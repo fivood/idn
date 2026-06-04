@@ -27,7 +27,9 @@ const DEATH_PARAS = {
   blore: { chapterId: 15, index: 195 },
   armstrong: { chapterId: 15, index: 270 },
   lombard: { chapterId: 16, index: 72 },
-  vera: { chapterId: 16, index: 137 }
+  vera: { chapterId: 16, index: 137 },
+  diana: { chapterId: 1, index: 30 },
+  pryce: { chapterId: 2, index: 15 }
 };
 
 // Clue discovery paragraph milestones
@@ -103,9 +105,6 @@ function NovelWorkspace({
   const [activeClueRelation, setActiveClueRelation] = useState(null);
 
 
-
-  // Passive decryption timer state
-  const [timeElapsed, setTimeElapsed] = useState(0);
 
   // Milestone State (mapped to player reading progress paragraphsRead)
   const [activeMilestone, setActiveMilestone] = useState(null);
@@ -216,34 +215,6 @@ function NovelWorkspace({
     currentChapterData,
     handleReadNextParagraph
   ]);
-
-  // Passive Auto-Decryption Tick Loop (runs in background to increment paragraphsUnlocked)
-  useEffect(() => {
-    const allUnlocked = novelState.paragraphsUnlocked >= totalParagraphs;
-    if (allUnlocked || novelState.finished) return;
-
-    const timer = setInterval(() => {
-      setTimeElapsed(prev => {
-        const next = prev + 0.1;
-        if (next >= decryptionInterval) {
-          autoUnlockParagraph(novelId, currentChapterId, novelState.paragraphsUnlocked);
-          return 0;
-        }
-        return next;
-      });
-    }, 100);
-
-    return () => clearInterval(timer);
-  }, [novelId, currentChapterId, novelState.paragraphsUnlocked, totalParagraphs, decryptionInterval, novelState.finished]);
-
-  // Reset timer state when chapter changes
-  useEffect(() => {
-    setTimeElapsed(0);
-  }, [currentChapterId]);
-
-  useEffect(() => {
-    setTimeElapsed(0);
-  }, [novelState.paragraphsUnlocked]);
 
   // Scroll to bottom of reader when new paragraphs are read/revealed
   const readerEndRef = useRef(null);
@@ -514,7 +485,7 @@ function NovelWorkspace({
           <div className="chapter-header-row">
             <div>
               <h2 style={{ fontSize: '16px' }}>
-                {currentChapterData.titleZH} / {currentChapterData.titleEN}
+                《{currentNovelInfo.titleZH}》 - {currentChapterData.titleZH} / {currentChapterData.titleEN}
               </h2>
               <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                 解密进度: 第 {novelState.paragraphsRead} / {totalParagraphs} 段
@@ -621,11 +592,11 @@ function NovelWorkspace({
                 <div className="decryption-timer-container">
                   <div 
                     className="decryption-timer-bar" 
-                    style={{ width: `${(timeElapsed / decryptionInterval) * 100}%` }}
+                    style={{ width: `${((novelState.timeElapsed || 0) / decryptionInterval) * 100}%` }}
                   ></div>
                 </div>
                 <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  解密进度: {(timeElapsed).toFixed(1)}秒 / {(decryptionInterval).toFixed(1)}秒
+                  解密进度: {(novelState.timeElapsed || 0).toFixed(1)}秒 / {(decryptionInterval).toFixed(1)}秒
                 </div>
               </div>
             )}

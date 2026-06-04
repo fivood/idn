@@ -145,7 +145,7 @@ export const novelsList = [
         accusationEN: "Accused of sending his wife's lover, Arthur Richmond, to certain death in WWI in 1917.",
         alibiZH: "否认这一说法，坚称里士满只是普通的战死沙场。",
         alibiEN: "Denied the rumor, claiming Richmond died in a normal reconnaissance patrol.",
-        deceasedChapter: 8,
+        deceasedChapter: 9,
         deathMethodZH: "在海边悬崖静坐时，头部后方遭到重物猛击致死。",
         deathMethodEN: "Struck on the back of the head while sitting by the cliff looking at the sea."
       },
@@ -578,7 +578,7 @@ export const novelsList = [
         accusationEN: "Accused of ruthless tactics in divorce trials, ruining lives and earning countless foes.",
         alibiZH: "已遇害，无答辩。",
         alibiEN: "Deceased, no alibi.",
-        deceasedChapter: 1,
+        deceasedChapter: 2,
         deathMethodZH: "在自家厨房中被昂贵红酒瓶重击后脑勺致死。",
         deathMethodEN: "Found bludgeoned to death in his kitchen with a heavy vintage wine bottle."
       },

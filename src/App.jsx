@@ -39,7 +39,9 @@ const DEATH_PARAS = {
   blore: 195,
   armstrong: 270,
   lombard: 72,
-  vera: 137
+  vera: 137,
+  diana: 30,
+  pryce: 15
 };
 
 // Calculate the active novel's global multiplier based on deceased suspects and clue levels
@@ -157,7 +159,8 @@ function App() {
       paragraphsUnlocked: 0,
       paragraphsRead: 0,
       clueLevels: {}, // clueId -> level
-      finished: false
+      finished: false,
+      timeElapsed: 0
     }
   });
   const [visualProgress, setVisualProgress] = useState(0);
@@ -168,6 +171,10 @@ function App() {
   
   // Cache diRate to avoid running calculation on every tick
   const [diRate, setDiRate] = useState(0.005); // Starts with 0.005 base rate
+
+  // Central ref to track state in game loop without restarting interval
+  const loopStateRef = useRef();
+  loopStateRef.current = { diRate, activeNovelId, novelStates, upgrades, library };
 
   // Theme Management
   const [theme, setTheme] = useState(() => {
@@ -243,6 +250,9 @@ function App() {
             if (migrated[k].paragraphsRead === undefined) {
               migrated[k].paragraphsRead = migrated[k].paragraphsUnlocked || 0;
             }
+            if (migrated[k].timeElapsed === undefined) {
+              migrated[k].timeElapsed = 0;
+            }
           });
 
           // Calculate offline paragraph decryption for the active novel
@@ -260,6 +270,7 @@ function App() {
                 decryptedOffline = Math.min(remainingToUnlock, Math.floor(elapsed / decryptionInterval));
                 if (decryptedOffline > 0) {
                   activeState.paragraphsUnlocked += decryptedOffline;
+                  activeState.timeElapsed = 0;
                 }
               }
             }
@@ -311,8 +322,14 @@ function App() {
   // Core Idle Game Loop (Ticks every 100ms)
   useEffect(() => {
     const tick = setInterval(() => {
-      if (diRate > 0) {
-        const stats = getDIProgressStats(diRate);
+      const state = loopStateRef.current;
+      if (!state) return;
+
+      const { diRate: currentDiRate, activeNovelId: currentActiveId, novelStates: currentStates, upgrades: currentUpgrades, library: currentLibrary } = state;
+
+      // 1. DI Progress Tick
+      if (currentDiRate > 0) {
+        const stats = getDIProgressStats(currentDiRate);
         setVisualProgress(prev => {
           const next = prev + (0.1 / stats.duration) * 100;
           if (next >= 100) {
@@ -322,9 +339,54 @@ function App() {
           return next;
         });
       }
+
+      // 2. Active Novel Paragraph Decryption Tick
+      if (currentActiveId && currentStates[currentActiveId]) {
+        const activeState = currentStates[currentActiveId];
+        if (!activeState.finished) {
+          const currentChapterId = activeState.currentChapterId;
+          const currentChapterData = novelData[currentActiveId]?.chapters?.find(c => c.id === currentChapterId);
+          if (currentChapterData) {
+            const totalParagraphs = currentChapterData.paragraphs.length;
+            const paragraphsUnlocked = activeState.paragraphsUnlocked;
+
+            if (paragraphsUnlocked < totalParagraphs) {
+              const assistantLevel = currentUpgrades['assistant_journal'] || 0;
+              const prestigeSpeedup = 1 + 0.1 * currentLibrary.length;
+              const decryptionInterval = Math.max(300, (1800 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup);
+
+              setNovelStates(prev => {
+                const bookState = prev[currentActiveId];
+                if (!bookState || bookState.currentChapterId !== currentChapterId || bookState.paragraphsUnlocked !== paragraphsUnlocked) {
+                  return prev;
+                }
+                const nextTime = (bookState.timeElapsed || 0) + 0.1;
+                if (nextTime >= decryptionInterval) {
+                  return {
+                    ...prev,
+                    [currentActiveId]: {
+                      ...bookState,
+                      paragraphsUnlocked: paragraphsUnlocked + 1,
+                      timeElapsed: 0
+                    }
+                  };
+                } else {
+                  return {
+                    ...prev,
+                    [currentActiveId]: {
+                      ...bookState,
+                      timeElapsed: nextTime
+                    }
+                  };
+                }
+              });
+            }
+          }
+        }
+      }
     }, 100);
     return () => clearInterval(tick);
-  }, [diRate]);
+  }, []);
 
   // Upgrade Purchase Action
   const buyUpgrade = (upgradeId) => {
@@ -360,7 +422,8 @@ function App() {
           paragraphsUnlocked: 0,
           paragraphsRead: 0,
           clueLevels: {},
-          finished: false
+          finished: false,
+          timeElapsed: 0
         }
       }));
     }
@@ -381,7 +444,8 @@ function App() {
               unlockedChapters: [...bookState.unlockedChapters, chapterId],
               currentChapterId: chapterId,
               paragraphsUnlocked: 0,
-              paragraphsRead: 0
+              paragraphsRead: 0,
+              timeElapsed: 0
             }
           };
         }
@@ -553,7 +617,7 @@ function App() {
             className={`tab-btn ${currentView === 'novel' ? 'active' : ''}`}
             onClick={() => setCurrentView('novel')}
           >
-            现场侦查
+            现场侦查: 《{novelsList.find(n => n.id === activeNovelId)?.titleZH}》
           </button>
         )}
         <button 
