@@ -345,7 +345,7 @@ function NovelWorkspace({
       } else if (!allParagraphsUnlocked) {
         tasks.push({ text: `文本正在后台自动解密中（解密速度：${(decryptionInterval).toFixed(1)}秒/段）`, done: false });
       } else {
-        if (currentChapterId < 18) {
+        if (currentChapterId < currentNovelInfo.totalChapters) {
           tasks.push({ text: `本章解锁完毕，请点击结案归档并开启下一章（费用：${CHAPTER_COSTS[currentChapterId + 1].toLocaleString()} DI）`, done: false });
         } else {
           tasks.push({ text: "所有章节解密完毕，线索已完全理清。请执行最终结案并归档", done: false });
@@ -392,28 +392,30 @@ function NovelWorkspace({
         
         {/* Left Column: Suspect Cards & Rhyme Panel */}
         <div className="workspace-left">
-          {/* Standing Figurine Count */}
-          <div className="rhyme-panel">
-            <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
-              小兵玩偶
-            </h4>
-            <div className="figurines-row">
-              {Array.from({ length: 10 }).map((_, idx) => {
-                const isBroken = idx >= standingCount;
-                return (
-                  <div 
-                    key={idx} 
-                    className={`figurine-indicator ${isBroken ? 'broken' : ''}`}
-                  >
-                    {isBroken ? "X" : "|"}
-                  </div>
-                );
-              })}
+          {/* Standing Figurine Count (Only for And Then There Were None) */}
+          {novelId === 'attwn' && (
+            <div className="rhyme-panel">
+              <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                小兵玩偶
+              </h4>
+              <div className="figurines-row">
+                {Array.from({ length: 10 }).map((_, idx) => {
+                  const isBroken = idx >= standingCount;
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`figurine-indicator ${isBroken ? 'broken' : ''}`}
+                    >
+                      {isBroken ? "X" : "|"}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
+                存活玩偶: {standingCount} / 10 (全局产量倍率: +{deceasedCount * 30}%)
+              </div>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-              存活玩偶: {standingCount} / 10 (全局产量倍率: +{deceasedCount * 30}%)
-            </div>
-          </div>
+          )}
 
           {/* Suspects Cards */}
           <div className="suspect-grid">
@@ -496,10 +498,10 @@ function NovelWorkspace({
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
                   <span>全案解锁进度</span>
-                  <span className="mono">{currentChapterId} / 18 章节</span>
+                  <span className="mono">{currentChapterId} / {currentNovelInfo.totalChapters} 章节</span>
                 </div>
                 <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--color-success)', height: '100%', width: `${(currentChapterId / 18) * 100}%` }}></div>
+                  <div style={{ background: 'var(--color-success)', height: '100%', width: `${(currentChapterId / currentNovelInfo.totalChapters) * 100}%` }}></div>
                 </div>
               </div>
             </div>
@@ -701,7 +703,7 @@ function NovelWorkspace({
                   [ 本章文字解锁完毕 ]
                 </div>
                 <div>
-                  {currentChapterId < 18 ? (
+                  {currentChapterId < currentNovelInfo.totalChapters ? (
                     <button 
                       className="btn-rect color-klein"
                       disabled={di < CHAPTER_COSTS[currentChapterId + 1]}
@@ -786,22 +788,24 @@ function NovelWorkspace({
             </div>
           </div>
 
-          {/* Rhyme Lyrics Panel */}
-          <div className="card-rect" style={{ fontSize: '12px', marginBottom: '0px' }}>
-            <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
-              童谣谋杀预言
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
-              {RHYME_LINES.map((line, idx) => {
-                const isCrossed = currentChapterId > line.deathChapter;
-                return (
-                  <div key={idx} className={`rhyme-line ${isCrossed ? 'fulfilled' : ''}`}>
-                    {idx + 1}. {line.textZH}
-                  </div>
-                );
-              })}
+          {/* Rhyme Lyrics Panel (Only for And Then There Were None) */}
+          {novelId === 'attwn' && (
+            <div className="card-rect" style={{ fontSize: '12px', marginBottom: '0px' }}>
+              <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+                童谣谋杀预言
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
+                {RHYME_LINES.map((line, idx) => {
+                  const isCrossed = currentChapterId > line.deathChapter;
+                  return (
+                    <div key={idx} className={`rhyme-line ${isCrossed ? 'fulfilled' : ''}`}>
+                      {idx + 1}. {line.textZH}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
       </div>
