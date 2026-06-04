@@ -33,6 +33,51 @@ const getParagraphs = (html, isZh) => {
     return paragraphs;
 };
 
+// Merge consecutive short paragraphs and filter out notes/separators/images
+const mergeShortParagraphs = (paragraphs, zhMin = 40, enMin = 40) => {
+    const merged = [];
+    let buffer = null;
+
+    paragraphs.forEach(p => {
+        const zh = p.zh || '';
+        const en = p.en || '';
+        const zhLen = zh.length;
+        const enLen = en.length;
+        const isShort = zhLen < zhMin || enLen < enMin;
+
+        // Filter out notes, separators, and image-only paragraphs
+        const isNote = zh.startsWith('[') || zh.startsWith('注释') || zh.startsWith('注：') ||
+                       zh.trim() === '***' || zh.trim() === '—' || zh.trim() === '* * *' ||
+                       zh.startsWith('<img') || en.startsWith('<img');
+
+        if (isNote) return;
+
+        if (isShort) {
+            if (!buffer) {
+                buffer = { zh, en };
+            } else {
+                buffer.zh = buffer.zh + (buffer.zh ? ' ' : '') + zh;
+                buffer.en = buffer.en + (buffer.en ? ' ' : '') + en;
+            }
+        } else {
+            if (buffer) {
+                buffer.zh = buffer.zh + (buffer.zh ? ' ' : '') + zh;
+                buffer.en = buffer.en + (buffer.en ? ' ' : '') + en;
+                merged.push({ zh: buffer.zh.trim(), en: buffer.en.trim() });
+                buffer = null;
+            } else {
+                merged.push({ zh: zh.trim(), en: en.trim() });
+            }
+        }
+    });
+
+    if (buffer) {
+        merged.push({ zh: buffer.zh.trim(), en: buffer.en.trim() });
+    }
+
+    return merged;
+};
+
 // --- BOOK 1: And Then There Were None (attwn) ---
 const parseAttwn = () => {
     const chMap = [
@@ -140,11 +185,13 @@ const parseWordIsMurder = () => {
             });
         }
 
+        const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+
         chaptersData.push({
             id: i,
             titleEN: `Chapter ${i}`,
             titleZH: `第${i}章`,
-            paragraphs: alignedParagraphs
+            paragraphs: mergedParagraphs
         });
     }
     console.log(`Parsed 'The Word Is Murder' (${chaptersData.length} chapters)`);
@@ -173,11 +220,13 @@ const parseSentenceIsDeath = () => {
             });
         }
 
+        const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+
         chaptersData.push({
             id: i,
             titleEN: `Chapter ${i}`,
             titleZH: `第${i}章`,
-            paragraphs: alignedParagraphs
+            paragraphs: mergedParagraphs
         });
     }
     console.log(`Parsed 'The Sentence is Death' (${chaptersData.length} chapters)`);
