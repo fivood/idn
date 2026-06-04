@@ -16,32 +16,32 @@ const RHYME_LINES = [
   { textZH: "一个小兵孤伶伶，悬梁自尽一个不剩。", deathChapter: 16 }
 ];
 
-// Death milestones paragraph lookup for suspects
+// Death milestones page lookup for suspects
 const DEATH_PARAS = {
-  marston: { chapterId: 4, index: 136 },
-  rogers_mrs: { chapterId: 6, index: 31 },
-  macarthur: { chapterId: 9, index: 123 },
-  rogers_mr: { chapterId: 11, index: 56 },
-  brent: { chapterId: 12, index: 86 },
-  wargrave: { chapterId: 13, index: 131 },
-  blore: { chapterId: 15, index: 195 },
-  armstrong: { chapterId: 15, index: 270 },
-  lombard: { chapterId: 16, index: 72 },
-  vera: { chapterId: 16, index: 137 },
-  diana: { chapterId: 1, index: 30 },
-  pryce: { chapterId: 2, index: 15 }
+  marston: { chapterId: 4, index: 12 },
+  rogers_mrs: { chapterId: 6, index: 2 },
+  macarthur: { chapterId: 9, index: 20 },
+  rogers_mr: { chapterId: 11, index: 5 },
+  brent: { chapterId: 12, index: 7 },
+  wargrave: { chapterId: 13, index: 14 },
+  blore: { chapterId: 15, index: 9 },
+  armstrong: { chapterId: 15, index: 11 },
+  lombard: { chapterId: 16, index: 2 },
+  vera: { chapterId: 16, index: 4 },
+  diana: { chapterId: 1, index: 6 },
+  pryce: { chapterId: 2, index: 1 }
 };
 
-// Clue discovery paragraph milestones
+// Clue discovery page milestones
 const CLUE_DISCOVER_PARAS = {
-  rhyme_poster: { chapterId: 2, index: 10 },
-  gramophone_record: { chapterId: 3, index: 91 },
-  soldiers_table: { chapterId: 4, index: 140 },
-  sleeping_draft: { chapterId: 6, index: 35 },
-  wool_missing: { chapterId: 10, index: 121 },
-  syringe_missing: { chapterId: 12, index: 93 },
-  revolver: { chapterId: 14, index: 10 },
-  manuscript_bottle: { chapterId: 18, index: 2 }
+  rhyme_poster: { chapterId: 2, index: 1 },
+  gramophone_record: { chapterId: 3, index: 9 },
+  soldiers_table: { chapterId: 4, index: 13 },
+  sleeping_draft: { chapterId: 6, index: 3 },
+  wool_missing: { chapterId: 10, index: 8 },
+  syringe_missing: { chapterId: 12, index: 5 },
+  revolver: { chapterId: 14, index: 0 },
+  manuscript_bottle: { chapterId: 18, index: 0 }
 };
 
 // Suspect introduction milestones (prevent showing characters before they appear in the player's read progress)
@@ -75,8 +75,8 @@ function NovelWorkspace({
   di,
   novelId,
   novelState,
-  autoUnlockParagraph,
-  readNextParagraph,
+  autoUnlockPage,
+  readNextPage,
   unlockNextChapter,
   unlockClue,
   finishNovel,
@@ -90,10 +90,10 @@ function NovelWorkspace({
   // Find current chapter content from the parsed json
   const bookChapters = novelData[novelId]?.chapters || [];
   const currentChapterData = bookChapters.find(c => c.id === currentChapterId);
-  const totalParagraphs = currentChapterData ? currentChapterData.paragraphs.length : 0;
-  const currentParaObj = currentChapterData ? currentChapterData.paragraphs[novelState.paragraphsRead] : null;
-  const maxLen = currentParaObj ? Math.max(currentParaObj.zh?.length || 0, currentParaObj.en?.length || 0) : 0;
-  const totalParas = bookChapters.reduce((sum, ch) => sum + ch.paragraphs.length, 0);
+  const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
+  const currentPageObj = currentChapterData ? currentChapterData.pages[novelState.pagesRead] : null;
+  const maxLen = currentPageObj ? Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0) : 0;
+  const totalPagesAll = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
   
   // Reader view options: zh, en
   const [langMode, setLangMode] = useState('zh');
@@ -106,7 +106,7 @@ function NovelWorkspace({
 
 
 
-  // Milestone State (mapped to player reading progress paragraphsRead)
+  // Milestone State (mapped to player reading progress pagesRead)
   const [activeMilestone, setActiveMilestone] = useState(null);
 
   // Typewriter effect state
@@ -117,38 +117,38 @@ function NovelWorkspace({
   const [toastMessage, setToastMessage] = useState(null);
   const [floatingRewards, setFloatingRewards] = useState([]);
 
-  const handleReadNextParagraph = useCallback(() => {
-    if (novelState.paragraphsRead < novelState.paragraphsUnlocked) {
+  const handleReadNextPage = useCallback(() => {
+    if (novelState.pagesRead < novelState.pagesUnlocked) {
       const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
-      const reward = Math.round(baseReward * (1 + 0.01 * novelState.paragraphsRead));
+      const reward = Math.round(baseReward * (1 + 0.01 * novelState.pagesRead));
       
       const id = Date.now() + Math.random();
       setFloatingRewards(prev => [...prev, { id, amount: reward }]);
       
-      readNextParagraph(novelId, currentChapterId);
+      readNextPage(novelId, currentChapterId);
       
       setTimeout(() => {
         setFloatingRewards(prev => prev.filter(r => r.id !== id));
       }, 1200);
     }
-  }, [novelState.paragraphsRead, novelState.paragraphsUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextParagraph]);
+  }, [novelState.pagesRead, novelState.pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
 
   useEffect(() => {
     localStorage.setItem('detective_auto_play', autoPlay);
   }, [autoPlay]);
 
-  // Reset typewriter when paragraph or chapter changes
+  // Reset typewriter when page or chapter changes
   useEffect(() => {
     setRevealedChars(0);
-  }, [novelState.paragraphsRead, currentChapterId]);
+  }, [novelState.pagesRead, currentChapterId]);
 
   // Toast notifier for story events
   useEffect(() => {
-    if (novelState.paragraphsRead <= 0) return;
+    if (novelState.pagesRead <= 0) return;
     
     // Check death triggers
     Object.entries(DEATH_PARAS).forEach(([suspectId, milestone]) => {
-      if (currentChapterId === milestone.chapterId && novelState.paragraphsRead === milestone.index) {
+      if (currentChapterId === milestone.chapterId && novelState.pagesRead === milestone.index) {
         const suspect = suspects.find(s => s.id === suspectId);
         if (suspect) {
           setToastMessage(`【案情通告】 嫌疑人 ${suspect.nameZH} 确认遇害！小兵玩偶破损，全局 DI 挂机产量提升 +30%！`);
@@ -159,7 +159,7 @@ function NovelWorkspace({
 
     // Check clue triggers
     Object.entries(CLUE_DISCOVER_PARAS).forEach(([clueId, milestone]) => {
-      if (currentChapterId === milestone.chapterId && novelState.paragraphsRead === milestone.index) {
+      if (currentChapterId === milestone.chapterId && novelState.pagesRead === milestone.index) {
         const clue = currentNovelInfo.clues.find(c => c.id === clueId);
         if (clue) {
           setToastMessage(`【物证发现】 搜寻到新线索物证：${clue.nameZH}！可在右侧物证墙进行升级分析。`);
@@ -167,29 +167,29 @@ function NovelWorkspace({
         }
       }
     });
-  }, [novelState.paragraphsRead, currentChapterId]);
+  }, [novelState.pagesRead, currentChapterId]);
 
-  // Calculate paragraph decryption interval based on "Assistant's Shorthand" upgrade level
-  // Base is 1800 seconds (30 minutes), minimum limit 300 seconds (5 minutes), speed up by global prestige (+10% per completed case)
+  // Calculate page decryption interval based on "Assistant's Shorthand" upgrade level
+  // Base is 360 seconds (6 minutes), minimum limit 60 seconds (1 minute), speed up by global prestige (+10% per completed case)
   const assistantLevel = upgrades['assistant_journal'] || 0;
   const prestigeSpeedup = 1 + 0.1 * library.length;
-  const decryptionInterval = Math.max(300, (1800 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup);
+  const decryptionInterval = Math.max(60, (360 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup);
 
   // Typewriter tick loop (runs when there is unread text in buffer)
   useEffect(() => {
-    if (novelState.paragraphsRead >= novelState.paragraphsUnlocked || novelState.finished) {
+    if (novelState.pagesRead >= novelState.pagesUnlocked || novelState.finished) {
       return;
     }
 
-    const currentParaObj = currentChapterData?.paragraphs[novelState.paragraphsRead];
-    if (!currentParaObj) return;
+    const currentPageObj = currentChapterData?.pages[novelState.pagesRead];
+    if (!currentPageObj) return;
 
-    const currentMaxLen = Math.max(currentParaObj.zh?.length || 0, currentParaObj.en?.length || 0);
+    const currentMaxLen = Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0);
 
     if (revealedChars >= currentMaxLen) {
       if (autoPlay) {
         const timeout = setTimeout(() => {
-          handleReadNextParagraph();
+          handleReadNextPage();
         }, 1200);
         return () => clearTimeout(timeout);
       }
@@ -207,22 +207,22 @@ function NovelWorkspace({
   }, [
     novelId,
     currentChapterId,
-    novelState.paragraphsRead,
-    novelState.paragraphsUnlocked,
+    novelState.pagesRead,
+    novelState.pagesUnlocked,
     revealedChars,
     autoPlay,
     novelState.finished,
     currentChapterData,
-    handleReadNextParagraph
+    handleReadNextPage
   ]);
 
-  // Scroll to bottom of reader when new paragraphs are read/revealed
+  // Scroll to bottom of reader when new pages are read/revealed
   const readerEndRef = useRef(null);
   useEffect(() => {
     if (readerEndRef.current) {
       readerEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [novelState.paragraphsRead]);
+  }, [novelState.pagesRead]);
 
   if (!currentChapterData) {
     return <div className="card-rect">正在加载案卷数据...</div>;
@@ -236,7 +236,7 @@ function NovelWorkspace({
     const intro = INTRODUCED_PARAS[s.id];
     if (!intro) return true;
     if (currentChapterId > intro.chapterId) return true;
-    if (currentChapterId === intro.chapterId && novelState.paragraphsRead >= intro.index) return true;
+    if (currentChapterId === intro.chapterId && novelState.pagesRead >= intro.index) return true;
     return false;
   };
   
@@ -250,7 +250,7 @@ function NovelWorkspace({
       return false;
     }
     if (currentChapterId > death.chapterId) return true;
-    if (currentChapterId === death.chapterId && novelState.paragraphsRead >= death.index) return true;
+    if (currentChapterId === death.chapterId && novelState.pagesRead >= death.index) return true;
     return false;
   };
 
@@ -259,14 +259,14 @@ function NovelWorkspace({
     const discover = CLUE_DISCOVER_PARAS[c.id];
     if (!discover) return false;
     if (currentChapterId > discover.chapterId) return true;
-    if (currentChapterId === discover.chapterId && novelState.paragraphsRead >= discover.index) return true;
+    if (currentChapterId === discover.chapterId && novelState.pagesRead >= discover.index) return true;
     return false;
   };
 
-  // Derived state: check if gramophone accusation is revealed (Chapter 3 paragraph 91+)
+  // Derived state: check if gramophone accusation is revealed (Chapter 3 page 15+)
   const isAccusationRevealed = () => {
     if (currentChapterId > 3) return true;
-    if (currentChapterId === 3 && novelState.paragraphsRead >= 91) return true;
+    if (currentChapterId === 3 && novelState.pagesRead >= 15) return true;
     return false;
   };
 
@@ -284,25 +284,25 @@ function NovelWorkspace({
   // Available clues = all clues of the book (discovered/undiscovered shown dynamically)
   const availableClues = currentNovelInfo.clues || [];
 
-  // Check if current chapter's paragraphs are all unlocked and read
-  const allParagraphsUnlocked = novelState.paragraphsUnlocked >= totalParagraphs;
-  const allParagraphsRead = novelState.paragraphsRead >= totalParagraphs;
+  // Check if current chapter's pages are all unlocked and read
+  const allPagesUnlocked = novelState.pagesUnlocked >= totalPages;
+  const allPagesRead = novelState.pagesRead >= totalPages;
 
-  const getOverallUnlockedParas = () => {
-    if (novelState.finished) return totalParas;
+  const getOverallUnlockedPages = () => {
+    if (novelState.finished) return totalPagesAll;
     let count = 0;
     bookChapters.forEach(ch => {
       if (ch.id < currentChapterId) {
-        count += ch.paragraphs.length;
+        count += ch.pages.length;
       } else if (ch.id === currentChapterId) {
-        count += novelState.paragraphsUnlocked;
+        count += novelState.pagesUnlocked;
       }
     });
     return count;
   };
 
-  const overallUnlocked = getOverallUnlockedParas();
-  const overallPercent = totalParas > 0 ? (overallUnlocked / totalParas) * 100 : 0;
+  const overallUnlocked = getOverallUnlockedPages();
+  const overallPercent = totalPagesAll > 0 ? (overallUnlocked / totalPagesAll) * 100 : 0;
 
   const renderWorkspaceMemo = () => {
     const tasks = [];
@@ -311,10 +311,10 @@ function NovelWorkspace({
     if (isFinished) {
       tasks.push({ text: "本案已全部告破并归档，可在书库中随时翻阅", done: true });
     } else {
-      if (novelState.paragraphsRead < novelState.paragraphsUnlocked) {
-        tasks.push({ text: `发现待读案卷！请查阅文本（积压未读：${novelState.paragraphsUnlocked - novelState.paragraphsRead}段）`, done: false });
-      } else if (!allParagraphsUnlocked) {
-        tasks.push({ text: `文本正在后台自动解密中（解密速度：${(decryptionInterval).toFixed(1)}秒/段）`, done: false });
+      if (novelState.pagesRead < novelState.pagesUnlocked) {
+        tasks.push({ text: `发现待读案卷！请查阅文本（积压未读：${novelState.pagesUnlocked - novelState.pagesRead}页）`, done: false });
+      } else if (!allPagesUnlocked) {
+        tasks.push({ text: `文本正在后台自动解密中（解密速度：${(decryptionInterval).toFixed(1)}秒/页）`, done: false });
       } else {
         if (currentChapterId < currentNovelInfo.totalChapters) {
           tasks.push({ text: `本章解锁完毕，请点击结案归档并开启下一章（费用：${CHAPTER_COSTS[currentChapterId + 1].toLocaleString()} DI）`, done: false });
@@ -488,7 +488,7 @@ function NovelWorkspace({
                 《{currentNovelInfo.titleZH}》 - {currentChapterData.titleZH} / {currentChapterData.titleEN}
               </h2>
               <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                解密进度: 第 {novelState.paragraphsRead} / {totalParagraphs} 段
+                解密进度: 第 {novelState.pagesRead} / {totalPages} 页
               </span>
             </div>
             
@@ -527,7 +527,7 @@ function NovelWorkspace({
 
           {/* Reading Viewer */}
           <div className="text-viewer">
-            {currentChapterData.paragraphs.slice(0, novelState.paragraphsRead).map((p, idx) => (
+            {currentChapterData.pages.slice(0, novelState.pagesRead).map((p, idx) => (
               <div key={idx} className="para-block">
                 {langMode !== 'zh' && p.en && (
                   <p className="para-en" dangerouslySetInnerHTML={{ __html: p.en }}></p>
@@ -545,9 +545,9 @@ function NovelWorkspace({
               </div>
             ))}
 
-            {/* Currently typing paragraph */}
-            {novelState.paragraphsRead < novelState.paragraphsUnlocked && (() => {
-              const p = currentParaObj;
+            {/* Currently typing page */}
+            {novelState.pagesRead < novelState.pagesUnlocked && (() => {
+              const p = currentPageObj;
               if (!p) return null;
               
               const isDone = revealedChars >= maxLen;
@@ -583,11 +583,11 @@ function NovelWorkspace({
               );
             })()}
 
-            {/* Paragraph Auto-Decryption Progress Indicator */}
-            {!allParagraphsUnlocked && novelState.paragraphsRead === novelState.paragraphsUnlocked && (
+            {/* Page Auto-Decryption Progress Indicator */}
+            {!allPagesUnlocked && novelState.pagesRead === novelState.pagesUnlocked && (
               <div className="para-block locked">
                 <div style={{ marginBottom: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  [ 正在解密下一段落原文本中... ]
+                  [ 正在解密下一页原文本中... ]
                 </div>
                 <div className="decryption-timer-container">
                   <div 
@@ -604,14 +604,14 @@ function NovelWorkspace({
             <div ref={readerEndRef} />
           </div>
 
-          {novelState.paragraphsRead < novelState.paragraphsUnlocked && (
+          {novelState.pagesRead < novelState.pagesUnlocked && (
             <div className="reader-controls-card" style={{ marginBottom: '12px', position: 'relative' }}>
               <div className="controls-left">
                 <span className="inventory-badge">
-                  未读缓存: <strong>{novelState.paragraphsUnlocked - novelState.paragraphsRead}</strong> 段段落
-                  {novelState.paragraphsRead < novelState.paragraphsUnlocked && (() => {
+                  未读缓存: <strong>{novelState.pagesUnlocked - novelState.pagesRead}</strong> 页
+                  {novelState.pagesRead < novelState.pagesUnlocked && (() => {
                     const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
-                    const reward = Math.round(baseReward * (1 + 0.01 * novelState.paragraphsRead));
+                    const reward = Math.round(baseReward * (1 + 0.01 * novelState.pagesRead));
                     return <span style={{ color: 'var(--color-success)', marginLeft: '8px' }}>(阅读可得 +{reward} DI)</span>;
                   })()}
                 </span>

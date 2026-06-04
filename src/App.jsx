@@ -28,20 +28,20 @@ const CHAPTER_COSTS = {
   18: 160000000
 };
 
-// Death milestones paragraph lookup for suspects
+// Death milestones page lookup for suspects
 const DEATH_PARAS = {
-  marston: 136,
-  rogers_mrs: 31,
-  macarthur: 123,
-  rogers_mr: 56,
-  brent: 86,
-  wargrave: 131,
-  blore: 195,
-  armstrong: 270,
-  lombard: 72,
-  vera: 137,
-  diana: 30,
-  pryce: 15
+  marston: 13,
+  rogers_mrs: 2,
+  macarthur: 9,
+  rogers_mr: 3,
+  brent: 5,
+  wargrave: 13,
+  blore: 8,
+  armstrong: 11,
+  lombard: 1,
+  vera: 4,
+  diana: 6,
+  pryce: 1
 };
 
 // Calculate the active novel's global multiplier based on deceased suspects and clue levels
@@ -51,7 +51,7 @@ export const getActiveNovelMultiplier = (novelId, state) => {
   if (!novelInfo) return 1;
   
   const currentChapterId = state.currentChapterId;
-  const paragraphsRead = state.paragraphsRead;
+  const pagesRead = state.pagesRead;
   
   // 1. Calculate deceased suspects ( figurines broken )
   let deceasedCount = 0;
@@ -61,7 +61,7 @@ export const getActiveNovelMultiplier = (novelId, state) => {
         deceasedCount++;
       } else if (currentChapterId === s.deceasedChapter) {
         const deathPara = DEATH_PARAS[s.id];
-        if (deathPara !== undefined && paragraphsRead >= deathPara) {
+        if (deathPara !== undefined && pagesRead >= deathPara) {
           deceasedCount++;
         }
       }
@@ -156,8 +156,8 @@ function App() {
     attwn: {
       unlockedChapters: [1],
       currentChapterId: 1,
-      paragraphsUnlocked: 0,
-      paragraphsRead: 0,
+      pagesUnlocked: 0,
+      pagesRead: 0,
       clueLevels: {}, // clueId -> level
       finished: false,
       timeElapsed: 0
@@ -247,8 +247,17 @@ function App() {
         if (data.novelStates !== undefined) {
           const migrated = { ...data.novelStates };
           Object.keys(migrated).forEach(k => {
-            if (migrated[k].paragraphsRead === undefined) {
-              migrated[k].paragraphsRead = migrated[k].paragraphsUnlocked || 0;
+            // Migrate from old paragraph-based to page-based structure
+            if (migrated[k].paragraphsUnlocked !== undefined) {
+              migrated[k].pagesUnlocked = migrated[k].paragraphsUnlocked;
+              delete migrated[k].paragraphsUnlocked;
+            }
+            if (migrated[k].paragraphsRead !== undefined) {
+              migrated[k].pagesRead = migrated[k].paragraphsRead;
+              delete migrated[k].paragraphsRead;
+            }
+            if (migrated[k].pagesRead === undefined) {
+              migrated[k].pagesRead = migrated[k].pagesUnlocked || 0;
             }
             if (migrated[k].timeElapsed === undefined) {
               migrated[k].timeElapsed = 0;
@@ -265,11 +274,11 @@ function App() {
                 const assistantLevel = migratedUpgrades['assistant_journal'] || 0;
                 const prestigeSpeedup = 1 + 0.1 * (data.library || []).length;
                 const decryptionInterval = Math.max(300, (1800 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup); // Base 1800s (30m), min 300s (5m), scaled by prestige
-                const totalParagraphs = currentChapterData.paragraphs.length;
-                const remainingToUnlock = totalParagraphs - activeState.paragraphsUnlocked;
+                const totalPages = currentChapterData.pages.length;
+                const remainingToUnlock = totalPages - activeState.pagesUnlocked;
                 decryptedOffline = Math.min(remainingToUnlock, Math.floor(elapsed / decryptionInterval));
                 if (decryptedOffline > 0) {
-                  activeState.paragraphsUnlocked += decryptedOffline;
+                  activeState.pagesUnlocked += decryptedOffline;
                   activeState.timeElapsed = 0;
                 }
               }
@@ -294,7 +303,7 @@ function App() {
             setOfflineReport({
               seconds: elapsed,
               earned: earned,
-              decryptedParagraphs: decryptedOffline
+              decryptedPages: decryptedOffline
             });
           }
         }
@@ -340,24 +349,24 @@ function App() {
         });
       }
 
-      // 2. Active Novel Paragraph Decryption Tick
+      // 2. Active Novel Page Decryption Tick
       if (currentActiveId && currentStates[currentActiveId]) {
         const activeState = currentStates[currentActiveId];
         if (!activeState.finished) {
           const currentChapterId = activeState.currentChapterId;
           const currentChapterData = novelData[currentActiveId]?.chapters?.find(c => c.id === currentChapterId);
           if (currentChapterData) {
-            const totalParagraphs = currentChapterData.paragraphs.length;
-            const paragraphsUnlocked = activeState.paragraphsUnlocked;
+            const totalPages = currentChapterData.pages.length;
+            const pagesUnlocked = activeState.pagesUnlocked;
 
-            if (paragraphsUnlocked < totalParagraphs) {
+            if (pagesUnlocked < totalPages) {
               const assistantLevel = currentUpgrades['assistant_journal'] || 0;
               const prestigeSpeedup = 1 + 0.1 * currentLibrary.length;
-              const decryptionInterval = Math.max(300, (1800 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup);
+              const decryptionInterval = Math.max(60, (360 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup); // Base 360s (6min), min 60s (1min), scaled by prestige
 
               setNovelStates(prev => {
                 const bookState = prev[currentActiveId];
-                if (!bookState || bookState.currentChapterId !== currentChapterId || bookState.paragraphsUnlocked !== paragraphsUnlocked) {
+                if (!bookState || bookState.currentChapterId !== currentChapterId || bookState.pagesUnlocked !== pagesUnlocked) {
                   return prev;
                 }
                 const nextTime = (bookState.timeElapsed || 0) + 0.1;
@@ -366,7 +375,7 @@ function App() {
                     ...prev,
                     [currentActiveId]: {
                       ...bookState,
-                      paragraphsUnlocked: paragraphsUnlocked + 1,
+                      pagesUnlocked: pagesUnlocked + 1,
                       timeElapsed: 0
                     }
                   };
@@ -419,8 +428,8 @@ function App() {
         [novelId]: {
           unlockedChapters: [1],
           currentChapterId: 1,
-          paragraphsUnlocked: 0,
-          paragraphsRead: 0,
+          pagesUnlocked: 0,
+          pagesRead: 0,
           clueLevels: {},
           finished: false,
           timeElapsed: 0
@@ -443,8 +452,8 @@ function App() {
               ...bookState,
               unlockedChapters: [...bookState.unlockedChapters, chapterId],
               currentChapterId: chapterId,
-              paragraphsUnlocked: 0,
-              paragraphsRead: 0,
+              pagesUnlocked: 0,
+              pagesRead: 0,
               timeElapsed: 0
             }
           };
@@ -460,16 +469,16 @@ function App() {
     setCurrentView('novel');
   };
 
-  // Auto Unlock Paragraph (called from workspace timer, free of charge)
-  const autoUnlockParagraph = (novelId, chapterId, paraIndex) => {
+  // Auto Unlock Page (called from workspace timer, free of charge)
+  const autoUnlockPage = (novelId, chapterId, pageIndex) => {
     setNovelStates(prev => {
       const bookState = prev[novelId];
-      if (bookState.currentChapterId === chapterId && bookState.paragraphsUnlocked === paraIndex) {
+      if (bookState.currentChapterId === chapterId && bookState.pagesUnlocked === pageIndex) {
         return {
           ...prev,
           [novelId]: {
             ...bookState,
-            paragraphsUnlocked: paraIndex + 1
+            pagesUnlocked: pageIndex + 1
           }
         };
       }
@@ -477,14 +486,14 @@ function App() {
     });
   };
 
-  // Manual Read Paragraph (called when clicking next paragraph to catch up to decryption)
-  const readNextParagraph = (novelId, chapterId) => {
+  // Manual Read Page (called when clicking next page to catch up to decryption)
+  const readNextPage = (novelId, chapterId) => {
     setNovelStates(prev => {
       const bookState = prev[novelId];
-      if (bookState.currentChapterId === chapterId && bookState.paragraphsRead < bookState.paragraphsUnlocked) {
+      if (bookState.currentChapterId === chapterId && bookState.pagesRead < bookState.pagesUnlocked) {
         // Calculate reading reward DI
         const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[chapterId] * 0.00005));
-        const reward = Math.round(baseReward * (1 + 0.01 * bookState.paragraphsRead));
+        const reward = Math.round(baseReward * (1 + 0.01 * bookState.pagesRead));
         
         // Directly award DI points
         setDi(d => d + reward);
@@ -493,7 +502,7 @@ function App() {
           ...prev,
           [novelId]: {
             ...bookState,
-            paragraphsRead: bookState.paragraphsRead + 1
+            pagesRead: bookState.pagesRead + 1
           }
         };
       }
@@ -648,8 +657,8 @@ function App() {
             di={di}
             novelId={activeNovelId}
             novelState={novelStates[activeNovelId]}
-            autoUnlockParagraph={autoUnlockParagraph}
-            readNextParagraph={readNextParagraph}
+            autoUnlockPage={autoUnlockPage}
+            readNextPage={readNextPage}
             unlockNextChapter={unlockNextChapter}
             unlockClue={unlockClue}
             finishNovel={finishNovel}

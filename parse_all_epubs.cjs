@@ -78,6 +78,62 @@ const mergeShortParagraphs = (paragraphs, zhMin = 40, enMin = 40) => {
     return merged;
 };
 
+// Group merged paragraphs into pages (each page ~300-500 Chinese characters)
+const groupIntoPages = (paragraphs, minChars = 200, maxChars = 400) => {
+    const pages = [];
+    let current = { zh: '', en: '' };
+    let zhLen = 0;
+
+    paragraphs.forEach(p => {
+        const pZh = p.zh || '';
+        const pEn = p.en || '';
+        const pZhLen = pZh.length;
+
+        if (zhLen > 0 && zhLen + pZhLen > maxChars) {
+            pages.push({ zh: current.zh.trim(), en: current.en.trim() });
+            current = { zh: pZh, en: pEn };
+            zhLen = pZhLen;
+        } else {
+            if (current.zh) {
+                current.zh += '\n\n' + pZh;
+                current.en += '\n\n' + pEn;
+            } else {
+                current = { zh: pZh, en: pEn };
+            }
+            zhLen += pZhLen;
+        }
+    });
+
+    if (current.zh) {
+        pages.push({ zh: current.zh.trim(), en: current.en.trim() });
+    }
+
+    return pages;
+};
+
+// Generate mapping from original paragraph index to page index for a chapter
+const getParaToPageMap = (paragraphs, minChars = 200, maxChars = 400) => {
+    const map = {};
+    let currentPageIdx = 0;
+    let currentZhLen = 0;
+
+    paragraphs.forEach((p, paraIdx) => {
+        const pZh = p.zh || '';
+        const pZhLen = pZh.length;
+
+        if (currentZhLen > 0 && currentZhLen + pZhLen > maxChars) {
+            currentPageIdx++;
+            currentZhLen = pZhLen;
+        } else {
+            currentZhLen += pZhLen;
+        }
+
+        map[paraIdx] = currentPageIdx;
+    });
+
+    return map;
+};
+
 // --- BOOK 1: And Then There Were None (attwn) ---
 const parseAttwn = () => {
     const chMap = [
@@ -152,11 +208,15 @@ const parseAttwn = () => {
                 });
             }
         }
+        
+        const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+        const pages = groupIntoPages(mergedParagraphs);
+        
         chaptersData.push({
             id: ch.id,
             titleEN: ch.titleEN,
             titleZH: ch.titleZH,
-            paragraphs: alignedParagraphs
+            pages: pages
         });
     });
     console.log(`Parsed 'And Then There Were None' (${chaptersData.length} chapters)`);
@@ -186,12 +246,13 @@ const parseWordIsMurder = () => {
         }
 
         const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+        const pages = groupIntoPages(mergedParagraphs);
 
         chaptersData.push({
             id: i,
             titleEN: `Chapter ${i}`,
             titleZH: `第${i}章`,
-            paragraphs: mergedParagraphs
+            pages: pages
         });
     }
     console.log(`Parsed 'The Word Is Murder' (${chaptersData.length} chapters)`);
@@ -221,12 +282,13 @@ const parseSentenceIsDeath = () => {
         }
 
         const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+        const pages = groupIntoPages(mergedParagraphs);
 
         chaptersData.push({
             id: i,
             titleEN: `Chapter ${i}`,
             titleZH: `第${i}章`,
-            paragraphs: mergedParagraphs
+            pages: pages
         });
     }
     console.log(`Parsed 'The Sentence is Death' (${chaptersData.length} chapters)`);

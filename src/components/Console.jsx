@@ -5,26 +5,26 @@ import novelData from '../data/novel_data.json';
 function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, novelStates, library = [], buyNovel, activeNovelId }) {
   // Find "attwn" data for progress tracking
   const attwnChapters = novelData.chapters || [];
-  const totalParas = attwnChapters.reduce((sum, ch) => sum + ch.paragraphs.length, 0);
+  const totalPages = attwnChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
 
-  const getBookTotalParagraphs = (bookId) => {
+  const getBookTotalPages = (bookId) => {
     const bookChapters = novelData[bookId]?.chapters || [];
-    return bookChapters.reduce((sum, ch) => sum + ch.paragraphs.length, 0);
+    return bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
   };
 
-  const getUnlockedParagraphsCount = (bookState, bookId) => {
+  const getUnlockedPagesCount = (bookState, bookId) => {
     if (!bookState) return 0;
     const bookChapters = novelData[bookId]?.chapters || [];
-    const bookTotalParas = bookChapters.reduce((sum, ch) => sum + ch.paragraphs.length, 0);
+    const bookTotalPages = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
     if (bookState.finished) {
-      return bookTotalParas;
+      return bookTotalPages;
     }
     let count = 0;
     bookChapters.forEach(ch => {
       if (ch.id < bookState.currentChapterId) {
-        count += ch.paragraphs.length;
+        count += ch.pages.length;
       } else if (ch.id === bookState.currentChapterId) {
-        count += bookState.paragraphsUnlocked;
+        count += bookState.pagesUnlocked;
       }
     });
     return count;
@@ -34,7 +34,7 @@ function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, 
     const assistantLevel = upgrades['assistant_journal'] || 0;
     const activeBookState = activeNovelId ? novelStates[activeNovelId] : null;
     const activeBookChapters = activeNovelId ? (novelData[activeNovelId]?.chapters || []) : [];
-    const activeTotalParas = activeBookChapters.reduce((sum, ch) => sum + ch.paragraphs.length, 0);
+    const activeTotalPages = activeBookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
     const tasks = [];
 
     if (assistantLevel === 0) {
@@ -44,22 +44,22 @@ function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, 
     if (!activeNovelId || !activeBookState) {
       tasks.push({ text: "在下方“未决案卷”中选择一部小说以“开始调查”", done: false });
     } else if (activeBookState && !activeBookState.finished) {
-      const unlockedCount = getUnlockedParagraphsCount(activeBookState, activeNovelId);
+      const unlockedCount = getUnlockedPagesCount(activeBookState, activeNovelId);
       
       tasks.push({ text: "前往“现场侦查”面板，查看已解密的文本剧情", done: false });
-      if (activeBookState.paragraphsRead < activeBookState.paragraphsUnlocked) {
-        tasks.push({ text: `有新解密的段落尚未翻阅（未读缓存：${activeBookState.paragraphsUnlocked - activeBookState.paragraphsRead}段）`, done: false });
+      if (activeBookState.pagesRead < activeBookState.pagesUnlocked) {
+        tasks.push({ text: `有新解密的页面尚未翻阅（未读缓存：${activeBookState.pagesUnlocked - activeBookState.pagesRead}页）`, done: false });
       }
       
       const currentChapterData = activeBookChapters.find(c => c.id === activeBookState.currentChapterId);
-      const currentChapterTotal = currentChapterData ? currentChapterData.paragraphs.length : 0;
-      const isAllUnlocked = activeBookState.paragraphsUnlocked >= currentChapterTotal;
-      const isAllRead = activeBookState.paragraphsRead >= currentChapterTotal;
+      const currentChapterTotal = currentChapterData ? currentChapterData.pages.length : 0;
+      const isAllUnlocked = activeBookState.pagesUnlocked >= currentChapterTotal;
+      const isAllRead = activeBookState.pagesRead >= currentChapterTotal;
 
       if (!isAllUnlocked) {
-        tasks.push({ text: `当前章节段落自动解密中（进度：${activeBookState.paragraphsUnlocked} / ${currentChapterTotal}）`, done: false });
+        tasks.push({ text: `当前章节页面自动解密中（进度：${activeBookState.pagesUnlocked} / ${currentChapterTotal}）`, done: false });
       } else if (!isAllRead) {
-        tasks.push({ text: `当前章节已完全解密，请查阅完全部已解锁文本段落`, done: false });
+        tasks.push({ text: `当前章节已完全解密，请查阅完全部已解锁文本页面`, done: false });
       } else {
         tasks.push({ text: `当前章节完全阅读完毕！请支付 DI 进行结案归档以开启下一章`, done: false });
       }
@@ -168,9 +168,9 @@ function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, 
                       }
                     }
 
-                    const bookTotalParas = getBookTotalParagraphs(n.id);
-                    const unlockedCount = getUnlockedParagraphsCount(bookState, n.id);
-                    const progressPercent = bookTotalParas > 0 ? (unlockedCount / bookTotalParas) * 100 : 0;
+                    const bookTotalPages = getBookTotalPages(n.id);
+                    const unlockedCount = getUnlockedPagesCount(bookState, n.id);
+                    const progressPercent = bookTotalPages > 0 ? (unlockedCount / bookTotalPages) * 100 : 0;
 
                     return (
                       <div key={n.id} className="novel-card">
@@ -191,7 +191,7 @@ function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, 
                             <div style={{ marginTop: '12px', marginBottom: '16px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
                                 <span>本案解密进度</span>
-                                <span className="mono">{unlockedCount} / {bookTotalParas} 段落 ({progressPercent.toFixed(1)}%)</span>
+                                <span className="mono">{unlockedCount} / {bookTotalPages} 页 ({progressPercent.toFixed(1)}%)</span>
                               </div>
                               <div style={{ border: '1px solid var(--border-color)', height: '6px', background: 'var(--bg-hover)', position: 'relative' }}>
                                 <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${progressPercent}%` }}></div>

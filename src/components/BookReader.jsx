@@ -161,9 +161,9 @@ function BookReader({ novelId, handleBack }) {
           {currentBookData?.titleZH} / {currentBookData?.titleEN}
         </h2>
 
-        {/* Paragraphs */}
+        {/* Pages */}
         <div style={{ maxWidth: '750px', margin: '0 auto', fontSize: '14px', lineHeight: '1.8' }}>
-          {currentBookData?.paragraphs.map((p, idx) => (
+          {currentBookData?.pages.map((p, idx) => (
             <div key={idx} className="para-block" style={{ borderBottom: 'none', marginBottom: '20px' }}>
               {langMode !== 'zh' && p.en && (
                 <p className="para-en" style={{ marginBottom: '6px' }} dangerouslySetInnerHTML={{ __html: p.en }}></p>
