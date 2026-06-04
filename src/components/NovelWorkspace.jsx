@@ -42,6 +42,33 @@ const CLUE_DISCOVER_PARAS = {
   manuscript_bottle: { chapterId: 18, index: 2 }
 };
 
+// Suspect introduction milestones (prevent showing characters before they appear in the player's read progress)
+const INTRODUCED_PARAS = {
+  // And Then There Were None (All 10 are introduced in Chapter 1)
+  wargrave: { chapterId: 1, index: 0 },
+  vera: { chapterId: 1, index: 0 },
+  lombard: { chapterId: 1, index: 0 },
+  brent: { chapterId: 1, index: 0 },
+  macarthur: { chapterId: 1, index: 0 },
+  armstrong: { chapterId: 1, index: 0 },
+  marston: { chapterId: 1, index: 0 },
+  blore: { chapterId: 1, index: 0 },
+  rogers_mr: { chapterId: 1, index: 0 },
+  rogers_mrs: { chapterId: 1, index: 0 },
+
+  // The Word Is Murder (Diana is the victim, others introduced in Chapters 3, 5, 8)
+  diana: { chapterId: 1, index: 0 },
+  damian: { chapterId: 3, index: 0 },
+  judith: { chapterId: 5, index: 0 },
+  grace: { chapterId: 8, index: 0 },
+
+  // The Sentence is Death (Pryce is the victim, others introduced in Chapters 4, 5, 7)
+  pryce: { chapterId: 1, index: 0 },
+  akira: { chapterId: 4, index: 0 },
+  davina: { chapterId: 5, index: 0 },
+  gregory: { chapterId: 7, index: 0 }
+};
+
 function NovelWorkspace({
   di,
   novelId,
@@ -232,11 +259,25 @@ function NovelWorkspace({
 
   // Get active suspects for this novel
   const suspects = currentNovelInfo.suspects || [];
+
+  // Derived state: check if a suspect is introduced at current reading point
+  const isSuspectIntroduced = (s) => {
+    const intro = INTRODUCED_PARAS[s.id];
+    if (!intro) return true;
+    if (currentChapterId > intro.chapterId) return true;
+    if (currentChapterId === intro.chapterId && novelState.paragraphsRead >= intro.index) return true;
+    return false;
+  };
   
   // Derived state: check if a suspect is deceased at current reading point (prevent spoilers)
   const isSuspectDeceased = (s) => {
     const death = DEATH_PARAS[s.id];
-    if (!death) return false;
+    if (!death) {
+      if (s.deceasedChapter !== undefined) {
+        return currentChapterId >= s.deceasedChapter;
+      }
+      return false;
+    }
     if (currentChapterId > death.chapterId) return true;
     if (currentChapterId === death.chapterId && novelState.paragraphsRead >= death.index) return true;
     return false;
@@ -379,7 +420,7 @@ function NovelWorkspace({
             <h4 style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
               现场嫌疑人列表
             </h4>
-            {suspects.map(s => {
+            {suspects.filter(s => isSuspectIntroduced(s)).map(s => {
               const deceased = isSuspectDeceased(s);
               
               let cardClass = "suspect-card";
