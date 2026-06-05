@@ -403,7 +403,7 @@ function NovelWorkspace({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
           {tasks.map((task, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: task.done ? 'var(--text-muted)' : 'var(--text-main)' }}>
-              <span>{task.done ? "[√]" : "[ ]"}</span>
+              <span>{task.done ? "✓" : "•"}</span>
               <span style={{ textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</span>
             </div>
           ))}
@@ -517,7 +517,7 @@ function NovelWorkspace({
                     <p style={{ margin: '2px 0' }}>{selectedSuspect.accusationZH}</p>
                     <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.accusationEN}</p>
                   </div>
-                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>[线索尚未浮现，待调查]</span>}
+                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
               </div>
               <div style={{ marginBottom: '6px' }}>
                 <strong>指控辩解 / Alibi:</strong> 
@@ -526,7 +526,7 @@ function NovelWorkspace({
                     <p style={{ margin: '2px 0' }}>{selectedSuspect.alibiZH}</p>
                     <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.alibiEN}</p>
                   </div>
-                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>[线索尚未浮现，待调查]</span>}
+                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
               </div>
               <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--crimson-red)', color: isSuspectDeceased(selectedSuspect) ? 'var(--crimson-red)' : 'var(--text-muted)' }}>
                 <strong>死亡状况 / Death:</strong> 
@@ -535,7 +535,7 @@ function NovelWorkspace({
                     <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedSuspect.deathMethodZH}</p>
                     <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.deathMethodEN}</p>
                   </div>
-                ) : <span style={{ marginLeft: '4px' }}>[生存 / 案情调查中]</span>}
+                ) : <span style={{ marginLeft: '4px' }}>生存 / 案情调查中</span>}
               </div>
               
               {/* Accusation gameplay for And Then There Were None */}
@@ -737,7 +737,7 @@ function NovelWorkspace({
                 {!allPagesUnlocked && novelState.pagesRead === novelState.pagesUnlocked && (
                   <div className="para-block locked">
                     <div style={{ marginBottom: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                      [ 正在解密下一页原文本中... ]
+                      正在解密下一页原文本中...
                     </div>
                     <div className="decryption-timer-container">
                       <div 
@@ -842,7 +842,7 @@ function NovelWorkspace({
             ) : allPagesRead ? (
               <div className="card-rect" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px', padding: '10px 16px' }}>
                 <div className="mono" style={{ fontSize: '13px' }}>
-                  [ 本章文字解锁完毕 ]
+                  本章文字解锁完毕
                 </div>
                 <div>
                   {currentChapterId < currentNovelInfo.totalChapters ? (

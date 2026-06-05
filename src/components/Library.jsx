@@ -112,7 +112,7 @@ function Library({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
           {tasks.map((task, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: task.done ? 'var(--text-muted)' : 'var(--text-main)' }}>
-              <span>{task.done ? "[√]" : "[ ]"}</span>
+              <span>{task.done ? "✓" : "•"}</span>
               <span style={{ textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</span>
             </div>
           ))}
@@ -380,7 +380,7 @@ function Library({
                   <div key={u.id} className="upgrade-item">
                     <div className="upgrade-info">
                       <div className="upgrade-name" style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                        {u.nameZH} <span className="mono" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>[等级 {lvl}]</span>
+                        {u.nameZH} <span className="mono" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>(等级 {lvl})</span>
                       </div>
                       <div className="upgrade-desc" style={{ fontSize: '10px', marginTop: '2px', lineHeight: '1.3' }}>
                         {u.descriptionZH}
