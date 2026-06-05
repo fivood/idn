@@ -203,6 +203,168 @@ function ClueWallModal({
 
   const unlockedBooks = novelsList.filter(book => unlockedNovels.includes(book.id));
 
+  const renderSidebarDetailContent = () => {
+    if (!selectedNode) {
+      return (
+        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '180px' }}>
+          <div style={{ textAlign: 'center', opacity: 0.6, padding: '20px' }}>
+            <span style={{ fontSize: '28px', display: 'block', marginBottom: '8px' }}>📂</span>
+            <h4 style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 6px 0', color: 'var(--text-main)' }}>请选择线索节点</h4>
+            <p style={{ fontSize: '11px', margin: 0, lineHeight: 1.4 }}>点击左侧墙上的任意卡片以查看其详细描述、指控罪行、遇害记录或进行物证分析。</p>
+          </div>
+        </div>
+      );
+    }
+
+    const suspectData = getSuspectStatus(selectedNode.id);
+    const suspect = suspectData?.suspect;
+    const isDeceased = suspectData?.isDeceased || false;
+
+    return (
+      <div className="clue-detail-sidebar-content" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <header className="clue-detail-header" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <span className="clue-detail-type-tag">
+              {selectedNode.type === 'suspect' || selectedNode.type === 'victim' 
+                ? (isDeceased ? '遇害人 / DECEASED' : '嫌疑人 / SUSPECT') 
+                : selectedNode.type === 'clue' ? '案件物证 / EVIDENCE' : '关键事件 / EVENT'}
+            </span>
+            <h4 className="clue-detail-title-zh" style={{ fontSize: '14.5px', fontWeight: 'bold', margin: '4px 0' }}>{selectedNode.labelZH}</h4>
+            <h5 className="clue-detail-title-en" style={{ fontSize: '10px', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>{selectedNode.labelEN}</h5>
+          </div>
+          <button 
+            className="clue-detail-close-btn" 
+            style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 4px', lineHeight: 1 }} 
+            onClick={() => setSelectedNode(null)}
+            title="清除选择"
+          >
+            &times;
+          </button>
+        </header>
+
+        <div className="clue-detail-body" style={{ flex: 1, minHeight: 0, paddingRight: '4px' }}>
+          {/* Basic description */}
+          <div className="clue-detail-section">
+            <h6 className="clue-detail-sec-title">案卷摘要 / Description</h6>
+            <p style={{ fontSize: '12.5px', lineHeight: 1.5, marginBottom: '6px', margin: 0 }}>{selectedNode.descZH}</p>
+            <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic', margin: 0 }}>{selectedNode.descEN}</p>
+          </div>
+
+          {/* Special Child Content for Nursery Rhyme Clue */}
+          {selectedNode.id === 'attwn_rhyme' && (
+            <>
+              <div className="clue-detail-divider" />
+              <div className="clue-detail-section" style={{ marginTop: '10px' }}>
+                <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)' }}>十个小士兵预言歌词</h6>
+                <div className="rhyme-sheet-lines" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                  {RHYME_LINES.map((line, idx) => {
+                    const suspectStatus = getSuspectStatus("attwn_" + line.suspectId);
+                    const isCrossed = suspectStatus ? suspectStatus.isDeceased : false;
+                    return (
+                      <div key={idx} className={`rhyme-sheet-line ${isCrossed ? 'crossed' : ''}`} style={{ fontSize: '11px', display: 'flex', gap: '6px', opacity: isCrossed ? 0.4 : 1, textDecoration: isCrossed ? 'line-through' : 'none' }}>
+                        <span className="rhyme-sheet-num" style={{ fontWeight: 'bold' }}>{idx + 1}.</span>
+                        <span className="rhyme-sheet-text">{line.textZH}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Evidence Upgrade / Analysis Section */}
+          {selectedNode.type === 'clue' && selectedNode.id !== 'attwn_rhyme' && (() => {
+            const clueId = selectedNode.id.substring(selectedNovelId.length + 1);
+            const clue = currentNovelInfo?.clues?.find(c => c.id === clueId);
+            if (!clue) return null;
+
+            const lvl = currentNovelState.clueLevels?.[clueId] || 0;
+            const cost = Math.round(clue.cost * Math.pow(1.5, lvl));
+            const bonus = lvl * 10;
+
+            return (
+              <>
+                <div className="clue-detail-divider" />
+                <div className="clue-detail-section" style={{ backgroundColor: 'var(--bg-hover)', padding: '10px 12px', borderRadius: 'var(--border-radius)', marginTop: '8px', border: '1px solid var(--border-color)' }}>
+                  <h6 className="clue-detail-sec-title" style={{ borderBottomColor: 'var(--border-color)', color: 'var(--text-main)', marginTop: 0, paddingBottom: '4px', fontSize: '11px' }}>
+                    线索物证分析与加成 / Clue Analysis
+                  </h6>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px', fontSize: '11px' }}>
+                    <div>
+                      <strong>当前分析级别:</strong> 等级 {lvl}
+                    </div>
+                    <div>
+                      <strong>挂机 DI/s 增益:</strong> <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>+{bonus}%</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginTop: '8px', paddingTop: '6px', borderTop: '1px dotted var(--border-color)' }}>
+                    <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      消耗: {cost.toLocaleString()} DI
+                    </span>
+                    <button
+                      className="btn-rect color-klein"
+                      style={{ padding: '3px 8px', fontSize: '10px', minWidth: '70px' }}
+                      disabled={di < cost}
+                      onClick={() => unlockClue && unlockClue(selectedNovelId, clueId, cost)}
+                    >
+                      分析 / Analyze
+                    </button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+
+          {/* Extended Suspect Stats (Bilingual) */}
+          {suspect && (
+            <>
+              <div className="clue-detail-divider" />
+              
+              <div className="clue-detail-section">
+                <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
+                <p style={{ fontSize: '12px', margin: '2px 0' }}><strong>{suspect.nameZH}</strong> - {suspect.titleZH}</p>
+                <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}><strong>{suspect.nameEN}</strong> - {suspect.titleEN}</p>
+              </div>
+              
+              <div className="clue-detail-divider" />
+
+              <div className="clue-detail-section">
+                <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
+                <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{suspect.accusationZH}</p>
+                <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{suspect.accusationEN}</p>
+              </div>
+
+              <div className="clue-detail-divider" />
+
+              <div className="clue-detail-section">
+                <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
+                <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{suspect.alibiZH}</p>
+                <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{suspect.alibiEN}</p>
+              </div>
+
+              {isDeceased && suspect.deathMethodZH && (
+                <>
+                  <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
+                  <div className="clue-detail-section deceased-section" style={{ padding: '6px 8px' }}>
+                    <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)', marginTop: 0 }}>遇害实录 / Death Circumstance</h6>
+                    <p style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, margin: '2px 0' }}>{suspect.deathMethodZH}</p>
+                    <p style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3, margin: '2px 0' }}>{suspect.deathMethodEN}</p>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+        
+        <footer className="clue-detail-footer" style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+          <button className="btn-rect" style={{ padding: '4px 12px', fontSize: '11px' }} onClick={() => setSelectedNode(null)}>
+            清除选择 (Clear)
+          </button>
+        </footer>
+      </div>
+    );
+  };
+
   const renderContainer = (
     <div className="clue-wall-container" style={isStandalone ? { width: '100vw', height: '100vh', maxWidth: 'none', maxHeight: 'none', borderRadius: 0, border: 'none' } : {}}>
       
@@ -245,298 +407,163 @@ function ClueWallModal({
         </div>
       </header>
 
-      {/* Board Outer Scrollable Wrapper */}
-      <div className="clue-wall-board-wrapper" ref={boardRef}>
-        <div className="clue-wall-board">
-          
-          {selectedNovelId === 'attwn' && (
-            <div className="corkboard-rhyme-sheet">
-              <h4 className="rhyme-sheet-title">十个小士兵童谣</h4>
-              <div className="rhyme-sheet-lines">
-                {RHYME_LINES.map((line, idx) => {
-                  const suspectStatus = getSuspectStatus("attwn_" + line.suspectId);
-                  const isCrossed = suspectStatus ? suspectStatus.isDeceased : false;
-                  return (
-                    <div key={idx} className={`rhyme-sheet-line ${isCrossed ? 'crossed' : ''}`}>
-                      <span className="rhyme-sheet-num">{idx + 1}.</span>
-                      <span className="rhyme-sheet-text">{line.textZH}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          
-          {/* SVG Connection Layer */}
-          <svg className="clue-wall-svg-layer">
-            <defs>
-              {/* Wool/string drop shadow filter */}
-              <filter id="yarn-shadow" x="-10%" y="-10%" width="120%" height="120%">
-                <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.5" />
-              </filter>
-            </defs>
+      {/* Split Body: Board and Sidebar Details */}
+      <div className="clue-wall-body-split">
+        {/* Board Outer Scrollable Wrapper */}
+        <div className="clue-wall-board-wrapper" ref={boardRef}>
+          <div className="clue-wall-board">
             
-            {/* Render connecting lines */}
-            {unlockedLinks.map(link => {
-              const fromNode = unlockedNodes.find(n => n.id === link.from);
-              const toNode = unlockedNodes.find(n => n.id === link.to);
-              if (!fromNode || !toNode) return null;
+            {/* SVG Connection Layer */}
+            <svg className="clue-wall-svg-layer">
+              <defs>
+                {/* Wool/string drop shadow filter */}
+                <filter id="yarn-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                  <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.5" />
+                </filter>
+              </defs>
               
-              const start = getNodeCenter(fromNode);
-              const end = getNodeCenter(toNode);
+              {/* Render connecting lines */}
+              {unlockedLinks.map(link => {
+                const fromNode = unlockedNodes.find(n => n.id === link.from);
+                const toNode = unlockedNodes.find(n => n.id === link.to);
+                if (!fromNode || !toNode) return null;
+                
+                const start = getNodeCenter(fromNode);
+                const end = getNodeCenter(toNode);
+                
+                return (
+                  <g key={link.id}>
+                    {/* The red yarn line */}
+                    <line
+                      x1={start.x}
+                      y1={start.y}
+                      x2={end.x}
+                      y2={end.y}
+                      stroke="var(--palette-red)"
+                      strokeWidth="3.5"
+                      strokeLinecap="round"
+                      filter="url(#yarn-shadow)"
+                      className="yarn-line"
+                    />
+                    {/* Pushpins at connection points */}
+                    <circle cx={start.x} cy={start.y} r="5.5" className="yarn-pin" />
+                    <circle cx={end.x} cy={end.y} r="5.5" className="yarn-pin" />
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Cards Layer */}
+            {unlockedNodes.map(node => {
+              const x = clueWallPositions?.[selectedNovelId]?.[node.id]?.x ?? node.x;
+              const y = clueWallPositions?.[selectedNovelId]?.[node.id]?.y ?? node.y;
               
+              const isDeceasedInfo = getSuspectStatus(node.id);
+              const isDeceased = isDeceasedInfo?.isDeceased || false;
+
+              // Card styling depending on type
+              let cardClass = "clue-card";
+              if (node.type === 'suspect' || node.type === 'victim') {
+                cardClass += " polaroid-node";
+              } else if (node.type === 'clue') {
+                cardClass += " postit-node";
+              } else {
+                cardClass += " clipping-node";
+              }
+
+              if (draggedNode?.nodeId === node.id) {
+                cardClass += " dragging";
+              }
+
               return (
-                <g key={link.id}>
-                  {/* The red yarn line */}
-                  <line
-                    x1={start.x}
-                    y1={start.y}
-                    x2={end.x}
-                    y2={end.y}
-                    stroke="var(--palette-red)"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    filter="url(#yarn-shadow)"
-                    className="yarn-line"
-                  />
-                  {/* Pushpins at connection points */}
-                  <circle cx={start.x} cy={start.y} r="5.5" className="yarn-pin" />
-                  <circle cx={end.x} cy={end.y} r="5.5" className="yarn-pin" />
-                </g>
+                <div
+                  key={node.id}
+                  className={cardClass}
+                  style={{
+                    transform: `translate(${x}px, ${y}px)`,
+                    position: 'absolute',
+                    touchAction: 'none'
+                  }}
+                  onMouseDown={(e) => handleDragStart(e, node, x, y)}
+                  onTouchStart={(e) => handleDragStart(e, node, x, y)}
+                >
+                  {/* Polaroid Content */}
+                  {(node.type === 'suspect' || node.type === 'victim') && (
+                    <div className="polaroid-inner">
+                      <div className="polaroid-photo">
+                        {/* Silhouette/Sketch representation */}
+                        <svg className="polaroid-avatar-svg" viewBox="0 0 100 100">
+                          <rect width="100%" height="100%" fill="var(--bg-viewer)" />
+                          <circle cx="50" cy="40" r="18" fill="var(--border-color)" />
+                          <path d="M22 80 C 22 55, 78 55, 78 80" fill="var(--border-color)" />
+                        </svg>
+                        
+                        {/* Deceased Stamp */}
+                        {isDeceased && (
+                          <div className="deceased-stamp-badge">
+                            遇害 DECEASED
+                          </div>
+                        )}
+                      </div>
+                      <div className="polaroid-label">
+                        {node.labelZH}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sticky Post-it Note Content */}
+                  {node.type === 'clue' && (
+                    <div className="postit-inner">
+                      <div className="postit-tape" />
+                      <div className="postit-content">
+                        <span className="postit-pin">📌</span>
+                        <div className="postit-title">{node.labelZH}</div>
+                        <div className="postit-subtitle">Evidence / 物证</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Newspaper Clipping Content */}
+                  {node.type === 'event' && (
+                    <div className="clipping-inner">
+                      <div className="clipping-header">DAILY NEWS</div>
+                      <div className="clipping-content">
+                        <div className="clipping-title">{node.labelZH}</div>
+                        <div className="clipping-body-teaser">
+                          调查发现：关键剧情线索在此解锁...
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               );
             })}
-          </svg>
-
-          {/* Cards Layer */}
-          {unlockedNodes.map(node => {
-            const x = clueWallPositions?.[selectedNovelId]?.[node.id]?.x ?? node.x;
-            const y = clueWallPositions?.[selectedNovelId]?.[node.id]?.y ?? node.y;
             
-            const isDeceasedInfo = getSuspectStatus(node.id);
-            const isDeceased = isDeceasedInfo?.isDeceased || false;
-
-            // Card styling depending on type
-            let cardClass = "clue-card";
-            if (node.type === 'suspect' || node.type === 'victim') {
-              cardClass += " polaroid-node";
-            } else if (node.type === 'clue') {
-              cardClass += " postit-node";
-            } else {
-              cardClass += " clipping-node";
-            }
-
-            if (draggedNode?.nodeId === node.id) {
-              cardClass += " dragging";
-            }
-
-            return (
-              <div
-                key={node.id}
-                className={cardClass}
-                style={{
-                  transform: `translate(${x}px, ${y}px)`,
-                  position: 'absolute',
-                  touchAction: 'none'
-                }}
-                onMouseDown={(e) => handleDragStart(e, node, x, y)}
-                onTouchStart={(e) => handleDragStart(e, node, x, y)}
-              >
-                {/* Polaroid Content */}
-                {(node.type === 'suspect' || node.type === 'victim') && (
-                  <div className="polaroid-inner">
-                    <div className="polaroid-photo">
-                      {/* Silhouette/Sketch representation */}
-                      <svg className="polaroid-avatar-svg" viewBox="0 0 100 100">
-                        <rect width="100%" height="100%" fill="var(--bg-viewer)" />
-                        <circle cx="50" cy="40" r="18" fill="var(--border-color)" />
-                        <path d="M22 80 C 22 55, 78 55, 78 80" fill="var(--border-color)" />
-                      </svg>
-                      
-                      {/* Deceased Stamp */}
-                      {isDeceased && (
-                        <div className="deceased-stamp-badge">
-                          遇害 DECEASED
-                        </div>
-                      )}
-                    </div>
-                    <div className="polaroid-label">
-                      {node.labelZH}
-                    </div>
-                  </div>
-                )}
-
-                {/* Sticky Post-it Note Content */}
-                {node.type === 'clue' && (
-                  <div className="postit-inner">
-                    <div className="postit-tape" />
-                    <div className="postit-content">
-                      <span className="postit-pin">📌</span>
-                      <div className="postit-title">{node.labelZH}</div>
-                      <div className="postit-subtitle">Evidence / 物证</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Newspaper Clipping Content */}
-                {node.type === 'event' && (
-                  <div className="clipping-inner">
-                    <div className="clipping-header">DAILY NEWS</div>
-                    <div className="clipping-content">
-                      <div className="clipping-title">{node.labelZH}</div>
-                      <div className="clipping-body-teaser">
-                        调查发现：关键剧情线索在此解锁...
-                      </div>
-                    </div>
-                  </div>
-                )}
-
+            {/* Center Hint if Board Empty */}
+            {unlockedNodes.length === 0 && (
+              <div className="clue-wall-empty-state">
+                <h4>此案卷尚待开启调查</h4>
+                <p style={{ fontSize: '12px', opacity: 0.7 }}>请先在侦探书房中解锁此书并解密第一章文本。</p>
               </div>
-            );
-          })}
-          
-          {/* Center Hint if Board Empty */}
-          {unlockedNodes.length === 0 && (
-            <div className="clue-wall-empty-state">
-              <h4>此案卷尚待开启调查</h4>
-              <p style={{ fontSize: '12px', opacity: 0.7 }}>请先在侦探书房中解锁此书并解密第一章文本。</p>
+            )}
+
+          </div>
+        </div>
+
+        {/* Sidebar Details Panel */}
+        <div className="clue-wall-sidebar-detail">
+          {selectedNode && (
+            <div className="clue-detail-folder-tab" style={{ position: 'absolute', top: '10px', left: '16px', zIndex: 10 }}>
+              CASE FILE: {selectedNode.id.toUpperCase()}
             </div>
           )}
-
+          
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: selectedNode ? '32px 16px 16px 16px' : '16px', overflowY: 'auto', minHeight: 0 }}>
+            {renderSidebarDetailContent()}
+          </div>
         </div>
       </div>
-
-      {/* Floating Detail Panel (Folder Box) */}
-      {selectedNode && (() => {
-        const suspectData = getSuspectStatus(selectedNode.id);
-        const suspect = suspectData?.suspect;
-        const isDeceased = suspectData?.isDeceased || false;
-
-        return (
-          <div className="clue-detail-overlay" onClick={() => setSelectedNode(null)}>
-            <div className="clue-detail-panel" onClick={(e) => e.stopPropagation()}>
-              
-              <div className="clue-detail-folder-tab">
-                CASE FILE: {selectedNode.id.toUpperCase()}
-              </div>
-              
-              <header className="clue-detail-header">
-                <div>
-                  <span className="clue-detail-type-tag">
-                    {selectedNode.type === 'suspect' || selectedNode.type === 'victim' 
-                      ? (isDeceased ? '遇害人 / DECEASED' : '嫌疑人 / SUSPECT') 
-                      : selectedNode.type === 'clue' ? '案件物证 / EVIDENCE' : '关键事件 / EVENT'}
-                  </span>
-                  <h4 className="clue-detail-title-zh">{selectedNode.labelZH}</h4>
-                  <h5 className="clue-detail-title-en">{selectedNode.labelEN}</h5>
-                </div>
-                <button className="clue-detail-close-btn" onClick={() => setSelectedNode(null)}>
-                  &times;
-                </button>
-              </header>
-
-              <div className="clue-detail-body">
-                {/* Basic description */}
-                <div className="clue-detail-section">
-                  <h6 className="clue-detail-sec-title">案卷摘要 / Description</h6>
-                  <p style={{ fontSize: '13px', lineHeight: 1.5, marginBottom: '8px' }}>{selectedNode.descZH}</p>
-                  <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic' }}>{selectedNode.descEN}</p>
-                </div>
-
-                {/* Evidence Upgrade / Analysis Section */}
-                {selectedNode.type === 'clue' && (() => {
-                  const clueId = selectedNode.id.substring(selectedNovelId.length + 1);
-                  const clue = currentNovelInfo?.clues?.find(c => c.id === clueId);
-                  if (!clue) return null;
-
-                  const lvl = currentNovelState.clueLevels?.[clueId] || 0;
-                  const cost = Math.round(clue.cost * Math.pow(1.5, lvl));
-                  const bonus = lvl * 10;
-
-                  return (
-                    <>
-                      <div className="clue-detail-divider" />
-                      <div className="clue-detail-section" style={{ backgroundColor: 'var(--bg-hover)', padding: '12px 14px', borderRadius: 'var(--border-radius)', marginTop: '8px', border: '1px solid var(--border-color)' }}>
-                        <h6 className="clue-detail-sec-title" style={{ borderBottomColor: 'var(--border-color)', color: 'var(--text-main)', marginTop: 0, paddingBottom: '4px', fontSize: '12px' }}>
-                          线索物证分析与加成 / Clue Analysis
-                        </h6>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '12px' }}>
-                          <div>
-                            <strong>当前分析级别:</strong> 等级 {lvl} / Level {lvl}
-                          </div>
-                          <div>
-                            <strong>挂机 DI/s 增益:</strong> <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>+{bonus}%</span>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginTop: '10px', paddingTop: '8px', borderTop: '1px dotted var(--border-color)' }}>
-                          <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                            消耗: {cost.toLocaleString()} DI
-                          </span>
-                          <button
-                            className="btn-rect color-klein"
-                            style={{ padding: '4px 10px', fontSize: '11px', minWidth: '90px' }}
-                            disabled={di < cost}
-                            onClick={() => unlockClue && unlockClue(selectedNovelId, clueId, cost)}
-                          >
-                            分析 / Analyze
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  );
-                })()}
-
-                {/* Extended Suspect Stats (Bilingual) */}
-                {suspect && (
-                  <>
-                    <div className="clue-detail-divider" />
-                    
-                    <div className="clue-detail-section">
-                      <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
-                      <p style={{ fontSize: '13px' }}><strong>{suspect.nameZH}</strong> - {suspect.titleZH}</p>
-                      <p style={{ fontSize: '11px', opacity: 0.7 }}><strong>{suspect.nameEN}</strong> - {suspect.titleEN}</p>
-                    </div>
-                    
-                    <div className="clue-detail-divider" />
-
-                    <div className="clue-detail-section">
-                      <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
-                      <p style={{ fontSize: '13px', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.accusationZH}</p>
-                      <p style={{ fontSize: '11px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic' }}>{suspect.accusationEN}</p>
-                    </div>
-
-                    <div className="clue-detail-divider" />
-
-                    <div className="clue-detail-section">
-                      <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
-                      <p style={{ fontSize: '13px', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.alibiZH}</p>
-                      <p style={{ fontSize: '11px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic' }}>{suspect.alibiEN}</p>
-                    </div>
-
-                    {isDeceased && suspect.deathMethodZH && (
-                      <>
-                        <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
-                        <div className="clue-detail-section deceased-section">
-                          <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)' }}>遇害实录 / Death Circumstance</h6>
-                          <p style={{ fontSize: '13px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.deathMethodZH}</p>
-                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3 }}>{suspect.deathMethodEN}</p>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <footer className="clue-detail-footer">
-                <button className="btn-rect" style={{ padding: '5px 15px', fontSize: '12px' }} onClick={() => setSelectedNode(null)}>
-                  合上案卷 (Close File)
-                </button>
-              </footer>
-
-            </div>
-          </div>
-        );
-      })()}
-
     </div>
   );
 

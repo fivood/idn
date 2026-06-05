@@ -1737,3 +1737,34 @@ button.btn-rect.active {
 .rhyme-sheet-text {
   word-break: break-all;
 }
+
+/* Clue Wall Split screen layout */
+.clue-wall-body-split {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.clue-wall-sidebar-detail {
+  width: 330px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border-color);
+  background-color: var(--bg-panel);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .clue-wall-body-split {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .clue-wall-sidebar-detail {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
