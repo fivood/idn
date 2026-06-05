@@ -452,7 +452,35 @@ export const novelsList = [
         answerIndex: 1,
         rewardDI: 150000
       }
-    ]
+    ],
+    clueWall: {
+      nodes: [
+        { id: "attwn_rhyme", type: "clue", labelZH: "童谣预言", labelEN: "Nursery Rhyme", descZH: "挂在各个客房里的童谣，神秘地预言了岛上所有宾客的死亡顺序与手法。", descEN: "Nursery rhyme framed in rooms, predicting deaths of all guests.", unlockChapter: 1, x: 100, y: 100 },
+        { id: "attwn_wargrave", type: "suspect", labelZH: "劳伦斯·瓦格雷夫", labelEN: "Lawrence Wargrave", descZH: "退休法官，被留声机控诉在1893年蓄意误导陪审团判处爱德华·塞顿绞刑。", descEN: "Retired judge, accused of misleading a jury to hang Edward Seton.", unlockChapter: 1, x: 380, y: 80 },
+        { id: "attwn_vera", type: "suspect", labelZH: "维拉·克莱索恩", labelEN: "Vera Claythorne", descZH: "被控于1935年纵容年幼的西里尔·汉密尔顿溺水身亡以获取继承财产。", descEN: "Accused of letting young Cyril Hamilton drown to secure inheritance.", unlockChapter: 1, x: 560, y: 100 },
+        { id: "attwn_armstrong", type: "suspect", labelZH: "爱德华·阿姆斯特朗", labelEN: "Edward Armstrong", descZH: "被控在醉酒状态下实施手术导致病人死亡。曾与法官结成秘密同盟。", descEN: "Accused of operating while drunk. Formed a secret alliance with Wargrave.", unlockChapter: 1, x: 480, y: 220 },
+        { id: "attwn_marston_dead", type: "event", labelZH: "安东尼之死", labelEN: "Anthony Marston's Death", descZH: "饮用掺有氰化钾的酒窒息暴毙，正如童谣中所说的第一个小士兵噎死。", descEN: "Choked to death on cyanide-poisoned whiskey, matching the first soldier.", unlockChapter: 4, x: 240, y: 200 },
+        { id: "attwn_rogers_mrs_dead", type: "event", labelZH: "罗杰斯太太之死", labelEN: "Mrs. Rogers' Death", descZH: "罗杰斯太太在睡梦中过量服用安眠药猝死，对应第二个小士兵睡死。", descEN: "Died in sleep of sedative overdose, matching the second soldier.", unlockChapter: 6, x: 360, y: 260 },
+        { id: "attwn_wool_missing", type: "clue", labelZH: "丢失的毛线", labelEN: "Missing Grey Wool", descZH: "艾米莉·布伦特的灰色毛线球丢失，后证实与浴帘一起被凶手用来装扮死去的法官。", descEN: "Emily Brent's knitting wool goes missing, later used to dress Wargrave.", unlockChapter: 10, x: 100, y: 360 },
+        { id: "attwn_rogers_mr_dead", type: "event", labelZH: "管家罗杰斯之死", labelEN: "Mr. Rogers' Death", descZH: "罗杰斯在后院劈柴时头部被斧头从后方劈开致死，对应第四个小士兵劈死。", descEN: "Head split by axe while chopping wood, matching the fourth soldier.", unlockChapter: 11, x: 220, y: 360 },
+        { id: "attwn_brent_dead", type: "event", labelZH: "艾米莉之死", labelEN: "Emily Brent's Death", descZH: "被偷来的注射器注射氰化物死在客厅，窗外有大黄蜂飞过，对应第五个小士兵被蜇死。", descEN: "Injected with cyanide using stolen syringe, matching the fifth soldier.", unlockChapter: 12, x: 450, y: 380 },
+        { id: "attwn_wargrave_dead", type: "event", labelZH: "瓦格雷夫之死", labelEN: "Wargrave's Death", descZH: "身穿红袍、戴着假发头部中枪死在椅子上，后证实为与医生的假死合谋。", descEN: "Found shot dressed in judicial robes, later revealed as faked death.", unlockChapter: 13, x: 580, y: 260 },
+        { id: "attwn_bottle", type: "clue", labelZH: "漂流瓶手稿", labelEN: "Confession Manuscript", descZH: "真凶放入海中的自白信，披露了整场完美谋杀的作案细节与行凶初衷。", descEN: "Mastermind's confession bottle, detailing the plot and motives.", unlockChapter: 18, x: 680, y: 360 }
+      ],
+      links: [
+        { id: "l1", from: "attwn_rhyme", to: "attwn_marston_dead", unlockChapter: 4 },
+        { id: "l2", from: "attwn_rhyme", to: "attwn_rogers_mrs_dead", unlockChapter: 6 },
+        { id: "l3", from: "attwn_rhyme", to: "attwn_rogers_mr_dead", unlockChapter: 11 },
+        { id: "l4", from: "attwn_rhyme", to: "attwn_brent_dead", unlockChapter: 12 },
+        { id: "l5", from: "attwn_marston_dead", to: "attwn_rogers_mrs_dead", unlockChapter: 6 },
+        { id: "l6", from: "attwn_rogers_mrs_dead", to: "attwn_rogers_mr_dead", unlockChapter: 11 },
+        { id: "l7", from: "attwn_rogers_mr_dead", to: "attwn_brent_dead", unlockChapter: 12 },
+        { id: "l8", from: "attwn_brent_dead", to: "attwn_wargrave_dead", unlockChapter: 13 },
+        { id: "l9", from: "attwn_armstrong", to: "attwn_wargrave_dead", unlockChapter: 13 },
+        { id: "l10", from: "attwn_wool_missing", to: "attwn_wargrave_dead", unlockChapter: 13 },
+        { id: "l11", from: "attwn_wargrave", to: "attwn_bottle", unlockChapter: 18 }
+      ]
+    }
   },
   {
     id: "word_is_murder",
@@ -553,7 +581,27 @@ export const novelsList = [
         cost: 18000
       }
     ],
-    deductions: []
+    deductions: [],
+    clueWall: {
+      nodes: [
+        { id: "word_diana", type: "victim", labelZH: "戴安娜·考珀", labelEN: "Diana Cowper", descZH: "富有的戴安娜在自己公寓中被窗帘拉绳勒死，这发生在她为自己筹办葬礼后的六小时。", descEN: "Wealthy Diana Cowper was strangled in her home six hours after planning her own funeral.", unlockChapter: 1, x: 100, y: 120 },
+        { id: "word_funeral", type: "clue", labelZH: "丧礼计划书", labelEN: "Funeral Plan", descZH: "戴安娜遇害前亲手拟定的极其详尽的丧礼计划书，似乎她提早预知了死亡。", descEN: "Detailed funeral program drawn up by Diana herself shortly before her murder.", unlockChapter: 1, x: 250, y: 80 },
+        { id: "word_hawthorne", type: "suspect", labelZH: "丹尼尔·霍桑", labelEN: "Daniel Hawthorne", descZH: "性格古怪的的前警探，作为私家侦探负责本案调查并雇用霍洛维茨记录。", descEN: "Ex-detective Hawthorne leads the investigation and hires Horowitz to record it.", unlockChapter: 1, x: 420, y: 100 },
+        { id: "word_horowitz", type: "suspect", labelZH: "安东尼·霍洛维茨", labelEN: "Anthony Horowitz", descZH: "记录调查过程的小说作家，跟随霍桑实地走访，但也时常对霍桑有所怀疑。", descEN: "Novelist Horowitz accompanies Hawthorne to document the case while doubting him.", unlockChapter: 1, x: 600, y: 100 },
+        { id: "word_accident", type: "clue", labelZH: "十年前车祸", labelEN: "Hit-and-run Accident", descZH: "戴安娜的明星儿子达米安在十年前开车撞残了格蕾丝之子双胞胎之一，涉嫌肇事逃逸。", descEN: "A crash 10 years ago where Diana's son Damian hit twin boys, leaving one disabled.", unlockChapter: 4, x: 280, y: 240 },
+        { id: "word_damian", type: "suspect", labelZH: "达米安·考珀", labelEN: "Damian Cowper", descZH: "戴安娜的演员儿子。在车祸中肇事并在母亲包庇下逃脱，与家庭财产关系密切。", descEN: "Famous actor son of Diana. Shielded by his mother after the hit-and-run.", unlockChapter: 2, x: 450, y: 240 },
+        { id: "word_grace", type: "suspect", labelZH: "格蕾丝·洛弗尔", labelEN: "Grace Lovell", descZH: "车祸受害者的母亲，对戴安娜及其儿子达米安有着深切的仇恨。", descEN: "Mother of the hit-and-run victim, harboring bitter hatred towards the Cowpers.", unlockChapter: 5, x: 180, y: 360 },
+        { id: "word_greencoat", type: "clue", labelZH: "神秘绿色雨衣", labelEN: "Green Raincoat", descZH: "有目击者目击案发前后一个穿着绿色雨衣的神秘人出现在戴安娜寓所后门。", descEN: "A suspicious figure in a green raincoat was seen near Diana's flat at the time of murder.", unlockChapter: 13, x: 500, y: 380 }
+      ],
+      links: [
+        { id: "wl1", from: "word_diana", to: "word_funeral", unlockChapter: 1 },
+        { id: "wl2", from: "word_hawthorne", to: "word_horowitz", unlockChapter: 1 },
+        { id: "wl3", from: "word_diana", to: "word_accident", unlockChapter: 4 },
+        { id: "wl4", from: "word_accident", to: "word_damian", unlockChapter: 4 },
+        { id: "wl5", from: "word_accident", to: "word_grace", unlockChapter: 5 },
+        { id: "wl6", from: "word_greencoat", to: "word_diana", unlockChapter: 13 }
+      ]
+    }
   },
   {
     id: "sentence_is_death",
@@ -654,7 +702,28 @@ export const novelsList = [
         cost: 100000
       }
     ],
-    deductions: []
+    deductions: [],
+    clueWall: {
+      nodes: [
+        { id: "sentence_pryce", type: "victim", labelZH: "理查德·普赖斯", labelEN: "Richard Pryce", descZH: "身价斐然的离婚大律师，在自家的厨房里被人用一瓶价值三千英镑的拉菲红酒砸碎后脑勺死亡。", descEN: "Wealthy divorce lawyer, bludgeoned in his kitchen with a £3,000 bottle of Lafite wine.", unlockChapter: 2, x: 100, y: 120 },
+        { id: "sentence_wine", type: "clue", labelZH: "拉菲红酒瓶", labelEN: "Lafite Wine Bottle", descZH: "砸死普赖斯的凶器，一瓶1982年份的高昂拉菲红酒，瓶身有被擦拭过的痕迹。", descEN: "The murder weapon, a rare 1982 Lafite bottle showing signs of being wiped clean.", unlockChapter: 1, x: 280, y: 80 },
+        { id: "sentence_graffiti", type: "clue", labelZH: "神秘涂鸦'182'", labelEN: "Wall Graffiti '182'", descZH: "在案发现场厨房白墙上用绿漆写着的神秘数字“182”，疑似普赖斯临死前留下的垂死线索。", descEN: "A green painted number '182' left on the kitchen wall, possibly a dying message from Pryce.", unlockChapter: 3, x: 260, y: 220 },
+        { id: "sentence_akira", type: "suspect", labelZH: "安野明", labelEN: "Akira Anno", descZH: "前卫剧作家。在普赖斯经办的离婚诉讼中失去了一切财产，因而对普赖斯充满仇恨与杀机。", descEN: "Avant-garde playwright who lost all assets in a divorce case managed by Pryce.", unlockChapter: 2, x: 450, y: 100 },
+        { id: "sentence_davina", type: "suspect", labelZH: "达维娜·理查森", labelEN: "Davina Richardson", descZH: "普赖斯的前妻，与普赖斯离婚后在财产分割和情感纠纷上有着长期的怨怼和冲突。", descEN: "Ex-wife of Pryce, harboring long-term resentment over bitter divorce terms and estate division.", unlockChapter: 4, x: 460, y: 260 },
+        { id: "sentence_gregory", type: "suspect", labelZH: "格雷戈里·泰勒", labelEN: "Gregory Taylor", descZH: "普赖斯的律师事务所合伙人，在财务 and 事务所未来发展方向上与普赖斯存在严重争执。", descEN: "Pryce's business partner, who had major disagreements with him over firm management and finances.", unlockChapter: 5, x: 620, y: 120 },
+        { id: "sentence_leash", type: "clue", labelZH: "沾泥狗拉绳", labelEN: "Muddy Dog Leash", descZH: "在普赖斯家后院篱笆旁发现的沾满泥土和狗毛的拉绳。但普赖斯生前从未养过狗。", descEN: "A muddy dog leash found near the fence. However, Pryce did not own any dogs.", unlockChapter: 14, x: 220, y: 360 },
+        { id: "sentence_divorce", type: "clue", labelZH: "离婚案卷", labelEN: "Divorce Case File", descZH: "普赖斯正在办理的涉及巨额隐秘资产转移的离婚诉讼案卷，案中人物似乎皆有重大秘密。", descEN: "Case file of a high-value divorce suit managed by Pryce, containing hidden asset transfer logs.", unlockChapter: 7, x: 500, y: 380 }
+      ],
+      links: [
+        { id: "sl1", from: "sentence_pryce", to: "sentence_wine", unlockChapter: 2 },
+        { id: "sl2", from: "sentence_pryce", to: "sentence_graffiti", unlockChapter: 3 },
+        { id: "sl3", from: "sentence_pryce", to: "sentence_akira", unlockChapter: 2 },
+        { id: "sl4", from: "sentence_pryce", to: "sentence_davina", unlockChapter: 4 },
+        { id: "sl5", from: "sentence_gregory", to: "sentence_pryce", unlockChapter: 5 },
+        { id: "sl6", from: "sentence_leash", to: "sentence_graffiti", unlockChapter: 14 },
+        { id: "sl7", from: "sentence_divorce", to: "sentence_akira", unlockChapter: 7 }
+      ]
+    }
   },
   {
     id: "line_to_kill",
@@ -749,7 +818,27 @@ export const novelsList = [
         cost: 100000
       }
     ],
-    deductions: []
+    deductions: [],
+    clueWall: {
+      nodes: [
+        { id: "line_mesurier", type: "victim", labelZH: "查尔斯·勒·梅苏里尔", labelEN: "Charles Le Mesurier", descZH: "奥尔德尼岛上的地产富豪，在自家隔绝的风月楼中被绑在椅子上，用拆信刀刺穿喉咙身亡。", descEN: "Alderney's wealthy landowner, found bound to a chair and stabbed in the throat in his gazebo.", unlockChapter: 8, x: 100, y: 120 },
+        { id: "line_helen", type: "victim", labelZH: "海伦·勒·梅苏里尔", labelEN: "Helen Le Mesurier", descZH: "查尔斯之妻。在查尔斯死后不久，被凶手在岛上的山洞通道中用重石击碎头部遇害。", descEN: "Wife of Charles. Found in a cave passage, bludgeoned to death with a heavy rock.", unlockChapter: 16, x: 320, y: 260 },
+        { id: "line_knife", type: "clue", labelZH: "查尔斯的拆信刀", labelEN: "Charles's Paper Knife", descZH: "行凶利器，原本插在查尔斯的喉咙里，是查尔斯自己书桌上的摆设件。", descEN: "The murder weapon found in Charles's throat, originally his own desk ornament.", unlockChapter: 8, x: 260, y: 80 },
+        { id: "line_derek", type: "suspect", labelZH: "德瑞克·阿伯特", labelEN: "Derek Abbott", descZH: "奥尔德尼岛的文学节名厨，实为前科犯。曾被查尔斯解雇并出言威胁，有强烈嫌疑。", descEN: "Famous chef at the festival and ex-convict. Resented Charles for firing and blackmailing him.", unlockChapter: 4, x: 480, y: 100 },
+        { id: "line_colin", type: "suspect", labelZH: "科林·马瑟森", labelEN: "Colin Matheson", descZH: "岛上的当地医生。与查尔斯之妻海伦暗中偷情，此事被查尔斯用摄像头拍下并遭受勒索。", descEN: "Local island doctor who had an affair with Helen, which Charles caught on camera to blackmail him.", unlockChapter: 7, x: 620, y: 120 },
+        { id: "line_footprint", type: "clue", labelZH: "风月楼血脚印", labelEN: "Bloody Footprint", descZH: "风月楼现场留下的血鞋印，鞋头带有极具特征的圆形，疑似凶手行凶后留下的行踪迹象。", descEN: "A bloody shoe print with a characteristic round tip found on the gazebo floor.", unlockChapter: 9, x: 260, y: 380 },
+        { id: "line_camera", type: "clue", labelZH: "风月楼摄像头", labelEN: "Gazebo Camera", descZH: "隐藏在风月楼内的针孔摄像头，查尔斯用它录下了海伦与科林医生的私密约会视频。", descEN: "A hidden pinhole camera in the gazebo, used by Charles to record Helen and Dr. Colin's meetings.", unlockChapter: 16, x: 500, y: 380 }
+      ],
+      links: [
+        { id: "ll1", from: "line_mesurier", to: "line_knife", unlockChapter: 8 },
+        { id: "ll2", from: "line_mesurier", to: "line_footprint", unlockChapter: 9 },
+        { id: "ll3", from: "line_mesurier", to: "line_helen", unlockChapter: 16 },
+        { id: "ll4", from: "line_helen", to: "line_colin", unlockChapter: 16 },
+        { id: "ll5", from: "line_camera", to: "line_helen", unlockChapter: 16 },
+        { id: "ll6", from: "line_camera", to: "line_colin", unlockChapter: 16 },
+        { id: "ll7", from: "line_mesurier", to: "line_derek", unlockChapter: 8 }
+      ]
+    }
   },
   {
     id: "twist_of_knife",
@@ -841,6 +930,27 @@ export const novelsList = [
         cost: 220000
       }
     ],
-    deductions: []
+    deductions: [],
+    clueWall: {
+      nodes: [
+        { id: "twist_harriet", type: "victim", labelZH: "哈丽特·斯罗索比", labelEN: "Harriet Throsby", descZH: "尖酸刻薄的戏剧评论家，在帕尔格罗夫花园住宅被印第安装饰匕首刺穿胸口身亡。", descEN: "Cruel drama critic, found stabbed to death in the chest at her apartment with a decorative dagger.", unlockChapter: 5, x: 100, y: 120 },
+        { id: "twist_dagger", type: "clue", labelZH: "印第安匕首", labelEN: "Indian Dagger", descZH: "刺死哈丽特的匕首，实为《心理游戏》剧组首演礼上赠送给安东尼的礼物，上面留有安东尼的指纹。", descEN: "The murder weapon, a replica dagger gifted to Anthony Horowitz, covered in his fingerprints.", unlockChapter: 5, x: 280, y: 80 },
+        { id: "twist_review", type: "clue", labelZH: "斯罗索比的恶评", labelEN: "Throsby's Bad Review", descZH: "哈丽特所写并将发表的刻薄剧评，一旦见报会彻底毁掉戏剧与剧组前程，构成强烈动机。", descEN: "Harriet's devastating, unpublished review that would ruin the play and bankrupt the crew.", unlockChapter: 5, x: 260, y: 240 },
+        { id: "twist_horowitz", type: "suspect", labelZH: "安东尼·霍洛维茨", labelEN: "Anthony Horowitz", descZH: "本案第一嫌疑人，因为凶器属于他且带有其指纹，在案发后被伦敦警方逮捕。", descEN: "The prime suspect. The weapon was a gift to him and bears his prints; arrested by police.", unlockChapter: 3, x: 420, y: 100 },
+        { id: "twist_olivia", type: "suspect", labelZH: "奥利维亚·斯罗索比", labelEN: "Olivia Throsby", descZH: "哈丽特的女儿。痛恨母亲的长年高压精神控制，在案发当晚行踪诡秘且带有母亲家的钥匙。", descEN: "Harriet's daughter. Resented her mother's control; had suspicious whereabouts and flat keys.", unlockChapter: 6, x: 460, y: 260 },
+        { id: "twist_arthur", type: "suspect", labelZH: "亚瑟·斯罗索比", labelEN: "Arthur Throsby", descZH: "哈丽特的丈夫。长期忍受妻子的冷嘲热讽与打压，案发当晚声称在学校办公但出入记录不符。", descEN: "Harriet's husband, who suffered years of constant berating; his school log has discrepancies.", unlockChapter: 8, x: 620, y: 120 },
+        { id: "twist_yurdakul", type: "suspect", labelZH: "阿赫梅特·尤尔达库尔", labelEN: "Ahmet Yurdakul", descZH: "戏剧制片人。为剧投入全部资金，极力避免哈丽特的评论见报，案发当晚对账单有涂改嫌疑。", descEN: "Play producer who faced bankruptcy if the play failed. His office logbook shows signs of tampering.", unlockChapter: 7, x: 600, y: 280 },
+        { id: "twist_letters", type: "clue", labelZH: "安娜贝尔的密信", labelEN: "Annabelle's Letters", descZH: "在帕尔格罗夫花园住宅秘密夹层中发现的一叠书信，揭示了斯罗索比家族不可告人的过去。", descEN: "Letters found in a secret drawer, linking the Throsby family to a tragic event in the past.", unlockChapter: 12, x: 240, y: 380 }
+      ],
+      links: [
+        { id: "tl1", from: "twist_harriet", to: "twist_dagger", unlockChapter: 5 },
+        { id: "tl2", from: "twist_harriet", to: "twist_review", unlockChapter: 5 },
+        { id: "tl3", from: "twist_dagger", to: "twist_horowitz", unlockChapter: 5 },
+        { id: "tl4", from: "twist_harriet", to: "twist_olivia", unlockChapter: 6 },
+        { id: "tl5", from: "twist_harriet", to: "twist_arthur", unlockChapter: 8 },
+        { id: "tl6", from: "twist_review", to: "twist_yurdakul", unlockChapter: 7 },
+        { id: "tl7", from: "twist_harriet", to: "twist_letters", unlockChapter: 12 }
+      ]
+    }
   }
 ];

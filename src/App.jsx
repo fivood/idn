@@ -5,6 +5,7 @@ import NovelWorkspace from './components/NovelWorkspace';
 import Library from './components/Library';
 import BookReader from './components/BookReader';
 import Logo from './components/Logo';
+import ClueWallModal from './components/ClueWallModal';
 
 // Chapter Unlock Costs
 const CHAPTER_COSTS = {
@@ -29,7 +30,7 @@ const CHAPTER_COSTS = {
 };
 
 // Death milestones page lookup for suspects
-const DEATH_PARAS = {
+export const DEATH_PARAS = {
   marston: 13,
   rogers_mrs: 2,
   macarthur: 9,
@@ -173,6 +174,19 @@ function App() {
   const [readerBookId, setReaderBookId] = useState(null);
   const [offlineReport, setOfflineReport] = useState(null);
   
+  const [isClueWallOpen, setIsClueWallOpen] = useState(false);
+  const [clueWallPositions, setClueWallPositions] = useState({});
+
+  const updateClueWallPosition = (novelId, nodeId, x, y) => {
+    setClueWallPositions(prev => ({
+      ...prev,
+      [novelId]: {
+        ...(prev[novelId] || {}),
+        [nodeId]: { x, y }
+      }
+    }));
+  };
+  
   // Cache diRate to avoid running calculation on every tick
   const [diRate, setDiRate] = useState(0.005); // Starts with 0.005 base rate
 
@@ -225,6 +239,7 @@ function App() {
       try {
         const data = JSON.parse(saved);
         if (data.di !== undefined) setDi(data.di);
+        if (data.clueWallPositions !== undefined) setClueWallPositions(data.clueWallPositions);
         
         let migratedUpgrades = {};
         if (data.upgrades !== undefined) {
@@ -319,7 +334,7 @@ function App() {
 
   // Save game state
   const saveStateRef = useRef();
-  saveStateRef.current = { di, upgrades, unlockedNovels, activeNovelId, library, novelStates, currentView, readerBookId };
+  saveStateRef.current = { di, upgrades, unlockedNovels, activeNovelId, library, novelStates, currentView, readerBookId, clueWallPositions };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -627,6 +642,9 @@ function App() {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button className="btn-rect" onClick={() => setIsClueWallOpen(true)}>
+            📌 案卷线索墙
+          </button>
           <button className="btn-rect" onClick={toggleTheme}>
             {theme === 'light' ? '深色模式' : '浅色模式'}
           </button>
@@ -743,6 +761,17 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Clue wall modal */}
+      <ClueWallModal 
+        isOpen={isClueWallOpen}
+        onClose={() => setIsClueWallOpen(false)}
+        novelStates={novelStates}
+        unlockedNovels={unlockedNovels}
+        activeNovelId={activeNovelId}
+        clueWallPositions={clueWallPositions}
+        updateClueWallPosition={updateClueWallPosition}
+      />
     </div>
   );
 }
