@@ -714,7 +714,7 @@ function App() {
               <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.0.0</span>
             </h1>
             <span className="di-rate" style={{ fontSize: '11px', display: 'block', marginTop: '2px' }}>
-              侦查效率: {diRate.toFixed(1)} DI/秒
+              侦查效率: {diRate < 0.1 ? diRate.toFixed(3) : diRate < 1 ? diRate.toFixed(2) : diRate.toFixed(1)} DI/秒
             </span>
           </div>
         </div>
@@ -741,7 +741,7 @@ function App() {
               {/* Right Face */}
               <path d="M12 13L21 8V16L12 21Z" fill="var(--cube-right)" />
             </svg>
-            <span className="mono">{Math.floor(di).toLocaleString()} DI</span>
+            <span className="mono">{di < 10 ? di.toFixed(2) : Math.floor(di).toLocaleString()} DI</span>
           </div>
         </div>
       </header>
