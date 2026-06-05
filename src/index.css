@@ -820,6 +820,7 @@ button.btn-rect.color-crimson:hover:not(:disabled) {
 
   .text-viewer {
     padding: 12px;
+    height: 320px;
     max-height: 350px;
   }
 

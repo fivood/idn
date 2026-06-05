@@ -110,6 +110,10 @@ function NovelWorkspace({
   library = [],
   setAccusedSuspect
 }) {
+  if (!novelState) {
+    return <div className="card-rect">正在加载案卷数据...</div>;
+  }
+
   const currentNovelInfo = novelsList.find(n => n.id === novelId);
   const currentChapterId = novelState.currentChapterId;
   
