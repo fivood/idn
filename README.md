@@ -5,7 +5,7 @@
 
 一个融合**推理小说双语阅读**与**挂机增量解密**玩法的网页游戏。
 
-[![Live Demo](https://img.shields.io/badge/在线游玩-Cloudflare_Pages-orange?style=flat-square)](https://idn.pages.dev)
+[![Live Demo](https://img.shields.io/badge/在线游玩-idn.fivood.com-orange?style=flat-square)](https://idn.fivood.com)
 [![Release](https://img.shields.io/github/v/release/fivood/idn?style=flat-square&label=桌面端下载)](https://github.com/fivood/idn/releases/latest)
 [![License](https://img.shields.io/badge/license-ISC-blue?style=flat-square)](LICENSE)
 
@@ -74,7 +74,7 @@
 
 ### 🌐 在线游玩（推荐）
 
-直接访问：**https://idn.pages.dev**
+直接访问：**https://idn.fivood.com**
 
 无需安装，进度保存在浏览器本地存储中。
 

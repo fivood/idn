@@ -67,6 +67,8 @@ jobs:
             - Linux：下载 `.AppImage`
 
             进度保存在本地，无需登录即可游玩。
+            在线版请访问：https://idn.fivood.com
           releaseDraft: false
           prerelease: false
+          updaterJsonPreferNsis: true
           args: ${{ matrix.platform == 'macos-latest' && '--target universal-apple-darwin' || '' }}

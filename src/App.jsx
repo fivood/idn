@@ -7,6 +7,14 @@ import BookReader from './components/BookReader';
 import Logo from './components/Logo';
 import ClueWallModal from './components/ClueWallModal';
 
+// Detect Tauri desktop environment
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+// Tauri invoke is only available at runtime inside the desktop app
+let tauriInvoke = null;
+if (isTauri) {
+  import('@tauri-apps/api/core').then(m => { tauriInvoke = m.invoke; });
+}
+
 // Chapter Unlock Costs
 const CHAPTER_COSTS = {
   1: 0,
@@ -166,6 +174,35 @@ function App() {
   const [isClueWallOpen, setIsClueWallOpen] = useState(false);
   const [clueWallPositions, setClueWallPositions] = useState({});
   const [isStandaloneClueWall, setIsStandaloneClueWall] = useState(false);
+
+  // Tauri updater state
+  const [updateStatus, setUpdateStatus] = useState(null); // null | 'checking' | {hasUpdate, version, body} | {error}
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+
+  const checkForUpdate = async () => {
+    if (!isTauri || !tauriInvoke) return;
+    setUpdateStatus('checking');
+    setShowUpdateModal(true);
+    try {
+      const raw = await tauriInvoke('check_for_update');
+      const result = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      setUpdateStatus(result);
+    } catch (e) {
+      setUpdateStatus({ error: String(e) });
+    }
+  };
+
+  const doInstallUpdate = async () => {
+    if (!isTauri || !tauriInvoke) return;
+    setIsInstalling(true);
+    try {
+      await tauriInvoke('install_update');
+    } catch (e) {
+      setUpdateStatus({ error: String(e) });
+      setIsInstalling(false);
+    }
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -723,6 +760,11 @@ function App() {
           <button className="btn-rect" onClick={openClueWallWindow}>
             📌 案卷线索墙
           </button>
+          {isTauri && (
+            <button className="btn-rect" onClick={checkForUpdate}>
+              检查更新
+            </button>
+          )}
           <button className="btn-rect" onClick={toggleTheme}>
             {theme === 'light' ? '深色模式' : '浅色模式'}
           </button>
@@ -845,7 +887,59 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Update check modal — only visible in Tauri desktop client */}
+      {showUpdateModal && (
+        <div className="offline-modal-overlay" onClick={() => !isInstalling && setShowUpdateModal(false)}>
+          <div className="offline-modal" onClick={e => e.stopPropagation()} style={{ minWidth: '320px' }}>
+            <h3 className="offline-title">检查客户端更新</h3>
+            <div className="offline-body">
+              {updateStatus === 'checking' && (
+                <p style={{ textAlign: 'center', padding: '12px 0', opacity: 0.6 }}>
+                  正在连接 GitHub 服务器检查版本…
+                </p>
+              )}
+              {updateStatus && updateStatus !== 'checking' && updateStatus.error && (
+                <p style={{ color: 'var(--palette-red)', fontSize: '12px' }}>
+                  检查失败：{updateStatus.error}
+                </p>
+              )}
+              {updateStatus && updateStatus !== 'checking' && !updateStatus.error && !updateStatus.hasUpdate && (
+                <p style={{ textAlign: 'center', padding: '8px 0' }}>
+                  ✓ 您已在使用最新版本，无需更新。
+                </p>
+              )}
+              {updateStatus && updateStatus !== 'checking' && updateStatus.hasUpdate && (
+                <>
+                  <p style={{ marginBottom: '8px' }}>
+                    发现新版本：<strong>{updateStatus.version}</strong>
+                  </p>
+                  {updateStatus.body && (
+                    <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '12px', whiteSpace: 'pre-wrap', maxHeight: '120px', overflowY: 'auto' }}>
+                      {updateStatus.body}
+                    </p>
+                  )}
+                  <button
+                    className="btn-rect color-klein"
+                    style={{ width: '100%', marginBottom: '8px' }}
+                    onClick={doInstallUpdate}
+                    disabled={isInstalling}
+                  >
+                    {isInstalling ? '正在下载并安装…' : '立即更新并重启'}
+                  </button>
+                </>
+              )}
+            </div>
+            {!isInstalling && (
+              <button className="btn-rect" style={{ width: '100%' }} onClick={() => setShowUpdateModal(false)}>
+                关闭
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+
   );
 }
 
