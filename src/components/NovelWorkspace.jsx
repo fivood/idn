@@ -423,9 +423,12 @@ function NovelWorkspace({
   };
 
   // Case File Statistics Panel
-  const totalSuspects = suspects.length;
   const unlockedCluesCount = availableClues.filter(c => isClueDiscovered(c)).length;
-  const totalClues = availableClues.length;
+  const currentChapterCluesCount = availableClues.filter(c => {
+    const discover = CLUE_DISCOVER_PARAS[c.id];
+    if (!discover) return false;
+    return currentChapterId >= discover.chapterId;
+  }).length;
 
   return (
     <div className="novel-workspace">
@@ -921,32 +924,26 @@ function NovelWorkspace({
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <span>遇害者人数</span>
-                  <span className="mono">{deceasedCount} / {totalSuspects}</span>
-                </div>
-                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--crimson-red)', height: '100%', width: `${(deceasedCount / totalSuspects) * 100}%` }}></div>
+                  <span className="mono" style={{ color: deceasedCount > 0 ? 'var(--crimson-red)' : 'var(--text-muted)', fontWeight: deceasedCount > 0 ? 'bold' : 'normal' }}>{deceasedCount} 人</span>
                 </div>
               </div>
               {novelId === 'attwn' && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
                     <span>玩偶全局倍率</span>
                     <span className="mono" style={{ color: 'var(--palette-red)', fontWeight: 'bold' }}>+{deceasedCount * 30}%</span>
-                  </div>
-                  <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                    <div style={{ background: 'var(--palette-red)', height: '100%', width: `${(deceasedCount / 10) * 100}%` }}></div>
                   </div>
                 </div>
               )}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
                   <span>收集物证数</span>
-                  <span className="mono">{unlockedCluesCount} / {totalClues}</span>
+                  <span className="mono">{unlockedCluesCount} / {currentChapterCluesCount}</span>
                 </div>
                 <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${totalClues > 0 ? (unlockedCluesCount / totalClues) * 100 : 0}%` }}></div>
+                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${currentChapterCluesCount > 0 ? (unlockedCluesCount / currentChapterCluesCount) * 100 : 0}%` }}></div>
                 </div>
               </div>
               <div>
