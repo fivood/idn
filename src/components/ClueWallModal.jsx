@@ -20,6 +20,79 @@ const DEATH_PARAS = {
   harriet: 42
 };
 
+// Clue discovery page milestones
+const CLUE_DISCOVER_PARAS = {
+  rhyme_poster: { chapterId: 2, index: 1 },
+  gramophone_record: { chapterId: 3, index: 9 },
+  soldiers_table: { chapterId: 4, index: 13 },
+  sleeping_draft: { chapterId: 6, index: 3 },
+  wool_missing: { chapterId: 10, index: 8 },
+  syringe_missing: { chapterId: 12, index: 5 },
+  revolver: { chapterId: 14, index: 0 },
+  manuscript_bottle: { chapterId: 18, index: 0 },
+  
+  // The Word Is Murder
+  funeral_plan: { chapterId: 1, index: 0 },
+  car_accident: { chapterId: 4, index: 0 },
+  will_draft: { chapterId: 8, index: 0 },
+  green_coat: { chapterId: 13, index: 0 },
+
+  // The Sentence is Death
+  wine_bottle: { chapterId: 1, index: 0 },
+  wall_graffiti: { chapterId: 3, index: 0 },
+  divorce_file: { chapterId: 7, index: 0 },
+  dog_leash: { chapterId: 14, index: 0 },
+
+  // A Line to Kill
+  paper_knife: { chapterId: 8, index: 0 },
+  blood_footprint: { chapterId: 9, index: 0 },
+  secret_camera: { chapterId: 16, index: 0 },
+
+  // The Twist of a Knife
+  indian_dagger: { chapterId: 5, index: 0 },
+  throsby_review: { chapterId: 5, index: 0 },
+  annabelle_letters: { chapterId: 12, index: 0 }
+};
+
+// Suspect introduction milestones
+const INTRODUCED_PARAS = {
+  // And Then There Were None (Suspect introduction pages in Chapter 1)
+  wargrave: { chapterId: 1, index: 0 },
+  vera: { chapterId: 1, index: 3 },
+  lombard: { chapterId: 1, index: 6 },
+  brent: { chapterId: 1, index: 8 },
+  macarthur: { chapterId: 1, index: 12 },
+  armstrong: { chapterId: 1, index: 13 },
+  marston: { chapterId: 1, index: 16 },
+  blore: { chapterId: 1, index: 18 },
+  rogers_mr: { chapterId: 1, index: 18 },
+  rogers_mrs: { chapterId: 1, index: 18 },
+
+  // The Word Is Murder (Diana is the victim, others introduced in Chapters 3, 5, 8)
+  diana: { chapterId: 1, index: 0 },
+  damian: { chapterId: 3, index: 0 },
+  judith: { chapterId: 5, index: 0 },
+  grace: { chapterId: 8, index: 0 },
+
+  // The Sentence is Death (Pryce is the victim, others introduced in Chapters 4, 5, 7)
+  pryce: { chapterId: 1, index: 0 },
+  akira: { chapterId: 4, index: 0 },
+  davina: { chapterId: 5, index: 0 },
+  gregory: { chapterId: 7, index: 0 },
+
+  // A Line to Kill
+  mesurier: { chapterId: 1, index: 0 },
+  helen: { chapterId: 1, index: 0 },
+  derek: { chapterId: 2, index: 0 },
+  colin: { chapterId: 3, index: 0 },
+
+  // The Twist of a Knife
+  harriet: { chapterId: 1, index: 0 },
+  yurdakul: { chapterId: 1, index: 0 },
+  olivia: { chapterId: 2, index: 0 },
+  arthur: { chapterId: 3, index: 0 }
+};
+
 const RHYME_LINES = [
   { textZH: "十个小兵去吃饭，一个噎死剩九个。", suspectId: "marston" },
   { textZH: "九个小兵睡得迟，一个一觉睡不醒剩八个。", suspectId: "rogers_mrs" },
@@ -145,9 +218,82 @@ function ClueWallModal({
     return { suspect, isDeceased };
   };
 
+  // Helper to check if suspect node is introduced in progress
+  const isNodeSuspectIntroduced = (node) => {
+    if (!currentNovelInfo) return false;
+    const suspect = currentNovelInfo.suspects.find(s => node.id.endsWith(s.id));
+    if (!suspect) return true; // Show immediately if not in suspects list (e.g. Hawthorne / Horowitz)
+
+    const intro = INTRODUCED_PARAS[suspect.id];
+    if (!intro) return true;
+    if (currentChapterId > intro.chapterId) return true;
+    if (currentChapterId === intro.chapterId && pagesRead >= intro.index) return true;
+    return false;
+  };
+
+  // Helper to check if clue node is discovered in progress
+  const isNodeClueDiscovered = (node) => {
+    if (!currentNovelInfo) return false;
+    const clue = currentNovelInfo.clues?.find(c => node.id.endsWith(c.id));
+    if (!clue) {
+      // Loose prefix matching
+      const parts = node.id.split('_');
+      const nodePart = parts.slice(1).join('_');
+      const fuzzyClue = currentNovelInfo.clues?.find(c => c.id.includes(nodePart) || nodePart.includes(c.id));
+      if (!fuzzyClue) return true;
+
+      const discover = CLUE_DISCOVER_PARAS[fuzzyClue.id];
+      if (!discover) return true;
+      if (currentChapterId > discover.chapterId) return true;
+      if (currentChapterId === discover.chapterId && pagesRead >= discover.index) return true;
+      return false;
+    }
+
+    const discover = CLUE_DISCOVER_PARAS[clue.id];
+    if (!discover) return true;
+    if (currentChapterId > discover.chapterId) return true;
+    if (currentChapterId === discover.chapterId && pagesRead >= discover.index) return true;
+    return false;
+  };
+
+  // Helper to check if event node (e.g. death) is discovered in progress
+  const isNodeEventDiscovered = (node) => {
+    if (!currentNovelInfo) return false;
+
+    // Check if it's a death event
+    if (node.id.endsWith('_dead')) {
+      const parts = node.id.split('_');
+      const suspectId = parts[parts.length - 2];
+      const suspect = currentNovelInfo.suspects.find(s => s.id === suspectId);
+      if (!suspect) return true;
+
+      if (suspect.deceasedChapter) {
+        if (currentChapterId > suspect.deceasedChapter) return true;
+        if (currentChapterId === suspect.deceasedChapter) {
+          const deathPara = DEATH_PARAS[suspect.id];
+          if (deathPara !== undefined && pagesRead >= deathPara) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    return true;
+  };
+
   // 2. Filter nodes and links by progress
   const unlockedNodes = currentNovelInfo?.clueWall?.nodes?.filter(node => {
-    return unlockedChapters.includes(node.unlockChapter) || currentChapterId >= node.unlockChapter;
+    const isChapterUnlocked = unlockedChapters.includes(node.unlockChapter) || currentChapterId >= node.unlockChapter;
+    if (!isChapterUnlocked) return false;
+
+    if (node.type === 'suspect' || node.type === 'victim') {
+      return isNodeSuspectIntroduced(node);
+    } else if (node.type === 'clue') {
+      return isNodeClueDiscovered(node);
+    } else if (node.type === 'event') {
+      return isNodeEventDiscovered(node);
+    }
+    return true;
   }) || [];
 
   const unlockedLinks = currentNovelInfo?.clueWall?.links?.filter(link => {

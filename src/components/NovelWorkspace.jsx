@@ -60,17 +60,17 @@ const CLUE_DISCOVER_PARAS = {
 
 // Suspect introduction milestones (prevent showing characters before they appear in the player's read progress)
 const INTRODUCED_PARAS = {
-  // And Then There Were None (All 10 are introduced in Chapter 1)
+  // And Then There Were None (Suspect introduction pages in Chapter 1)
   wargrave: { chapterId: 1, index: 0 },
-  vera: { chapterId: 1, index: 0 },
-  lombard: { chapterId: 1, index: 0 },
-  brent: { chapterId: 1, index: 0 },
-  macarthur: { chapterId: 1, index: 0 },
-  armstrong: { chapterId: 1, index: 0 },
-  marston: { chapterId: 1, index: 0 },
-  blore: { chapterId: 1, index: 0 },
-  rogers_mr: { chapterId: 1, index: 0 },
-  rogers_mrs: { chapterId: 1, index: 0 },
+  vera: { chapterId: 1, index: 3 },
+  lombard: { chapterId: 1, index: 6 },
+  brent: { chapterId: 1, index: 8 },
+  macarthur: { chapterId: 1, index: 12 },
+  armstrong: { chapterId: 1, index: 13 },
+  marston: { chapterId: 1, index: 16 },
+  blore: { chapterId: 1, index: 18 },
+  rogers_mr: { chapterId: 1, index: 18 },
+  rogers_mrs: { chapterId: 1, index: 18 },
 
   // The Word Is Murder (Diana is the victim, others introduced in Chapters 3, 5, 8)
   diana: { chapterId: 1, index: 0 },
