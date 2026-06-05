@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "1.1.0"
+version = "1.2.0"
 description = "贝克街私家侦探档案柜"
 authors = ["fivood"]
 license = "ISC"
