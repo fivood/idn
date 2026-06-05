@@ -36,10 +36,10 @@ const RHYME_LINES = [
 function ClueWallModal({
   isOpen,
   onClose,
-  novelStates,
-  unlockedNovels,
+  novelStates = {},
+  unlockedNovels = [],
   activeNovelId,
-  clueWallPositions,
+  clueWallPositions = {},
   updateClueWallPosition,
   isStandalone = false,
   di = 0,
@@ -75,12 +75,16 @@ function ClueWallModal({
   if (!isOpen && !isStandalone) return null;
 
   const currentNovelInfo = novelsList.find(n => n.id === selectedNovelId);
-  const currentNovelState = novelStates[selectedNovelId] || {
+  const currentNovelState = (novelStates && novelStates[selectedNovelId]) || {
     unlockedChapters: [1],
     currentChapterId: 1,
     pagesUnlocked: 0,
     pagesRead: 0
   };
+
+  const unlockedChapters = currentNovelState?.unlockedChapters || [1];
+  const currentChapterId = currentNovelState?.currentChapterId || 1;
+  const pagesRead = currentNovelState?.pagesRead || 0;
 
   // 1. Helper to determine if a suspect is deceased
   const getSuspectStatus = (nodeId) => {
@@ -88,9 +92,6 @@ function ClueWallModal({
     // Find suspect matching ID part
     const suspect = currentNovelInfo.suspects.find(s => nodeId.endsWith(s.id));
     if (!suspect) return null;
-
-    const currentChapterId = currentNovelState.currentChapterId;
-    const pagesRead = currentNovelState.pagesRead;
 
     let isDeceased = false;
     if (suspect.deceasedChapter) {
@@ -107,13 +108,12 @@ function ClueWallModal({
   };
 
   // 2. Filter nodes and links by progress
-  const unlockedChapters = currentNovelState.unlockedChapters || [1];
   const unlockedNodes = currentNovelInfo?.clueWall?.nodes?.filter(node => {
-    return unlockedChapters.includes(node.unlockChapter) || currentNovelState.currentChapterId >= node.unlockChapter;
+    return unlockedChapters.includes(node.unlockChapter) || currentChapterId >= node.unlockChapter;
   }) || [];
 
   const unlockedLinks = currentNovelInfo?.clueWall?.links?.filter(link => {
-    const isLinkChapterUnlocked = unlockedChapters.includes(link.unlockChapter) || currentNovelState.currentChapterId >= link.unlockChapter;
+    const isLinkChapterUnlocked = unlockedChapters.includes(link.unlockChapter) || currentChapterId >= link.unlockChapter;
     const isFromNodeVisible = unlockedNodes.some(n => n.id === link.from);
     const isToNodeVisible = unlockedNodes.some(n => n.id === link.to);
     return isLinkChapterUnlocked && isFromNodeVisible && isToNodeVisible;
