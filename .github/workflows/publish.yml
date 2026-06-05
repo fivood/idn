@@ -3,12 +3,13 @@ name: 'Publish Desktop App'
 on:
   push:
     tags:
-      - 'v*' # Triggers the workflow when you push a version tag like v1.0.0
+      - 'v*' # Triggers when you push a version tag like v1.0.0
 
 jobs:
   publish-tauri:
     permissions:
-      contents: write # Required for creating GitHub Releases and uploading assets
+      contents: write # Required for creating GitHub Releases
+
     strategy:
       fail-fast: false
       matrix:
@@ -18,6 +19,7 @@ jobs:
           - platform: 'ubuntu-22.04'
 
     runs-on: ${{ matrix.platform }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,28 +29,44 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: Install Rust toolchain
+      - name: Install Rust toolchain (stable)
         uses: dtolnay/rust-toolchain@stable
-        with:
-          # Targets for macOS cross-compilation (x86_64 and Apple Silicon)
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install Linux system dependencies
+      - name: Add macOS targets (x86_64 + Apple Silicon)
+        if: matrix.platform == 'macos-latest'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Install Linux system dependencies (Tauri v2)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libgtk-3-dev \
+            libjavascriptcoregtk-4.1-dev
 
       - name: Install frontend dependencies
-        run: npm ci # Uses package-lock.json for clean, reproducible installations
+        run: npm ci
 
-      - name: Build and Publish Release
+      - name: Build Tauri app and publish release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: '贝克街私家侦探档案柜 ${{ github.ref_name }}'
-          releaseBody: '贝克街私家侦探档案柜客户端自动发版。下载下方对应系统安装包即可离线游玩。'
+          releaseBody: |
+            贝克街私家侦探档案柜客户端自动发版。
+
+            **下载说明：**
+            - Windows：下载 `.msi` 安装包
+            - macOS：下载 `.dmg` 安装包
+            - Linux：下载 `.AppImage`
+
+            进度保存在本地，无需登录即可游玩。
           releaseDraft: false
           prerelease: false
+          args: ${{ matrix.platform == 'macos-latest' && '--target universal-apple-darwin' || '' }}
