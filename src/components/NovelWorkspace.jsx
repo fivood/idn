@@ -442,8 +442,11 @@ function NovelWorkspace({
                   style={style}
                   onClick={() => setSelectedSuspect(s)}
                 >
-                  <div style={{ fontWeight: 'bold' }}>{s.nameZH}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{s.titleZH}</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '11px', lineHeight: '1.2' }}>
+                    {s.nameZH}
+                    <span style={{ display: 'block', fontSize: '9px', fontWeight: 'normal', color: 'var(--text-muted)', marginTop: '2px' }}>{s.nameEN}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginTop: '2px', lineHeight: '1.2' }}>{s.titleZH} / {s.titleEN}</div>
                   {deceased && (
                     <div className="deceased-stamp">遇害</div>
                   )}
@@ -468,8 +471,11 @@ function NovelWorkspace({
           {/* Active Suspect Profile Card */}
           {selectedSuspect && (
             <div className="card-rect" style={{ fontSize: '12px', border: '1px solid var(--border-highlight)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
-                <h4 style={{ fontSize: '13px' }}>{selectedSuspect.nameZH}</h4>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px', alignItems: 'flex-start' }}>
+                <h4 style={{ fontSize: '13px', margin: 0 }}>
+                  {selectedSuspect.nameZH}
+                  <span style={{ display: 'block', fontSize: '11px', fontWeight: 'normal', color: 'var(--text-muted)', marginTop: '2px' }}>{selectedSuspect.nameEN}</span>
+                </h4>
                 <button 
                   style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'monospace' }}
                   onClick={() => setSelectedSuspect(null)}
@@ -477,11 +483,33 @@ function NovelWorkspace({
                   [关闭]
                 </button>
               </div>
-              <div style={{ marginBottom: '6px' }}><strong>身份:</strong> {selectedSuspect.titleZH}</div>
-              <div style={{ marginBottom: '6px' }}><strong>留声机指控:</strong> {isAccusationRevealed() ? selectedSuspect.accusationZH : '[线索尚未浮现，待调查]'}</div>
-              <div style={{ marginBottom: '6px' }}><strong>指控辩解:</strong> {isAccusationRevealed() ? selectedSuspect.alibiZH : '[线索尚未浮现，待调查]'}</div>
+              <div style={{ marginBottom: '6px' }}><strong>身份 / Title:</strong> {selectedSuspect.titleZH} / {selectedSuspect.titleEN}</div>
+              <div style={{ marginBottom: '6px' }}>
+                <strong>留声机指控 / Indictment:</strong> 
+                {isAccusationRevealed() ? (
+                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
+                    <p style={{ margin: '2px 0' }}>{selectedSuspect.accusationZH}</p>
+                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.accusationEN}</p>
+                  </div>
+                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>[线索尚未浮现，待调查]</span>}
+              </div>
+              <div style={{ marginBottom: '6px' }}>
+                <strong>指控辩解 / Alibi:</strong> 
+                {isAccusationRevealed() ? (
+                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
+                    <p style={{ margin: '2px 0' }}>{selectedSuspect.alibiZH}</p>
+                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.alibiEN}</p>
+                  </div>
+                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>[线索尚未浮现，待调查]</span>}
+              </div>
               <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--crimson-red)', color: isSuspectDeceased(selectedSuspect) ? 'var(--crimson-red)' : 'var(--text-muted)' }}>
-                <strong>死亡状况:</strong> {isSuspectDeceased(selectedSuspect) ? selectedSuspect.deathMethodZH : '[生存 / 案情调查中]'}
+                <strong>死亡状况 / Death:</strong> 
+                {isSuspectDeceased(selectedSuspect) ? (
+                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--crimson-red)' }}>
+                    <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedSuspect.deathMethodZH}</p>
+                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.deathMethodEN}</p>
+                  </div>
+                ) : <span style={{ marginLeft: '4px' }}>[生存 / 案情调查中]</span>}
               </div>
               
               {/* Accusation gameplay for And Then There Were None */}
@@ -549,29 +577,42 @@ function NovelWorkspace({
         {/* Center Column: Paragraphs Reader, Timer, Milestone Actions, and Quiz */}
         <div className="workspace-center">
           {/* Chapter header panel */}
-          <div className="chapter-header-row">
-            <div>
-              <h2 style={{ fontSize: '16px' }}>
+          <div className="chapter-header-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '8px' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>
                 《{currentNovelInfo.titleZH}》 - {currentChapterData.titleZH} / {currentChapterData.titleEN}
               </h2>
-              <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                解密进度: 第 {novelState.pagesRead} / {totalPages} 页
-              </span>
+              <div className="reader-settings">
+                <button 
+                  className={`btn-rect ${langMode === 'zh' ? 'active' : ''}`}
+                  onClick={() => setLangMode('zh')}
+                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                >
+                  中文
+                </button>
+                <button 
+                  className={`btn-rect ${langMode === 'en' ? 'active' : ''}`}
+                  onClick={() => setLangMode('en')}
+                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                >
+                  英文
+                </button>
+              </div>
             </div>
             
-            <div className="reader-settings">
-              <button 
-                className={`btn-rect ${langMode === 'zh' ? 'active' : ''}`}
-                onClick={() => setLangMode('zh')}
-              >
-                中文
-              </button>
-              <button 
-                className={`btn-rect ${langMode === 'en' ? 'active' : ''}`}
-                onClick={() => setLangMode('en')}
-              >
-                英文
-              </button>
+            {/* Combined Progress Indicators Row */}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '11px', width: '100%', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>当前章节解密:</span>
+                <span className="mono" style={{ fontWeight: 'bold' }}>第 {novelState.pagesRead} / {totalPages} 页</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '180px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>全案总解密:</span>
+                <span className="mono">{overallUnlocked} / {totalPagesAll} 页 ({overallPercent.toFixed(1)}%)</span>
+                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)', position: 'relative', flex: 1 }}>
+                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${overallPercent}%`, transition: 'width 0.3s ease' }}></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -765,17 +806,6 @@ function NovelWorkspace({
 
         {/* Right Column: Case Memo, Clues Board, and Rhyme Previews */}
         <div className="workspace-right">
-          {/* Overall Decryption Progress */}
-          <div className="card-rect" style={{ padding: '10px 12px', marginBottom: '0px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-              <span style={{ fontWeight: 'bold' }}>全案文本解密总进度</span>
-              <span className="mono">{overallUnlocked} / {totalPagesAll} 页 ({overallPercent.toFixed(1)}%)</span>
-            </div>
-            <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)', position: 'relative' }}>
-              <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${overallPercent}%`, transition: 'width 0.3s ease' }}></div>
-            </div>
-          </div>
-
           {renderWorkspaceMemo()}
 
           {/* Clues Board */}
