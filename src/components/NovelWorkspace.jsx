@@ -307,7 +307,7 @@ function NovelWorkspace({
     const intro = INTRODUCED_PARAS[s.id];
     if (!intro) return true;
     if (currentChapterId > intro.chapterId) return true;
-    if (currentChapterId === intro.chapterId && novelState.pagesRead >= intro.index) return true;
+    if (currentChapterId === intro.chapterId && pagesRead > intro.index) return true;
     return false;
   };
   
@@ -321,7 +321,7 @@ function NovelWorkspace({
       return false;
     }
     if (currentChapterId > death.chapterId) return true;
-    if (currentChapterId === death.chapterId && novelState.pagesRead >= death.index) return true;
+    if (currentChapterId === death.chapterId && pagesRead > death.index) return true;
     return false;
   };
 
@@ -330,14 +330,14 @@ function NovelWorkspace({
     const discover = CLUE_DISCOVER_PARAS[c.id];
     if (!discover) return false;
     if (currentChapterId > discover.chapterId) return true;
-    if (currentChapterId === discover.chapterId && novelState.pagesRead >= discover.index) return true;
+    if (currentChapterId === discover.chapterId && pagesRead > discover.index) return true;
     return false;
   };
 
   // Derived state: check if gramophone accusation is revealed (Chapter 3 page 15+)
   const isAccusationRevealed = () => {
     if (currentChapterId > 3) return true;
-    if (currentChapterId === 3 && novelState.pagesRead >= 15) return true;
+    if (currentChapterId === 3 && pagesRead > 15) return true;
     return false;
   };
 

@@ -43,15 +43,15 @@ const CHAPTER_COSTS = {
 
 // Death milestones page lookup for suspects
 export const DEATH_PARAS = {
-  marston: 13,
+  marston: 12,
   rogers_mrs: 2,
-  macarthur: 9,
-  rogers_mr: 3,
-  brent: 5,
-  wargrave: 13,
-  blore: 8,
+  macarthur: 20,
+  rogers_mr: 5,
+  brent: 7,
+  wargrave: 14,
+  blore: 9,
   armstrong: 11,
-  lombard: 1,
+  lombard: 2,
   vera: 4,
   diana: 6,
   pryce: 1,
@@ -77,7 +77,7 @@ export const getActiveNovelMultiplier = (novelId, state) => {
         deceasedCount++;
       } else if (currentChapterId === s.deceasedChapter) {
         const deathPara = DEATH_PARAS[s.id];
-        if (deathPara !== undefined && pagesRead >= deathPara) {
+        if (deathPara !== undefined && pagesRead > deathPara) {
           deceasedCount++;
         }
       }

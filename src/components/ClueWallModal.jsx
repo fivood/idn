@@ -210,7 +210,7 @@ function ClueWallModal({
         isDeceased = true;
       } else if (currentChapterId === suspect.deceasedChapter) {
         const deathPara = DEATH_PARAS[suspect.id];
-        if (deathPara !== undefined && pagesRead >= deathPara) {
+        if (deathPara !== undefined && pagesRead > deathPara) {
           isDeceased = true;
         }
       }
@@ -227,7 +227,7 @@ function ClueWallModal({
     const intro = INTRODUCED_PARAS[suspect.id];
     if (!intro) return true;
     if (currentChapterId > intro.chapterId) return true;
-    if (currentChapterId === intro.chapterId && pagesRead >= intro.index) return true;
+    if (currentChapterId === intro.chapterId && pagesRead > intro.index) return true;
     return false;
   };
 
@@ -245,14 +245,14 @@ function ClueWallModal({
       const discover = CLUE_DISCOVER_PARAS[fuzzyClue.id];
       if (!discover) return true;
       if (currentChapterId > discover.chapterId) return true;
-      if (currentChapterId === discover.chapterId && pagesRead >= discover.index) return true;
+      if (currentChapterId === discover.chapterId && pagesRead > discover.index) return true;
       return false;
     }
 
     const discover = CLUE_DISCOVER_PARAS[clue.id];
     if (!discover) return true;
     if (currentChapterId > discover.chapterId) return true;
-    if (currentChapterId === discover.chapterId && pagesRead >= discover.index) return true;
+    if (currentChapterId === discover.chapterId && pagesRead > discover.index) return true;
     return false;
   };
 
@@ -271,7 +271,7 @@ function ClueWallModal({
         if (currentChapterId > suspect.deceasedChapter) return true;
         if (currentChapterId === suspect.deceasedChapter) {
           const deathPara = DEATH_PARAS[suspect.id];
-          if (deathPara !== undefined && pagesRead >= deathPara) {
+          if (deathPara !== undefined && pagesRead > deathPara) {
             return true;
           }
         }
