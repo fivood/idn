@@ -727,8 +727,7 @@ function App() {
             {theme === 'light' ? '深色模式' : '浅色模式'}
           </button>
           <button 
-            className="btn-rect" 
-            style={{ borderColor: 'var(--crimson-red)', color: 'var(--crimson-red)' }} 
+            className="btn-rect color-crimson" 
             onClick={resetSave}
           >
             重置档案
