@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { novelsList } from '../data/game_data';
-import novelData from '../data/novel_data.json';
+
+
 
 
 
@@ -115,9 +116,35 @@ function NovelWorkspace({
   setAccusedSuspect,
   onOpenClueWall
 }) {
+  const [activeBookData, setActiveBookData] = useState(null);
+  const [isTextLoading, setIsTextLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setIsTextLoading(true);
+    fetch(`data/novel_${novelId}.json`)
+      .then(res => res.json())
+      .then(data => {
+        if (active) {
+          setActiveBookData(data);
+          setIsTextLoading(false);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load novel text", err);
+      });
+    return () => { active = false; };
+  }, [novelId]);
+
   if (!novelState) {
     return <div className="card-rect">正在加载案卷数据...</div>;
   }
+
+  if (isTextLoading || !activeBookData) {
+    return <div className="card-rect" style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>正在装载案卷正文，请稍候...</div>;
+  }
+
+  const novelData = activeBookData;
 
   const currentNovelInfo = novelsList.find(n => n.id === novelId);
   const currentChapterId = novelState.currentChapterId;

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import novelData from '../data/novel_data.json';
+import React, { useState, useEffect } from 'react';
+
+
 
 const CHAPTER_SUMMARIES = {
   1: {
@@ -82,9 +83,43 @@ const formatBracketText = (text) => {
 };
 
 function BookReader({ novelId, handleBack }) {
+  const [bookData, setBookData] = useState(null);
+  const [isTextLoading, setIsTextLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setIsTextLoading(true);
+    fetch(`data/novel_${novelId}.json`)
+      .then(res => res.json())
+      .then(data => {
+        if (active) {
+          setBookData(data);
+          setIsTextLoading(false);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load book text", err);
+      });
+    return () => { active = false; };
+  }, [novelId]);
+
   const [currentChapter, setCurrentChapter] = useState(1);
   const [langMode, setLangMode] = useState('zh');
 
+  if (isTextLoading || !bookData) {
+    return (
+      <div className="book-reader" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '16px' }}>
+        <div className="card-rect" style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>
+          正在装载案卷正文，请稍候...
+        </div>
+        <button className="btn-rect" onClick={handleBack}>
+          &lt; 返回书架
+        </button>
+      </div>
+    );
+  }
+
+  const novelData = bookData;
   const bookChapters = novelData[novelId]?.chapters || [];
   const currentBookData = bookChapters.find(c => c.id === currentChapter);
 

@@ -376,14 +376,49 @@ const compileAll = () => {
     novelData["line_to_kill"] = parseLineToKill();
     novelData["twist_of_knife"] = parseTwistOfKnife();
 
-    const outputDir = path.join(__dirname, 'src', 'data');
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
+    // 1. Create public/data directory if it doesn't exist
+    const publicDataDir = path.join(__dirname, 'public', 'data');
+    if (!fs.existsSync(publicDataDir)) {
+        fs.mkdirSync(publicDataDir, { recursive: true });
     }
-    const outputPath = path.join(outputDir, 'novel_data.json');
-    fs.writeFileSync(outputPath, JSON.stringify(novelData, null, 2), 'utf8');
-    console.log(`\nSuccess! Compiled all 5 aligned books to ${outputPath}`);
+
+    // 2. Write individual novel text JSONs
+    for (const [novelId, book] of Object.entries(novelData)) {
+        const singleBook = { [novelId]: book };
+        const singlePath = path.join(publicDataDir, `novel_${novelId}.json`);
+        fs.writeFileSync(singlePath, JSON.stringify(singleBook, null, 2), 'utf8');
+        console.log(`Wrote split book text: ${singlePath}`);
+    }
+
+    // 3. Generate lightweight metadata (removing actual page texts)
+    const novelMetadata = {};
+    for (const [novelId, book] of Object.entries(novelData)) {
+        const metaChapters = book.chapters.map(ch => ({
+            id: ch.id,
+            titleEN: ch.titleEN,
+            titleZH: ch.titleZH,
+            pages: ch.pages.map(() => ({})) // Only keep empty objects to preserve pages.length
+        }));
+        novelMetadata[novelId] = { chapters: metaChapters };
+    }
+
+    // 4. Write metadata to src/data/
+    const srcDataDir = path.join(__dirname, 'src', 'data');
+    if (!fs.existsSync(srcDataDir)) {
+        fs.mkdirSync(srcDataDir, { recursive: true });
+    }
+    const metadataPath = path.join(srcDataDir, 'novel_metadata.json');
+    fs.writeFileSync(metadataPath, JSON.stringify(novelMetadata, null, 2), 'utf8');
+    console.log(`Wrote metadata file: ${metadataPath}`);
+
+    // 5. Clean up old monolithic file if it exists
+    const oldPath = path.join(srcDataDir, 'novel_data.json');
+    if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+        console.log(`Removed deprecated monolithic file: ${oldPath}`);
+    }
+
+    console.log(`\nSuccess! Compiled all books into split packages and metadata.`);
 };
 
 compileAll();
-

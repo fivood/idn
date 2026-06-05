@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { globalUpgrades, novelsList } from '../data/game_data';
-import novelData from '../data/novel_data.json';
+import novelMetadata from '../data/novel_metadata.json';
+const novelData = novelMetadata;
+
 
 function Library({
   di = 0,
