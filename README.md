@@ -111,18 +111,21 @@ npm run build
 
 ```
 idn/
+├── public/                      # 静态资源目录
+│   └── data/
+│       └── novel_[id].json      # 按需动态载入的单本小说中英文正文数据（各约 600 KB~1 MB）
 ├── src/
 │   ├── App.jsx                  # 核心状态引擎、挂机循环、存档逻辑
 │   ├── index.css                # 全局设计系统（CSS 变量、深浅主题）
 │   ├── components/
 │   │   ├── Library.jsx          # 侦探书房（书架 + 升级面板 + 案卷检视器）
-│   │   ├── NovelWorkspace.jsx   # 现场侦查工作区（阅读器 + 嫌疑人 + 线索）
+│   │   ├── NovelWorkspace.jsx   # 现场侦查工作区（正文动态拉取 + 打字机 + 嫌疑人 + 线索）
 │   │   ├── ClueWallModal.jsx    # 软木板线索墙弹窗
-│   │   ├── BookReader.jsx       # 已结案卷双语对照阅读器
+│   │   ├── BookReader.jsx       # 归档案卷双语对照阅读器（正文动态拉取）
 │   │   └── Logo.jsx             # 贝克街 Logo 组件
 │   └── data/
 │       ├── game_data.js         # 小说配置、嫌疑人、线索墙节点数据
-│       └── novel_data.json      # 编译好的双语段落数据库（5 部小说）
+│       └── novel_metadata.json  # 轻量化小说结构元数据（秒开计算，约 45 KB）
 ├── src-tauri/                   # Tauri 桌面端封装配置
 ├── .github/workflows/
 │   └── publish.yml              # GitHub Actions 自动发版工作流
