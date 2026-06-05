@@ -259,6 +259,13 @@ function App() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  const resetSave = () => {
+    if (window.confirm("确定要彻底清空所有调查档案与生涯荣誉吗？此操作将恢复到初始状态并不可逆！")) {
+      localStorage.removeItem('detective_console_save');
+      window.location.reload();
+    }
+  };
+
   // Recalculate DI/s
   useEffect(() => {
     let baseRate = 0.005; // Base passive rate
@@ -702,7 +709,10 @@ function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Logo size={26} style={{ color: 'var(--text-main)' }} />
           <div>
-            <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0, lineHeight: 1.2 }}>贝克街私家侦探档案柜</h1>
+            <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              贝克街私家侦探档案柜
+              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.0.0</span>
+            </h1>
             <span className="di-rate" style={{ fontSize: '11px', display: 'block', marginTop: '2px' }}>
               侦查效率: {diRate.toFixed(1)} DI/秒
             </span>
@@ -715,6 +725,13 @@ function App() {
           </button>
           <button className="btn-rect" onClick={toggleTheme}>
             {theme === 'light' ? '深色模式' : '浅色模式'}
+          </button>
+          <button 
+            className="btn-rect" 
+            style={{ borderColor: 'var(--crimson-red)', color: 'var(--crimson-red)' }} 
+            onClick={resetSave}
+          >
+            重置档案
           </button>
           <div className="di-counter">
             <svg className="di-cube-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '6px' }}>
