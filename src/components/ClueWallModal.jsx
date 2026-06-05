@@ -72,8 +72,6 @@ function ClueWallModal({
     };
   }, [isOpen, isStandalone]);
 
-  if (!isOpen && !isStandalone) return null;
-
   const currentNovelInfo = novelsList.find(n => n.id === selectedNovelId);
   const currentNovelState = (novelStates && novelStates[selectedNovelId]) || {
     unlockedChapters: [1],
@@ -186,6 +184,8 @@ function ClueWallModal({
       window.removeEventListener('touchend', handleEnd);
     };
   }, [draggedNode, selectedNovelId, unlockedNodes, updateClueWallPosition]);
+
+  if (!isOpen && !isStandalone) return null;
 
   // Center coordinate calculator for links
   const getNodeCenter = (node) => {
