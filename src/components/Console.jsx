@@ -172,6 +172,16 @@ function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, 
                     const unlockedCount = getUnlockedPagesCount(bookState, n.id);
                     const progressPercent = bookTotalPages > 0 ? (unlockedCount / bookTotalPages) * 100 : 0;
 
+                    const getPrerequisiteNovel = (bookId) => {
+                      if (bookId === 'sentence_is_death') return 'word_is_murder';
+                      if (bookId === 'line_to_kill') return 'sentence_is_death';
+                      if (bookId === 'twist_of_knife') return 'line_to_kill';
+                      return null;
+                    };
+                    const prereqId = getPrerequisiteNovel(n.id);
+                    const prereqNovel = prereqId ? novelsList.find(x => x.id === prereqId) : null;
+                    const isPrereqMet = prereqId ? library.includes(prereqId) : true;
+
                     return (
                       <div key={n.id} className="novel-card">
                         <div>
@@ -213,6 +223,15 @@ function Console({ di, upgrades, buyUpgrade, unlockedNovels, handleSelectNovel, 
                                 onClick={() => handleSelectNovel(n.id)}
                               >
                                 {bookState ? "继续调查" : "开始调查"}
+                              </button>
+                            ) : !isPrereqMet ? (
+                              <button 
+                                className="btn-rect" 
+                                disabled={true}
+                                style={{ fontSize: '11px', padding: '6px 10px', height: 'auto', whiteSpace: 'normal', maxWidth: '180px', textAlign: 'right', opacity: 0.6, cursor: 'not-allowed' }}
+                              >
+                                前置案卷未结案<br />
+                                <span style={{ fontSize: '10px' }}>（需先侦破《{prereqNovel?.titleZH}》）</span>
                               </button>
                             ) : (
                               <button 

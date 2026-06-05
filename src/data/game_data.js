@@ -655,5 +655,192 @@ export const novelsList = [
       }
     ],
     deductions: []
+  },
+  {
+    id: "line_to_kill",
+    titleZH: "一行杀人的台词",
+    titleEN: "A Line to Kill",
+    authorZH: "安东尼·霍洛维茨",
+    authorEN: "Anthony Horowitz",
+    detectiveZH: "丹尼尔·霍桑",
+    detectiveEN: "Daniel Hawthorne",
+    descriptionZH: "霍桑与霍洛维茨受邀前往风景如画的奥尔德尼岛参加首届文学节。然而，随着岛上唯一的地产富商离奇惨死在自己那与世隔绝的豪宅风月楼中，文学节上的作家的秘密、恩怨与私欲也逐一浮出水面。而唯一离岛的轮渡因暴风雨停航，凶手就在他们之中……",
+    descriptionEN: "Hawthorne and Horowitz are invited to a literary festival on Alderney. When a wealthy landowner is murdered in his gazebo, the authors' dark secrets are exposed. Trapped by a storm, the killer is among them.",
+    baseCost: 10000,
+    totalChapters: 24,
+    suspects: [
+      {
+        id: "mesurier",
+        nameZH: "查尔斯·勒·梅苏里尔",
+        nameEN: "Charles Le Mesurier",
+        titleZH: "被害人 / 地产富商",
+        titleEN: "The Victim / Rich Landowner",
+        accusationZH: "指控他利用权势强推电缆工程，破坏奥尔德尼岛的生态与安宁。",
+        accusationEN: "Accused of using power to force a cable project, ruining the island's peace.",
+        alibiZH: "已遇害，无答辩。",
+        alibiEN: "Deceased, no alibi.",
+        deceasedChapter: 8,
+        deathMethodZH: "在风月楼被绑在椅子上，用自己的拆信刀刺穿喉咙致死。",
+        deathMethodEN: "Found tied to a chair in the gazebo, stabbed in the throat with a paper knife."
+      },
+      {
+        id: "helen",
+        nameZH: "海伦·勒·梅苏里尔",
+        nameEN: "Helen Le Mesurier",
+        titleZH: "被害人二 / 查尔斯之妻",
+        titleEN: "The Second Victim / Charles's Wife",
+        accusationZH: "指控她背叛丈夫与当地医生偷情，且在丈夫死后图谋巨额遗产。",
+        accusationEN: "Accused of an affair with the local doctor and plotting inheritance after Charles's death.",
+        alibiZH: "已遇害，无答辩。",
+        alibiEN: "Deceased, no alibi.",
+        deceasedChapter: 16,
+        deathMethodZH: "在山洞通道中被凶手用重石反复击打头部致死。",
+        deathMethodEN: "Found in a cave passage, bludgeoned repeatedly on the head with a heavy rock."
+      },
+      {
+        id: "derek",
+        nameZH: "德瑞克·阿伯特",
+        nameEN: "Derek Abbott",
+        titleZH: "名厨 / 前科犯",
+        titleEN: "Famous Chef / Ex-convict",
+        accusationZH: "被怀疑因出狱后被查尔斯解雇并遭到威胁，怀恨在心实施报复。",
+        accusationEN: "Suspected of revenge after being fired and threatened by Charles upon release.",
+        alibiZH: "声称案发当晚自己一个人待在厨房准备餐食，没有人证。",
+        alibiEN: "Claimed he was alone in the kitchen preparing meals, with no witnesses."
+      },
+      {
+        id: "colin",
+        nameZH: "科林·马瑟森",
+        nameEN: "Colin Matheson",
+        titleZH: "当地医生",
+        titleEN: "Local Doctor",
+        accusationZH: "被怀疑与海伦偷情被查尔斯发现并录像勒索，为免身败名裂而行凶。",
+        accusationEN: "Suspected of murder to stop Charles from blackmailing him with affair recordings.",
+        alibiZH: "声称当晚自己在诊所整理药剂，直到深夜才回家。",
+        alibiEN: "Claimed he was organizing medicine at the clinic until late night."
+      }
+    ],
+    clues: [
+      {
+        id: "paper_knife",
+        nameZH: "查尔斯的拆信刀",
+        nameEN: "Charles's Paper Knife",
+        descriptionZH: "发现于被害人查尔斯喉部伤口处的行凶利器，原本是他自己书桌上的摆件。",
+        descriptionEN: "The murder weapon found in Charles's neck, originally a desk decoration.",
+        chapterId: 8,
+        cost: 12000
+      },
+      {
+        id: "blood_footprint",
+        nameZH: "风月楼血脚印",
+        nameEN: "Bloody Footprint",
+        descriptionZH: "留在风月楼水泥地板上的带血脚印，脚印前端呈现圆形，极具特征。",
+        descriptionEN: "A bloody shoe print on the cement floor of the gazebo, showing a round tip.",
+        chapterId: 9,
+        cost: 35000
+      },
+      {
+        id: "secret_camera",
+        nameZH: "风月楼摄像头",
+        nameEN: "Gazebo Camera",
+        descriptionZH: "隐藏在风月楼内的监控摄像头，此前暗中记录了海伦与当地医生的私密画面。",
+        descriptionEN: "A hidden camera in the gazebo that recorded Helen and the doctor's affair.",
+        chapterId: 16,
+        cost: 100000
+      }
+    ],
+    deductions: []
+  },
+  {
+    id: "twist_of_knife",
+    titleZH: "一把扭曲的匕首",
+    titleEN: "The Twist of a Knife",
+    authorZH: "安东尼·霍洛维茨",
+    authorEN: "Anthony Horowitz",
+    detectiveZH: "丹尼尔·霍桑",
+    detectiveEN: "Daniel Hawthorne",
+    descriptionZH: "作家霍洛维茨亲自编剧的戏剧《心理游戏》在伦敦西区首演，然而这成了他的噩梦。恶名昭彰的评论家哈丽特在发表了将戏剧批得体无完肤的恶评后，次日即被刺杀在帕尔格罗夫花园住宅中。行凶利器竟是首演礼上赠送给安东尼的那把装饰匕首，上留指纹……被警方逮捕的安东尼唯一能依靠的，只有那个他深表怀疑的霍桑。",
+    descriptionEN: "Horowitz's new play debuts in the West End. But when a cruel critic is stabbed to death with a dagger gifted to him, Anthony is arrested. His only hope is Daniel Hawthorne.",
+    baseCost: 35000,
+    totalChapters: 26,
+    suspects: [
+      {
+        id: "harriet",
+        nameZH: "哈丽特·斯罗索比",
+        nameEN: "Harriet Throsby",
+        titleZH: "被害人 / 戏剧评论家",
+        titleEN: "The Victim / Theater Critic",
+        accusationZH: "撰写了极端刻薄的评论，试图摧毁剧组所有成员的演艺生涯。",
+        accusationEN: "Wrote a devastating review, attempting to destroy the careers of the play crew.",
+        alibiZH: "已遇害，无答辩。",
+        alibiEN: "Deceased, no alibi.",
+        deceasedChapter: 5,
+        deathMethodZH: "在自己的寓所中，被一把赠予剧组的印第安装饰匕首刺中胸部身亡。",
+        deathMethodEN: "Struck in the chest with a replica Native American dagger in her own apartment."
+      },
+      {
+        id: "olivia",
+        nameZH: "奥利维亚·斯罗索比",
+        nameEN: "Olivia Throsby",
+        titleZH: "被害人女儿",
+        titleEN: "Victim's Daughter",
+        accusationZH: "极度厌恶母亲的强势控制与冷酷言语，且在母亲遇害前后行踪可疑。",
+        accusationEN: "Deeply resented her mother's controlling and cruel nature; had suspicious movements.",
+        alibiZH: "自称当晚在外散步，但没有人证，且身上有母亲公寓的钥匙。",
+        alibiEN: "Claimed she was out walking, with no witnesses; carried keys to her mother's flat."
+      },
+      {
+        id: "arthur",
+        nameZH: "亚瑟·斯罗索比",
+        nameEN: "Arthur Throsby",
+        titleZH: "被害人丈夫",
+        titleEN: "Victim's Husband",
+        accusationZH: "多年来生活在妻子的无休止指责下，在谋杀发生的时间段内形迹可疑。",
+        accusationEN: "Suffered years of constant berating; had suspicious whereabouts during the murder.",
+        alibiZH: "声称当时在学校里处理公务，但是学校大门的进出记录有偏差。",
+        alibiEN: "Claimed he was at school doing duties, but the gate entry log is inconsistent."
+      },
+      {
+        id: "yurdakul",
+        nameZH: "阿赫梅特·尤尔达库尔",
+        nameEN: "Ahmet Yurdakul",
+        titleZH: "《心理游戏》制片人",
+        titleEN: "Producer of the Play",
+        accusationZH: "为该剧投入巨额资金，若因哈丽特的恶评导致剧作停演，他将面临破产。",
+        accusationEN: "Invested heavily in the play; faced absolute bankruptcy if Harriet's review closed it.",
+        alibiZH: "声称当晚一直在剧院的后台办公室与会计师对账，但对账单时间存在涂改。",
+        alibiEN: "Claimed he was auditing accounts in the backstage office, but the log was edited."
+      }
+    ],
+    clues: [
+      {
+        id: "indian_dagger",
+        nameZH: "印第安匕首",
+        nameEN: "Indian Dagger",
+        descriptionZH: "刺死哈丽特的凶器，属于赠予安东尼的剧组首演礼，上留有安东尼的指纹。",
+        descriptionEN: "The dagger that killed Harriet, a gift to Anthony with his fingerprints on it.",
+        chapterId: 5,
+        cost: 25000
+      },
+      {
+        id: "throsby_review",
+        nameZH: "斯罗索比的恶评",
+        nameEN: "Throsby's Bad Review",
+        descriptionZH: "哈丽特撰写的极具杀伤力的戏剧评论，若见报将导致整部剧停演，为剧组众人提供了杀机。",
+        descriptionEN: "A devastating review written by Harriet that could close the play, providing motive.",
+        chapterId: 5,
+        cost: 75000
+      },
+      {
+        id: "annabelle_letters",
+        nameZH: "安娜贝尔的密信",
+        nameEN: "Annabelle's Letters",
+        descriptionZH: "在案发现场隐秘夹层里找到的一封信件，揭示了斯罗索比家庭与多年前一桩旧案的关联。",
+        descriptionEN: "A letter found in a hidden drawer, revealing a link between Throsbys and a past case.",
+        chapterId: 12,
+        cost: 220000
+      }
+    ],
+    deductions: []
   }
 ];

@@ -29,7 +29,10 @@ const DEATH_PARAS = {
   lombard: { chapterId: 16, index: 2 },
   vera: { chapterId: 16, index: 4 },
   diana: { chapterId: 1, index: 6 },
-  pryce: { chapterId: 2, index: 1 }
+  pryce: { chapterId: 2, index: 1 },
+  mesurier: { chapterId: 8, index: 0 },
+  helen: { chapterId: 16, index: 102 },
+  harriet: { chapterId: 5, index: 42 }
 };
 
 // Clue discovery page milestones
@@ -41,7 +44,29 @@ const CLUE_DISCOVER_PARAS = {
   wool_missing: { chapterId: 10, index: 8 },
   syringe_missing: { chapterId: 12, index: 5 },
   revolver: { chapterId: 14, index: 0 },
-  manuscript_bottle: { chapterId: 18, index: 0 }
+  manuscript_bottle: { chapterId: 18, index: 0 },
+  
+  // The Word Is Murder
+  funeral_plan: { chapterId: 1, index: 0 },
+  car_accident: { chapterId: 4, index: 0 },
+  will_draft: { chapterId: 8, index: 0 },
+  green_coat: { chapterId: 13, index: 0 },
+
+  // The Sentence is Death
+  wine_bottle: { chapterId: 1, index: 0 },
+  wall_graffiti: { chapterId: 3, index: 0 },
+  divorce_file: { chapterId: 7, index: 0 },
+  dog_leash: { chapterId: 14, index: 0 },
+
+  // A Line to Kill
+  paper_knife: { chapterId: 8, index: 0 },
+  blood_footprint: { chapterId: 9, index: 0 },
+  secret_camera: { chapterId: 16, index: 0 },
+
+  // The Twist of a Knife
+  indian_dagger: { chapterId: 5, index: 0 },
+  throsby_review: { chapterId: 5, index: 0 },
+  annabelle_letters: { chapterId: 12, index: 0 }
 };
 
 // Suspect introduction milestones (prevent showing characters before they appear in the player's read progress)
@@ -68,7 +93,19 @@ const INTRODUCED_PARAS = {
   pryce: { chapterId: 1, index: 0 },
   akira: { chapterId: 4, index: 0 },
   davina: { chapterId: 5, index: 0 },
-  gregory: { chapterId: 7, index: 0 }
+  gregory: { chapterId: 7, index: 0 },
+
+  // A Line to Kill
+  mesurier: { chapterId: 1, index: 0 },
+  helen: { chapterId: 1, index: 0 },
+  derek: { chapterId: 2, index: 0 },
+  colin: { chapterId: 3, index: 0 },
+
+  // The Twist of a Knife
+  harriet: { chapterId: 1, index: 0 },
+  yurdakul: { chapterId: 1, index: 0 },
+  olivia: { chapterId: 2, index: 0 },
+  arthur: { chapterId: 3, index: 0 }
 };
 
 function NovelWorkspace({
@@ -352,7 +389,7 @@ function NovelWorkspace({
       <div className="card-rect" style={{ marginBottom: '0px', padding: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
           <span>全案文本解密总进度（后台挂机）</span>
-          <span className="mono">{overallUnlocked} / {totalParas} 段落 ({overallPercent.toFixed(1)}%)</span>
+          <span className="mono">{overallUnlocked} / {totalPagesAll} 页 ({overallPercent.toFixed(1)}%)</span>
         </div>
         <div style={{ border: '1px solid var(--border-color)', height: '6px', background: 'var(--bg-hover)', position: 'relative' }}>
           <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${overallPercent}%`, transition: 'width 0.3s ease' }}></div>
@@ -645,7 +682,7 @@ function NovelWorkspace({
                   <button 
                     className="btn-rect color-klein"
                     onClick={() => {
-                      handleReadNextParagraph();
+                      handleReadNextPage();
                       setRevealedChars(0);
                     }}
                     style={{ fontWeight: 'bold', paddingLeft: '24px', paddingRight: '24px' }}
@@ -668,7 +705,7 @@ function NovelWorkspace({
 
           {/* Footer Controls: Chapter Transition */}
           <div>
-            {allParagraphsRead && (
+            {allPagesRead && (
               <div className="card-rect" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px' }}>
                 <div className="mono" style={{ fontSize: '13px' }}>
                   [ 本章文字解锁完毕 ]

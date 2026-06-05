@@ -295,12 +295,86 @@ const parseSentenceIsDeath = () => {
     return { chapters: chaptersData };
 };
 
+// --- BOOK 4: A Line to Kill (line_to_kill) ---
+const parseLineToKill = () => {
+    const chaptersData = [];
+    for (let i = 1; i <= 24; i++) {
+        const enPath = path.join(__dirname, 'temp_extracted', 'line_to_kill_en', 'EPUB', 'xhtml', `chapter${String(i).padStart(3, '0')}.xhtml`);
+        const zhPath = path.join(__dirname, 'temp_extracted', 'line_to_kill_zh', 'OEBPS', `${String(i + 6).padStart(3, '0')}.xhtml`);
+
+        const enHtml = fs.readFileSync(enPath, 'utf8');
+        const zhHtml = fs.readFileSync(zhPath, 'utf8');
+
+        const enParas = getParagraphs(enHtml, false);
+        const zhParas = getParagraphs(zhHtml, true);
+
+        const alignedParagraphs = [];
+        const numParas = Math.max(enParas.length, zhParas.length);
+        for (let p = 0; p < numParas; p++) {
+            alignedParagraphs.push({
+                en: enParas[p] || "",
+                zh: zhParas[p] || ""
+            });
+        }
+
+        const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+        const pages = groupIntoPages(mergedParagraphs);
+
+        chaptersData.push({
+            id: i,
+            titleEN: `Chapter ${i}`,
+            titleZH: `第${i}章`,
+            pages: pages
+        });
+    }
+    console.log(`Parsed 'A Line to Kill' (${chaptersData.length} chapters)`);
+    return { chapters: chaptersData };
+};
+
+// --- BOOK 5: The Twist of a Knife (twist_of_knife) ---
+const parseTwistOfKnife = () => {
+    const chaptersData = [];
+    for (let i = 1; i <= 26; i++) {
+        const enPath = path.join(__dirname, 'temp_extracted', 'twist_of_knife_en', 'OEBPS', 'text', `9780062938206_Chapter_${i}.xhtml`);
+        const zhPath = path.join(__dirname, 'temp_extracted', 'twist_of_knife_zh', 'text', `part${String(i + 4).padStart(4, '0')}_split_001.html`);
+
+        const enHtml = fs.readFileSync(enPath, 'utf8');
+        const zhHtml = fs.readFileSync(zhPath, 'utf8');
+
+        const enParas = getParagraphs(enHtml, false);
+        const zhParas = getParagraphs(zhHtml, true);
+
+        const alignedParagraphs = [];
+        const numParas = Math.max(enParas.length, zhParas.length);
+        for (let p = 0; p < numParas; p++) {
+            alignedParagraphs.push({
+                en: enParas[p] || "",
+                zh: zhParas[p] || ""
+            });
+        }
+
+        const mergedParagraphs = mergeShortParagraphs(alignedParagraphs);
+        const pages = groupIntoPages(mergedParagraphs);
+
+        chaptersData.push({
+            id: i,
+            titleEN: `Chapter ${i}`,
+            titleZH: `第${i}章`,
+            pages: pages
+        });
+    }
+    console.log(`Parsed 'The Twist of a Knife' (${chaptersData.length} chapters)`);
+    return { chapters: chaptersData };
+};
+
 // --- MAIN COMPILE ---
 const compileAll = () => {
     const novelData = {};
     novelData["attwn"] = parseAttwn();
     novelData["word_is_murder"] = parseWordIsMurder();
     novelData["sentence_is_death"] = parseSentenceIsDeath();
+    novelData["line_to_kill"] = parseLineToKill();
+    novelData["twist_of_knife"] = parseTwistOfKnife();
 
     const outputDir = path.join(__dirname, 'src', 'data');
     if (!fs.existsSync(outputDir)) {
@@ -308,7 +382,8 @@ const compileAll = () => {
     }
     const outputPath = path.join(outputDir, 'novel_data.json');
     fs.writeFileSync(outputPath, JSON.stringify(novelData, null, 2), 'utf8');
-    console.log(`\nSuccess! Compiled all 3 aligned books to ${outputPath}`);
+    console.log(`\nSuccess! Compiled all 5 aligned books to ${outputPath}`);
 };
 
 compileAll();
+

@@ -41,7 +41,10 @@ const DEATH_PARAS = {
   lombard: 1,
   vera: 4,
   diana: 6,
-  pryce: 1
+  pryce: 1,
+  mesurier: 0,
+  helen: 102,
+  harriet: 42
 };
 
 // Calculate the active novel's global multiplier based on deceased suspects and clue levels
@@ -273,7 +276,7 @@ function App() {
               if (currentChapterData) {
                 const assistantLevel = migratedUpgrades['assistant_journal'] || 0;
                 const prestigeSpeedup = 1 + 0.1 * (data.library || []).length;
-                const decryptionInterval = Math.max(300, (1800 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup); // Base 1800s (30m), min 300s (5m), scaled by prestige
+                const decryptionInterval = Math.max(60, (360 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup); // Base 360s (6m), min 60s (1m), scaled by prestige
                 const totalPages = currentChapterData.pages.length;
                 const remainingToUnlock = totalPages - activeState.pagesUnlocked;
                 decryptedOffline = Math.min(remainingToUnlock, Math.floor(elapsed / decryptionInterval));
@@ -418,6 +421,18 @@ function App() {
   const buyNovel = (novelId) => {
     const novel = novelsList.find(n => n.id === novelId);
     if (!novel) return;
+
+    // Series sequential unlock restrictions
+    const getPrerequisiteNovel = (bookId) => {
+      if (bookId === 'sentence_is_death') return 'word_is_murder';
+      if (bookId === 'line_to_kill') return 'sentence_is_death';
+      if (bookId === 'twist_of_knife') return 'line_to_kill';
+      return null;
+    };
+    const prereqId = getPrerequisiteNovel(novelId);
+    if (prereqId && !library.includes(prereqId)) {
+      return; // Prevent out-of-order purchase
+    }
     
     if (di >= novel.baseCost && !unlockedNovels.includes(novelId)) {
       setDi(prev => prev - novel.baseCost);
@@ -693,9 +708,9 @@ function App() {
               <p style={{ marginBottom: '12px' }}>
                 共为您积累了 <strong>+{offlineReport.earned.toLocaleString()} DI</strong> 侦查经验（在线效率的1/10）。
               </p>
-              {offlineReport.decryptedParagraphs > 0 && (
+              {offlineReport.decryptedPages > 0 && (
                 <p style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-color)' }}>
-                  助手已在后台为您搜集并解密了 <strong>{offlineReport.decryptedParagraphs}</strong> 段未读案卷文本，已存入您的案卷库中。
+                  助手已在后台为您搜集并解密了 <strong>{offlineReport.decryptedPages}</strong> 页未读案卷文本，已存入您的案卷库中。
                 </p>
               )}
             </div>
