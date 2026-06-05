@@ -48,6 +48,7 @@ function ClueWallModal({
   const [selectedNovelId, setSelectedNovelId] = useState(activeNovelId || unlockedNovels[0] || 'attwn');
   const [draggedNode, setDraggedNode] = useState(null); // { nodeId, startX, startY, nodeStartX, nodeStartY, hasMoved }
   const [selectedNode, setSelectedNode] = useState(null); // node object for popup details
+  const [boardScale, setBoardScale] = useState(1);
   
   // Track start coordinates to differentiate click from drag
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -71,6 +72,45 @@ function ClueWallModal({
       document.body.style.overflow = '';
     };
   }, [isOpen, isStandalone]);
+
+  // Proportional scaling calculator to fit board (1000x600) into wrapper width/height
+  useEffect(() => {
+    const updateScale = () => {
+      if (!boardRef.current) return;
+      const wrapperWidth = boardRef.current.clientWidth;
+      const wrapperHeight = boardRef.current.clientHeight;
+
+      const margin = 20; 
+      const targetW = Math.max(100, wrapperWidth - margin);
+      const targetH = Math.max(100, wrapperHeight - margin);
+
+      const scaleX = targetW / 1000;
+      const scaleY = targetH / 600;
+      const scale = Math.min(scaleX, scaleY);
+      
+      setBoardScale(Math.min(1, Math.max(0.15, scale)));
+    };
+
+    updateScale();
+
+    let resizeObserver = null;
+    if (boardRef.current && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        updateScale();
+      });
+      resizeObserver.observe(boardRef.current);
+    } else {
+      window.addEventListener('resize', updateScale);
+    }
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      } else {
+        window.removeEventListener('resize', updateScale);
+      }
+    };
+  }, [isOpen, selectedNovelId, selectedNode]);
 
   const currentNovelInfo = novelsList.find(n => n.id === selectedNovelId);
   const currentNovelState = (novelStates && novelStates[selectedNovelId]) || {
@@ -150,8 +190,8 @@ function ClueWallModal({
         setDraggedNode(prev => prev ? { ...prev, hasMoved: true } : null);
       }
 
-      let newX = draggedNode.nodeStartX + deltaX;
-      let newY = draggedNode.nodeStartY + deltaY;
+      let newX = draggedNode.nodeStartX + deltaX / boardScale;
+      let newY = draggedNode.nodeStartY + deltaY / boardScale;
 
       // Constrain coordinates to board boundaries (1000px by 600px)
       // Node widths range from 120px to 140px, heights from 100px to 150px
@@ -183,7 +223,7 @@ function ClueWallModal({
       window.removeEventListener('touchmove', handleMove);
       window.removeEventListener('touchend', handleEnd);
     };
-  }, [draggedNode, selectedNovelId, unlockedNodes, updateClueWallPosition]);
+  }, [draggedNode, selectedNovelId, unlockedNodes, updateClueWallPosition, boardScale]);
 
   if (!isOpen && !isStandalone) return null;
 
@@ -411,7 +451,17 @@ function ClueWallModal({
       <div className="clue-wall-body-split">
         {/* Board Outer Scrollable Wrapper */}
         <div className="clue-wall-board-wrapper" ref={boardRef}>
-          <div className="clue-wall-board">
+          <div 
+            className="clue-wall-board"
+            style={{
+              transform: `scale(${boardScale})`,
+              transformOrigin: 'center center',
+              width: '1000px',
+              height: '600px',
+              flexShrink: 0,
+              margin: 0
+            }}
+          >
             
             {/* SVG Connection Layer */}
             <svg className="clue-wall-svg-layer">

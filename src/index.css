@@ -1267,9 +1267,11 @@ button.btn-rect.active {
 
 .clue-wall-board-wrapper {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
   background-color: var(--bg-color);
-  display: block; /* Allows natural scrolling if board exceeds viewport */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   padding: 16px;
 }
