@@ -9,10 +9,12 @@ import ClueWallModal from './components/ClueWallModal';
 
 // Detect Tauri desktop environment
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
-// Tauri invoke is only available at runtime inside the desktop app
+// Tauri invoke and listen are only available at runtime inside the desktop app
 let tauriInvoke = null;
+let tauriListen = null;
 if (isTauri) {
   import('@tauri-apps/api/core').then(m => { tauriInvoke = m.invoke; });
+  import('@tauri-apps/api/event').then(m => { tauriListen = m.listen; });
 }
 
 // Chapter Unlock Costs
@@ -179,9 +181,14 @@ function App() {
   const [updateStatus, setUpdateStatus] = useState(null); // null | 'checking' | {hasUpdate, version, body} | {error}
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [downloadPercent, setDownloadPercent] = useState(0);
 
   const checkForUpdate = async () => {
-    if (!isTauri || !tauriInvoke) return;
+    if (!isTauri || !tauriInvoke) {
+      setUpdateStatus({ error: "未检测到桌面端环境或接口未就绪。" });
+      setShowUpdateModal(true);
+      return;
+    }
     setUpdateStatus('checking');
     setShowUpdateModal(true);
     try {
@@ -196,11 +203,26 @@ function App() {
   const doInstallUpdate = async () => {
     if (!isTauri || !tauriInvoke) return;
     setIsInstalling(true);
+    setDownloadPercent(0);
+    
+    let unlisten = null;
     try {
+      if (tauriListen) {
+        unlisten = await tauriListen('update-progress', (event) => {
+          const payload = event.payload;
+          if (payload && typeof payload.percent === 'number') {
+            setDownloadPercent(payload.percent);
+          }
+        });
+      }
       await tauriInvoke('install_update');
     } catch (e) {
       setUpdateStatus({ error: String(e) });
       setIsInstalling(false);
+    } finally {
+      if (unlisten) {
+        unlisten();
+      }
     }
   };
 
@@ -263,17 +285,7 @@ function App() {
     });
   };
 
-  const openClueWallWindow = () => {
-    const width = 1040;
-    const height = 700;
-    const left = (window.screen.width - width) / 2;
-    const top = (window.screen.height - height) / 2;
-    window.open(
-      window.location.origin + window.location.pathname + '?view=cluewall',
-      'ClueWallWindow',
-      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=no`
-    );
-  };
+
   
   // Cache diRate to avoid running calculation on every tick
   const [diRate, setDiRate] = useState(0.005); // Starts with 0.005 base rate
@@ -757,9 +769,7 @@ function App() {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button className="btn-rect" onClick={openClueWallWindow}>
-            📌 案卷线索墙
-          </button>
+
           {isTauri && (
             <button className="btn-rect" onClick={checkForUpdate}>
               检查更新
@@ -839,6 +849,7 @@ function App() {
             upgrades={upgrades}
             library={library}
             setAccusedSuspect={setAccusedSuspect}
+            onOpenClueWall={() => setIsClueWallOpen(true)}
           />
         )}
         {currentView === 'library' && (
@@ -900,8 +911,16 @@ function App() {
                 </p>
               )}
               {updateStatus && updateStatus !== 'checking' && updateStatus.error && (
-                <p style={{ color: 'var(--palette-red)', fontSize: '12px' }}>
-                  检查失败：{updateStatus.error}
+                <p style={{ color: 'var(--palette-red)', fontSize: '12px', lineHeight: 1.4 }}>
+                  检查失败：{
+                    (() => {
+                      const err = updateStatus.error.toLowerCase();
+                      if (err.includes('connect') || err.includes('timeout') || err.includes('dns') || err.includes('network') || err.includes('host') || err.includes('reqwest')) {
+                        return `网络连接失败，无法连接 GitHub。请检查互联网连接或代理设置。(${updateStatus.error})`;
+                      }
+                      return updateStatus.error;
+                    })()
+                  }
                 </p>
               )}
               {updateStatus && updateStatus !== 'checking' && !updateStatus.error && !updateStatus.hasUpdate && (
@@ -925,8 +944,19 @@ function App() {
                     onClick={doInstallUpdate}
                     disabled={isInstalling}
                   >
-                    {isInstalling ? '正在下载并安装…' : '立即更新并重启'}
+                    {isInstalling ? '正在进行静默升级…' : '立即更新并重启'}
                   </button>
+                  {isInstalling && (
+                    <div style={{ marginTop: '14px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px' }}>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>正在下载并解压更新文件…</span>
+                        <span className="mono" style={{ fontWeight: 'bold' }}>{downloadPercent}%</span>
+                      </p>
+                      <div style={{ border: '1px solid var(--border-color)', height: '8px', background: 'var(--bg-hover)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ background: 'var(--color-success)', height: '100%', width: `${downloadPercent}%`, transition: 'width 0.1s ease' }}></div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -938,6 +968,16 @@ function App() {
           </div>
         </div>
       )}
+      {/* Interactive Clue Wall Modal (Overlay inside the main app) */}
+      <ClueWallModal
+        isOpen={isClueWallOpen}
+        onClose={() => setIsClueWallOpen(false)}
+        novelStates={novelStates}
+        unlockedNovels={unlockedNovels}
+        activeNovelId={activeNovelId}
+        clueWallPositions={clueWallPositions}
+        updateClueWallPosition={updateClueWallPosition}
+      />
     </div>
 
   );

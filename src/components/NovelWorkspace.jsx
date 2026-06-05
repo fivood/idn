@@ -108,7 +108,8 @@ function NovelWorkspace({
   CHAPTER_COSTS,
   upgrades,
   library = [],
-  setAccusedSuspect
+  setAccusedSuspect,
+  onOpenClueWall
 }) {
   if (!novelState) {
     return <div className="card-rect">正在加载案卷数据...</div>;
@@ -574,7 +575,14 @@ function NovelWorkspace({
               <h2 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>
                 《{currentNovelInfo.titleZH}》 - {currentChapterData.titleZH} / {currentChapterData.titleEN}
               </h2>
-              <div className="reader-settings">
+              <div className="reader-settings" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                  className="btn-rect color-klein"
+                  onClick={onOpenClueWall}
+                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                >
+                  📌 案卷线索墙
+                </button>
                 <button 
                   className={`btn-rect ${langMode === 'zh' ? 'active' : ''}`}
                   onClick={() => setLangMode('zh')}

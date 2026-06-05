@@ -1,4 +1,5 @@
 use tauri::Manager;
+use tauri::Emitter;
 use tauri_plugin_updater::UpdaterExt;
 
 /// Check for a new version on GitHub Releases.
@@ -33,8 +34,29 @@ async fn install_update(app: tauri::AppHandle) -> String {
     match app.updater() {
         Ok(updater) => match updater.check().await {
             Ok(Some(update)) => {
+                let app_handle = app.clone();
+                let mut downloaded = 0;
                 let _ = update
-                    .download_and_install(|_, _| {}, || {})
+                    .download_and_install(
+                        move |chunk_length, content_length| {
+                            downloaded += chunk_length as u64;
+                            let total = content_length.unwrap_or(0);
+                            let percent = if total > 0 {
+                                (downloaded as f64 / total as f64 * 100.0) as u32
+                            } else {
+                                0
+                            };
+                            let _ = app_handle.emit(
+                                "update-progress",
+                                serde_json::json!({
+                                    "downloaded": downloaded,
+                                    "total": total,
+                                    "percent": percent
+                                }),
+                            );
+                        },
+                        || {},
+                    )
                     .await;
                 app.restart();
             }
