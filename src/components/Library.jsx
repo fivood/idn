@@ -406,7 +406,7 @@ function Library({
         {/* Right Column: Book Inspector (35%) */}
         <div className="book-inspector-card card-rect">
           {selectedBook ? (
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
               <div>
                 {/* Header colored with the series color */}
                 <div 
@@ -426,7 +426,7 @@ function Library({
                   {selectedBook.titleEN}
                 </div>
 
-                <div style={{ fontSize: '11px', marginBottom: '16px', borderBottom: '1px dashed var(--border-color)', paddingBottom: '10px' }}>
+                <div style={{ fontSize: '11px', marginBottom: '12px', borderBottom: '1px dashed var(--border-color)', paddingBottom: '10px' }}>
                   <p style={{ margin: '4px 0' }}><strong>著者:</strong> {selectedBook.authorZH} ({selectedBook.authorEN})</p>
                   <p style={{ margin: '4px 0' }}><strong>侦探:</strong> {selectedBook.detectiveZH || '经典悬疑'}</p>
                   <p style={{ margin: '4px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -443,15 +443,18 @@ function Library({
                   {/* Progress info if unlocked and in progress */}
                   {renderInspectorProgress()}
                 </div>
-
-                <h4 style={{ fontSize: '11px', marginBottom: '6px', color: 'var(--text-main)' }}>案情梗概:</h4>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5', maxHeight: '180px', overflowY: 'auto' }}>
-                  {selectedBook.descriptionZH}
-                </p>
               </div>
 
-              <div style={{ marginTop: '20px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+              {/* Action Buttons are placed here for instant accessibility */}
+              <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '4px' }}>
                 {renderInspectorActions()}
+              </div>
+
+              <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <h4 style={{ fontSize: '11px', marginBottom: '6px', color: 'var(--text-main)' }}>案情梗概:</h4>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5', overflowY: 'auto', flex: 1, maxHeight: '200px' }}>
+                  {selectedBook.descriptionZH}
+                </p>
               </div>
             </div>
           ) : (
