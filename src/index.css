@@ -150,12 +150,7 @@ code, pre, .mono {
   flex-direction: column;
   background-color: var(--bg-color);
   width: 100vw;
-  height: calc(100vw * 9 / 16);
-  max-height: 100vh;
-  max-width: calc(100vh * 16 / 9);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  height: 100vh;
   position: relative;
   overflow: hidden;
 }
