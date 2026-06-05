@@ -543,53 +543,6 @@ function NovelWorkspace({
               )}
             </div>
           )}
-
-          {/* Case File Statistics Panel */}
-          <div className="card-rect" style={{ fontSize: '12px', marginTop: 'auto', marginBottom: '0px' }}>
-            <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
-              案情侦破进度统计
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                  <span>遇害者人数</span>
-                  <span className="mono">{deceasedCount} / {totalSuspects}</span>
-                </div>
-                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--crimson-red)', height: '100%', width: `${(deceasedCount / totalSuspects) * 100}%` }}></div>
-                </div>
-              </div>
-              {novelId === 'attwn' && (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                    <span>玩偶全局倍率</span>
-                    <span className="mono" style={{ color: 'var(--palette-red)', fontWeight: 'bold' }}>+{deceasedCount * 30}%</span>
-                  </div>
-                  <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                    <div style={{ background: 'var(--palette-red)', height: '100%', width: `${(deceasedCount / 10) * 100}%` }}></div>
-                  </div>
-                </div>
-              )}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                  <span>收集物证数</span>
-                  <span className="mono">{unlockedCluesCount} / {totalClues}</span>
-                </div>
-                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${totalClues > 0 ? (unlockedCluesCount / totalClues) * 100 : 0}%` }}></div>
-                </div>
-              </div>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                  <span>全案解锁进度</span>
-                  <span className="mono">{currentChapterId} / {currentNovelInfo.totalChapters} 章节</span>
-                </div>
-                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--color-success)', height: '100%', width: `${(currentChapterId / currentNovelInfo.totalChapters) * 100}%` }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Center Column: Paragraphs Reader, Timer, Milestone Actions, and Quiz */}
@@ -900,6 +853,53 @@ function NovelWorkspace({
         {/* Right Column: Case Memo */}
         <div className="workspace-right">
           {renderWorkspaceMemo()}
+
+          {/* Case File Statistics Panel */}
+          <div className="card-rect" style={{ fontSize: '12px', marginTop: 'auto', marginBottom: '0px' }}>
+            <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+              案情侦破进度统计
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                  <span>遇害者人数</span>
+                  <span className="mono">{deceasedCount} / {totalSuspects}</span>
+                </div>
+                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
+                  <div style={{ background: 'var(--crimson-red)', height: '100%', width: `${(deceasedCount / totalSuspects) * 100}%` }}></div>
+                </div>
+              </div>
+              {novelId === 'attwn' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                    <span>玩偶全局倍率</span>
+                    <span className="mono" style={{ color: 'var(--palette-red)', fontWeight: 'bold' }}>+{deceasedCount * 30}%</span>
+                  </div>
+                  <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
+                    <div style={{ background: 'var(--palette-red)', height: '100%', width: `${(deceasedCount / 10) * 100}%` }}></div>
+                  </div>
+                </div>
+              )}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                  <span>收集物证数</span>
+                  <span className="mono">{unlockedCluesCount} / {totalClues}</span>
+                </div>
+                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
+                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${totalClues > 0 ? (unlockedCluesCount / totalClues) * 100 : 0}%` }}></div>
+                </div>
+              </div>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                  <span>全案解锁进度</span>
+                  <span className="mono">{currentChapterId} / {currentNovelInfo.totalChapters} 章节</span>
+                </div>
+                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
+                  <div style={{ background: 'var(--color-success)', height: '100%', width: `${(currentChapterId / currentNovelInfo.totalChapters) * 100}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
