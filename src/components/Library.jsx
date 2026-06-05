@@ -19,9 +19,9 @@ function Library({ library = [], handleReadBook }) {
   // Helper to determine book spine color based on series/detective
   const getSpineColor = (book) => {
     if (book.id === 'attwn') {
-      return '#B54745'; // Muted Red (Agatha Christie series)
+      return 'var(--palette-red)'; // Muted Red (Agatha Christie series)
     }
-    return '#4C6665'; // Spruce (Daniel Hawthorne series)
+    return 'var(--palette-spruce)'; // Spruce (Daniel Hawthorne series)
   };
 
   return (
