@@ -163,7 +163,8 @@ function App() {
       pagesRead: 0,
       clueLevels: {}, // clueId -> level
       finished: false,
-      timeElapsed: 0
+      timeElapsed: 0,
+      accusedSuspectId: null
     }
   });
   const [visualProgress, setVisualProgress] = useState(0);
@@ -447,7 +448,8 @@ function App() {
           pagesRead: 0,
           clueLevels: {},
           finished: false,
-          timeElapsed: 0
+          timeElapsed: 0,
+          accusedSuspectId: null
         }
       }));
     }
@@ -547,8 +549,36 @@ function App() {
     }
   };
 
+  // Set Accused Suspect for a novel
+  const setAccusedSuspect = (novelId, suspectId) => {
+    setNovelStates(prev => {
+      const bookState = prev[novelId];
+      if (!bookState) return prev;
+      return {
+        ...prev,
+        [novelId]: {
+          ...bookState,
+          accusedSuspectId: suspectId
+        }
+      };
+    });
+  };
+
   // Final Solver - Completed Case
   const finishNovel = (novelId) => {
+    if (novelId === 'attwn') {
+      const activeState = novelStates['attwn'];
+      if (activeState && activeState.accusedSuspectId === 'wargrave') {
+        setDi(prev => prev + 250000);
+        alert("【指控成功】您成功识破了劳伦斯·瓦格雷夫法官的伪死与完美谋杀计划！获得额外 250,000 DI 推理奖励！");
+      } else {
+        const accusedName = activeState?.accusedSuspectId 
+          ? novelsList.find(n => n.id === 'attwn')?.suspects.find(s => s.id === activeState.accusedSuspectId)?.nameZH 
+          : "无";
+        alert(`【指控失败/未指控】案件已告破，您指控的真凶是：${accusedName}。真正的幕后黑手其实是劳伦斯·瓦格雷夫法官！`);
+      }
+    }
+
     setNovelStates(prev => ({
       ...prev,
       [novelId]: {
@@ -680,6 +710,7 @@ function App() {
             CHAPTER_COSTS={CHAPTER_COSTS}
             upgrades={upgrades}
             library={library}
+            setAccusedSuspect={setAccusedSuspect}
           />
         )}
         {currentView === 'library' && (

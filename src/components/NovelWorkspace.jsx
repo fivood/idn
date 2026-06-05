@@ -119,7 +119,8 @@ function NovelWorkspace({
   finishNovel,
   CHAPTER_COSTS,
   upgrades,
-  library = []
+  library = [],
+  setAccusedSuspect
 }) {
   const currentNovelInfo = novelsList.find(n => n.id === novelId);
   const currentChapterId = novelState.currentChapterId;
@@ -432,13 +433,17 @@ function NovelWorkspace({
             </h4>
             {suspects.filter(s => isSuspectIntroduced(s)).map(s => {
               const deceased = isSuspectDeceased(s);
+              const isAccused = novelState.accusedSuspectId === s.id;
               
               let cardClass = "suspect-card";
               if (deceased) cardClass += " deceased";
+              if (isAccused) cardClass += " accused";
               
               let style = {};
               if (deceased) {
                 style = { borderColor: 'var(--crimson-red)' };
+              } else if (isAccused) {
+                style = { borderColor: 'var(--border-highlight)', boxShadow: '0 0 5px var(--border-highlight)' };
               }
 
               return (
@@ -452,6 +457,19 @@ function NovelWorkspace({
                   <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{s.titleZH}</div>
                   {deceased && (
                     <div className="deceased-stamp">遇害</div>
+                  )}
+                  {isAccused && (
+                    <div className="accused-stamp" style={{
+                      position: 'absolute',
+                      top: '2px',
+                      right: '4px',
+                      fontSize: '8px',
+                      backgroundColor: 'var(--klein-blue)',
+                      color: '#fff',
+                      padding: '1px 3px',
+                      borderRadius: '2px',
+                      transform: 'scale(0.85)'
+                    }}>主脑</div>
                   )}
                 </div>
               );
@@ -476,6 +494,29 @@ function NovelWorkspace({
               <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--crimson-red)', color: isSuspectDeceased(selectedSuspect) ? 'var(--crimson-red)' : 'var(--text-muted)' }}>
                 <strong>死亡状况:</strong> {isSuspectDeceased(selectedSuspect) ? selectedSuspect.deathMethodZH : '[生存 / 案情调查中]'}
               </div>
+              
+              {/* Accusation gameplay for And Then There Were None */}
+              {novelId === 'attwn' && !novelState.finished && (
+                <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>真凶指控状态:</span>
+                    {novelState.accusedSuspectId === selectedSuspect.id ? (
+                      <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>【已指定为幕后主脑】</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>未指定</span>
+                    )}
+                  </div>
+                  {novelState.accusedSuspectId !== selectedSuspect.id && (
+                    <button 
+                      className="btn-rect color-klein"
+                      style={{ fontSize: '11px', padding: '6px 12px', width: '100%' }}
+                      onClick={() => setAccusedSuspect(novelId, selectedSuspect.id)}
+                    >
+                      指控该嫌疑人为幕后真凶
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
