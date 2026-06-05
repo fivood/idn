@@ -3,15 +3,15 @@ import { novelsList } from '../data/game_data';
 
 // Local copy of death milestones page lookup to avoid circular dependencies
 const DEATH_PARAS = {
-  marston: 13,
+  marston: 12,
   rogers_mrs: 2,
-  macarthur: 9,
-  rogers_mr: 3,
-  brent: 5,
-  wargrave: 13,
-  blore: 8,
+  macarthur: 20,
+  rogers_mr: 5,
+  brent: 7,
+  wargrave: 14,
+  blore: 9,
   armstrong: 11,
-  lombard: 1,
+  lombard: 2,
   vera: 4,
   diana: 6,
   pryce: 1,
@@ -19,6 +19,19 @@ const DEATH_PARAS = {
   helen: 102,
   harriet: 42
 };
+
+const RHYME_LINES = [
+  { textZH: "十个小兵去吃饭，一个噎死剩九个。", suspectId: "marston" },
+  { textZH: "九个小兵睡得迟，一个一觉睡不醒剩八个。", suspectId: "rogers_mrs" },
+  { textZH: "八个小兵去德文，一个不走剩七个。", suspectId: "macarthur" },
+  { textZH: "七个小兵劈木头，一个砍作两半剩六个。", suspectId: "rogers_mr" },
+  { textZH: "六个小兵玩蜂房，一个被蜇剩五个。", suspectId: "brent" },
+  { textZH: "五个小兵看法网，一个法官断案剩四个。", suspectId: "wargrave" },
+  { textZH: "四个小兵去航海，红鲱鱼吞掉一个剩三个。", suspectId: "armstrong" },
+  { textZH: "三个小兵逛动物园，大熊抱死一个剩两个。", suspectId: "blore" },
+  { textZH: "两个小兵晒太阳，一个烤焦剩一个。", suspectId: "lombard" },
+  { textZH: "一个小兵孤伶伶，悬梁自尽一个不剩。", suspectId: "vera" }
+];
 
 function ClueWallModal({
   isOpen,
@@ -233,6 +246,24 @@ function ClueWallModal({
       <div className="clue-wall-board-wrapper" ref={boardRef}>
         <div className="clue-wall-board">
           
+          {selectedNovelId === 'attwn' && (
+            <div className="corkboard-rhyme-sheet">
+              <h4 className="rhyme-sheet-title">十个小士兵童谣</h4>
+              <div className="rhyme-sheet-lines">
+                {RHYME_LINES.map((line, idx) => {
+                  const suspectStatus = getSuspectStatus("attwn_" + line.suspectId);
+                  const isCrossed = suspectStatus ? suspectStatus.isDeceased : false;
+                  return (
+                    <div key={idx} className={`rhyme-sheet-line ${isCrossed ? 'crossed' : ''}`}>
+                      <span className="rhyme-sheet-num">{idx + 1}.</span>
+                      <span className="rhyme-sheet-text">{line.textZH}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
           {/* SVG Connection Layer */}
           <svg className="clue-wall-svg-layer">
             <defs>
@@ -259,15 +290,15 @@ function ClueWallModal({
                     y1={start.y}
                     x2={end.x}
                     y2={end.y}
-                    stroke="#bf3030"
+                    stroke="var(--palette-red)"
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     filter="url(#yarn-shadow)"
                     className="yarn-line"
                   />
                   {/* Pushpins at connection points */}
-                  <circle cx={start.x} cy={start.y} r="5.5" fill="#e03030" stroke="#8a1111" strokeWidth="1" />
-                  <circle cx={end.x} cy={end.y} r="5.5" fill="#e03030" stroke="#8a1111" strokeWidth="1" />
+                  <circle cx={start.x} cy={start.y} r="5.5" className="yarn-pin" />
+                  <circle cx={end.x} cy={end.y} r="5.5" className="yarn-pin" />
                 </g>
               );
             })}
@@ -437,11 +468,11 @@ function ClueWallModal({
 
                     {isDeceased && suspect.deathMethodZH && (
                       <>
-                        <div className="clue-detail-divider" style={{ borderTop: '1px solid #c24646' }} />
+                        <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
                         <div className="clue-detail-section deceased-section">
-                          <h6 className="clue-detail-sec-title" style={{ color: '#b22222' }}>遇害实录 / Death Circumstance</h6>
-                          <p style={{ fontSize: '13px', color: '#b22222', fontWeight: '500', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.deathMethodZH}</p>
-                          <p style={{ fontSize: '11px', color: '#c24646', fontStyle: 'italic', lineHeight: 1.3 }}>{suspect.deathMethodEN}</p>
+                          <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)' }}>遇害实录 / Death Circumstance</h6>
+                          <p style={{ fontSize: '13px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.deathMethodZH}</p>
+                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3 }}>{suspect.deathMethodEN}</p>
                         </div>
                       </>
                     )}

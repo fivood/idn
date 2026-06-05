@@ -1239,7 +1239,7 @@ button.btn-rect.active {
 .clue-wall-board-wrapper {
   flex: 1;
   overflow: auto;
-  background-color: #2b1f1a;
+  background-color: var(--bg-color);
   display: block; /* Allows natural scrolling if board exceeds viewport */
   position: relative;
   padding: 16px;
@@ -1248,15 +1248,15 @@ button.btn-rect.active {
 .clue-wall-board {
   width: 1000px;
   height: 600px;
-  background-color: #cda276;
-  /* Corkboard textured grid */
+  background-color: var(--bg-panel);
+  /* Corkboard textured grid using theme border color */
   background-image: 
-    radial-gradient(rgba(0, 0, 0, 0.08) 12%, transparent 13%), 
-    radial-gradient(rgba(0, 0, 0, 0.08) 12%, transparent 13%);
+    radial-gradient(var(--border-color) 10%, transparent 11%), 
+    radial-gradient(var(--border-color) 10%, transparent 11%);
   background-size: 14px 14px;
   background-position: 0 0, 7px 7px;
-  border: 14px solid #5a3d31; /* Wooden framing */
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+  border: 10px solid var(--border-highlight);
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
   margin: 0 auto;
@@ -1273,6 +1273,7 @@ button.btn-rect.active {
 }
 
 .yarn-line {
+  stroke: var(--palette-red) !important;
   animation: yarnPulse 3s infinite ease-in-out;
 }
 
@@ -1280,6 +1281,13 @@ button.btn-rect.active {
   0% { opacity: 0.85; stroke-width: 3.5px; }
   50% { opacity: 1; stroke-width: 4.2px; }
   100% { opacity: 0.85; stroke-width: 3.5px; }
+}
+
+.yarn-pin {
+  fill: var(--palette-red);
+  stroke: var(--bg-panel);
+  stroke-width: 1.2px;
+  transition: fill 0.2s ease, stroke 0.2s ease;
 }
 
 /* ----------------------------------------------------
@@ -1299,7 +1307,7 @@ button.btn-rect.active {
 }
 
 .clue-card.dragging {
-  box-shadow: 6px 12px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 6px 12px 20px rgba(0, 0, 0, 0.4);
   z-index: 10;
 }
 
@@ -1307,10 +1315,10 @@ button.btn-rect.active {
 .polaroid-node {
   width: 130px;
   height: 150px;
-  background-color: #f7f5ef;
-  border: 1px solid #dfdcd3;
+  background-color: var(--bg-viewer);
+  border: 1px solid var(--border-color);
   padding: 8px 8px 12px 8px;
-  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
   transform: rotate(0.5deg);
   border-radius: 2px;
 }
@@ -1323,8 +1331,8 @@ button.btn-rect.active {
 
 .polaroid-photo {
   flex: 1;
-  background-color: #ece9df;
-  border: 1px solid #d8d4c9;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -1335,7 +1343,7 @@ button.btn-rect.active {
 .polaroid-avatar-svg {
   width: 75%;
   height: 75%;
-  opacity: 0.35;
+  opacity: 0.25;
 }
 
 .deceased-stamp-badge {
@@ -1343,13 +1351,13 @@ button.btn-rect.active {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate(-12deg);
-  border: 2px dashed #b22222;
-  color: #b22222;
+  border: 2px dashed var(--palette-red);
+  color: var(--palette-red);
   font-weight: 900;
   font-size: 10px;
   letter-spacing: 0.5px;
   padding: 3px 5px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--bg-viewer);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   border-radius: 2px;
   z-index: 2;
@@ -1360,10 +1368,10 @@ button.btn-rect.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Georgia", serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: bold;
-  color: #2b2926;
+  color: var(--text-main);
   text-align: center;
   margin-top: 6px;
   white-space: nowrap;
@@ -1375,14 +1383,15 @@ button.btn-rect.active {
 .postit-node {
   width: 120px;
   height: 100px;
-  background-color: #fffbbf; /* pale yellow sticky */
-  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--palette-gold);
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.12);
   padding: 8px;
   border-radius: 1px;
   transform: rotate(-1deg);
 }
 
-/* Semitransparent tape on top */
 .postit-tape {
   position: absolute;
   top: -8px;
@@ -1390,9 +1399,9 @@ button.btn-rect.active {
   transform: translateX(-50%) rotate(2deg);
   width: 45px;
   height: 16px;
-  background-color: rgba(244, 241, 222, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 1px 1px rgba(0,0,0,0.03);
+  background-color: var(--border-color);
+  opacity: 0.45;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.02);
 }
 
 .postit-content {
@@ -1412,7 +1421,7 @@ button.btn-rect.active {
 .postit-title {
   font-size: 11px;
   font-weight: bold;
-  color: #434033;
+  color: var(--text-main);
   margin-top: 2px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1422,7 +1431,7 @@ button.btn-rect.active {
 
 .postit-subtitle {
   font-size: 8px;
-  color: #928f73;
+  color: var(--text-muted);
   letter-spacing: 0.5px;
   margin-top: 4px;
   font-weight: bold;
@@ -1432,10 +1441,11 @@ button.btn-rect.active {
 .clipping-node {
   width: 140px;
   height: 110px;
-  background-color: #ebe0ce; /* aged cream paper */
-  border: 1px solid #d2c5b3;
+  background-color: var(--bg-viewer);
+  border: 1px solid var(--border-color);
+  border-top: 3.5px solid var(--palette-spruce);
   padding: 6px 8px;
-  box-shadow: 3px 4px 7px rgba(0, 0, 0, 0.25);
+  box-shadow: 3px 4px 7px rgba(0, 0, 0, 0.15);
   transform: rotate(1.5deg);
 }
 
@@ -1443,17 +1453,16 @@ button.btn-rect.active {
   height: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid #decdaf;
-  padding: 4px;
+  padding: 4px 0;
 }
 
 .clipping-header {
   font-size: 8px;
   font-weight: 900;
-  font-family: "Georgia", serif;
+  font-family: var(--font-mono);
   text-align: center;
-  color: #3b352e;
-  border-bottom: 1px double #3b352e;
+  color: var(--palette-spruce);
+  border-bottom: 1px double var(--border-color);
   padding-bottom: 2px;
   margin-bottom: 4px;
   letter-spacing: 0.5px;
@@ -1468,8 +1477,8 @@ button.btn-rect.active {
 .clipping-title {
   font-size: 10px;
   font-weight: bold;
-  font-family: "Georgia", serif;
-  color: #221d19;
+  font-family: var(--font-sans);
+  color: var(--text-main);
   line-height: 1.1;
   margin-bottom: 3px;
   display: -webkit-box;
@@ -1480,8 +1489,8 @@ button.btn-rect.active {
 
 .clipping-body-teaser {
   font-size: 8px;
-  color: #655d56;
-  font-family: "Georgia", serif;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
   line-height: 1.1;
   overflow: hidden;
   text-align: justify;
@@ -1494,16 +1503,17 @@ button.btn-rect.active {
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  color: #4a3424;
-  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  background-color: var(--bg-color);
   padding: 24px;
   border-radius: 4px;
-  border: 1px dashed rgba(74, 52, 36, 0.3);
+  border: 1px dashed var(--border-color);
 }
 
 .clue-wall-empty-state h4 {
   margin: 0 0 8px 0;
   font-size: 15px;
+  color: var(--text-main);
 }
 
 /* ----------------------------------------------------
@@ -1527,9 +1537,9 @@ button.btn-rect.active {
 .clue-detail-panel {
   width: 420px;
   max-width: 90%;
-  background-color: #f6efe6; /* Folder manila paper color */
-  border: 3px solid #cfc2b3;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+  background-color: var(--bg-panel);
+  border: 1.5px solid var(--border-highlight);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   padding: 16px 20px;
   position: relative;
   border-radius: 1px;
@@ -1539,15 +1549,15 @@ button.btn-rect.active {
   position: absolute;
   top: -24px;
   left: 10px;
-  background-color: #f6efe6;
-  border: 3px solid #cfc2b3;
+  background-color: var(--bg-panel);
+  border: 1.5px solid var(--border-highlight);
   border-bottom: none;
   border-radius: 3px 3px 0 0;
   padding: 1px 8px;
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: bold;
-  color: #7d6b5e;
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
@@ -1561,8 +1571,8 @@ button.btn-rect.active {
 .clue-detail-type-tag {
   font-size: 8px;
   padding: 2px 6px;
-  background-color: #7d6b5e;
-  color: #ffffff;
+  background-color: var(--border-highlight);
+  color: var(--bg-viewer);
   border-radius: 1px;
   font-weight: bold;
   font-family: var(--font-mono);
@@ -1573,14 +1583,14 @@ button.btn-rect.active {
 .clue-detail-title-zh {
   font-size: 16px;
   font-weight: bold;
-  color: #3b2c22;
+  color: var(--text-main);
   margin: 2px 0;
 }
 
 .clue-detail-title-en {
   font-size: 11px;
   font-style: italic;
-  color: #7d6b5e;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -1589,7 +1599,7 @@ button.btn-rect.active {
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: #7d6b5e;
+  color: var(--text-muted);
   line-height: 1;
 }
 
@@ -1607,21 +1617,21 @@ button.btn-rect.active {
 .clue-detail-sec-title {
   font-size: 10px;
   font-weight: bold;
-  color: #7d6b5e;
+  color: var(--border-highlight);
   margin: 0 0 4px 0;
   text-transform: uppercase;
-  border-bottom: 1px dashed #dfd4c8;
+  border-bottom: 1px dashed var(--border-color);
   padding-bottom: 2px;
 }
 
 .clue-detail-divider {
-  border-top: 1px solid #dfd4c8;
+  border-top: 1px solid var(--border-color);
   margin: 10px 0;
 }
 
 .deceased-section {
-  background-color: rgba(178, 34, 34, 0.05);
-  border: 1px dashed rgba(178, 34, 34, 0.25);
+  background-color: rgba(181, 71, 69, 0.08);
+  border: 1px dashed var(--palette-red);
   padding: 8px;
   border-radius: 2px;
 }
@@ -1630,6 +1640,71 @@ button.btn-rect.active {
   display: flex;
   justify-content: flex-end;
   margin-top: 12px;
-  border-top: 1px solid #dfd4c8;
+  border-top: 1px solid var(--border-color);
   padding-top: 10px;
+}
+
+/* ----------------------------------------------------
+   Nursery Rhyme Prophecy Sheet Styling
+   ---------------------------------------------------- */
+
+.corkboard-rhyme-sheet {
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  width: 250px;
+  height: 570px;
+  background-color: var(--bg-viewer);
+  border: 1px solid var(--border-color);
+  border-top: 4px solid var(--palette-red);
+  padding: 12px;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-sans);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+}
+
+.rhyme-sheet-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.rhyme-sheet-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.rhyme-sheet-line {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-main);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease;
+}
+
+.rhyme-sheet-line.crossed {
+  opacity: 0.35;
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.rhyme-sheet-num {
+  font-weight: bold;
+  opacity: 0.8;
+}
+
+.rhyme-sheet-text {
+  word-break: break-all;
 }

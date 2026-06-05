@@ -2,19 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { novelsList } from '../data/game_data';
 import novelData from '../data/novel_data.json';
 
-// Rhyme text database
-const RHYME_LINES = [
-  { textZH: "十个小兵去吃饭，一个噎死剩九个。", deathChapter: 2 },
-  { textZH: "九个小兵睡得迟，一个一觉睡不醒剩八个。", deathChapter: 6 },
-  { textZH: "八个小兵去德文，一个不走剩七个。", deathChapter: 8 },
-  { textZH: "七个小兵劈木头，一个砍作两半剩六个。", deathChapter: 11 },
-  { textZH: "六个小兵玩蜂房，一个被蜇剩五个。", deathChapter: 12 },
-  { textZH: "五个小兵看法网，一个法官断案剩四个。", deathChapter: 13 },
-  { textZH: "四个小兵去航海，红鲱鱼吞掉一个剩三个。", deathChapter: 15 },
-  { textZH: "三个小兵逛动物园，大熊抱死一个剩两个。", deathChapter: 15 },
-  { textZH: "两个小兵晒太阳，一个烤焦剩一个。", deathChapter: 16 },
-  { textZH: "一个小兵孤伶伶，悬梁自尽一个不剩。", deathChapter: 16 }
-];
+
 
 // Death milestones page lookup for suspects
 const DEATH_PARAS = {
@@ -862,24 +850,7 @@ function NovelWorkspace({
             </div>
           </div>
 
-          {/* Rhyme Lyrics Panel (Only for And Then There Were None) */}
-          {novelId === 'attwn' && (
-            <div className="card-rect" style={{ fontSize: '12px', marginBottom: '0px' }}>
-              <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
-                童谣谋杀预言
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
-                {RHYME_LINES.map((line, idx) => {
-                  const isCrossed = currentChapterId > line.deathChapter;
-                  return (
-                    <div key={idx} className={`rhyme-line ${isCrossed ? 'fulfilled' : ''}`}>
-                      {idx + 1}. {line.textZH}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+
         </div>
 
       </div>
