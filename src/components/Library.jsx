@@ -39,6 +39,13 @@ function Library({
     return 'var(--palette-spruce)'; // Spruce (Daniel Hawthorne series)
   };
 
+  const getPrerequisiteNovel = (bookId) => {
+    if (bookId === 'sentence_is_death') return 'word_is_murder';
+    if (bookId === 'line_to_kill') return 'sentence_is_death';
+    if (bookId === 'twist_of_knife') return 'line_to_kill';
+    return null;
+  };
+
   const getBookTotalPages = (bookId) => {
     const bookChapters = novelData[bookId]?.chapters || [];
     return bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
@@ -198,12 +205,6 @@ function Library({
     }
 
     // Locked case
-    const getPrerequisiteNovel = (bookId) => {
-      if (bookId === 'sentence_is_death') return 'word_is_murder';
-      if (bookId === 'line_to_kill') return 'sentence_is_death';
-      if (bookId === 'twist_of_knife') return 'line_to_kill';
-      return null;
-    };
     const prereqId = getPrerequisiteNovel(selectedBook.id);
     const prereqNovel = prereqId ? novelsList.find(x => x.id === prereqId) : null;
     const isPrereqMet = prereqId ? library.includes(prereqId) : true;
@@ -305,11 +306,13 @@ function Library({
                         const isSelected = selectedBook && selectedBook.id === book.id;
                         const isActive = activeNovelId === book.id;
                         const spineColor = getSpineColor(book);
+                        const prereqId = getPrerequisiteNovel(book.id);
+                        const isPrereqMet = prereqId ? library.includes(prereqId) : true;
 
                         return (
                           <div
                             key={book.id}
-                            className={`book-spine-flat ${isUnlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''}`}
+                            className={`book-spine-flat ${isUnlocked ? '' : 'locked'} ${!isUnlocked && isPrereqMet ? 'unlockable' : ''} ${isSelected ? 'selected' : ''}`}
                             style={{
                               backgroundColor: isUnlocked ? spineColor : 'var(--bg-hover)',
                               borderColor: isSelected ? 'var(--border-highlight)' : 'var(--border-color)',
