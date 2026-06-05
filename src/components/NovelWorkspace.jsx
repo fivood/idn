@@ -163,7 +163,7 @@ function NovelWorkspace({
   }, [novelId]);
 
   const handleReadNextPage = useCallback(() => {
-    if (novelState && pagesRead < pagesUnlocked) {
+    if (pagesRead < pagesUnlocked) {
       const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
       const reward = Math.round(baseReward * (1 + 0.01 * pagesRead));
       
@@ -176,7 +176,7 @@ function NovelWorkspace({
         setFloatingRewards(prev => prev.filter(r => r.id !== id));
       }, 1200);
     }
-  }, [novelState, pagesRead, pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
+  }, [pagesRead, pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
 
   useEffect(() => {
     localStorage.setItem('detective_auto_play', autoPlay);
@@ -216,7 +216,7 @@ function NovelWorkspace({
         }
       }
     });
-  }, [pagesRead, currentChapterId, novelState, suspects, currentNovelInfo]);
+  }, [pagesRead, currentChapterId, suspects, currentNovelInfo]);
 
   // Derived data based on state loads
   const novelData = activeBookData || {};
@@ -276,8 +276,7 @@ function NovelWorkspace({
     currentPageObj,
     maxLen,
     handleReadNextPage,
-    viewedChapterId,
-    novelState
+    viewedChapterId
   ]);
 
   // Scroll to bottom of reader when new pages are read/revealed
