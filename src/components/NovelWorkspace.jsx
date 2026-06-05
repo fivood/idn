@@ -227,6 +227,8 @@ function NovelWorkspace({
       return;
     }
 
+    if (!autoPlay) return;
+
     const interval = setInterval(() => {
       setRevealedChars(prev => {
         const next = prev + 1;
@@ -729,11 +731,18 @@ function NovelWorkspace({
                 
                 <div className="controls-actions">
                   <button 
-                    className={`btn-rect ${autoPlay ? 'color-klein active' : ''}`}
-                    onClick={() => setAutoPlay(prev => !prev)}
-                    style={{ minWidth: '130px' }}
+                    className={`btn-rect ${autoPlay ? 'active' : ''}`}
+                    onClick={() => setAutoPlay(true)}
+                    style={{ minWidth: '95px' }}
                   >
-                    {autoPlay ? '自动播放: 开启' : '自动播放: 关闭'}
+                    ▶ 自动播放
+                  </button>
+                  <button 
+                    className={`btn-rect ${!autoPlay ? 'active' : ''}`}
+                    onClick={() => setAutoPlay(false)}
+                    style={{ minWidth: '70px' }}
+                  >
+                    ⏸ 暂停
                   </button>
                   
                   {revealedChars < maxLen ? (
