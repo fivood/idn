@@ -386,17 +386,6 @@ function NovelWorkspace({
 
   return (
     <div className="novel-workspace">
-      {/* Top Banner: Overall Decryption Progress */}
-      <div className="card-rect" style={{ marginBottom: '0px', padding: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-          <span>全案文本解密总进度（后台挂机）</span>
-          <span className="mono">{overallUnlocked} / {totalPagesAll} 页 ({overallPercent.toFixed(1)}%)</span>
-        </div>
-        <div style={{ border: '1px solid var(--border-color)', height: '6px', background: 'var(--bg-hover)', position: 'relative' }}>
-          <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${overallPercent}%`, transition: 'width 0.3s ease' }}></div>
-        </div>
-      </div>
-
       <div className="workspace-layout">
         
         {/* Left Column: Suspect Cards & Rhyme Panel */}
@@ -781,6 +770,17 @@ function NovelWorkspace({
 
         {/* Right Column: Case Memo, Clues Board, and Rhyme Previews */}
         <div className="workspace-right">
+          {/* Overall Decryption Progress */}
+          <div className="card-rect" style={{ padding: '10px 12px', marginBottom: '0px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+              <span style={{ fontWeight: 'bold' }}>全案文本解密总进度</span>
+              <span className="mono">{overallUnlocked} / {totalPagesAll} 页 ({overallPercent.toFixed(1)}%)</span>
+            </div>
+            <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)', position: 'relative' }}>
+              <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${overallPercent}%`, transition: 'width 0.3s ease' }}></div>
+            </div>
+          </div>
+
           {renderWorkspaceMemo()}
 
           {/* Clues Board */}
