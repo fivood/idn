@@ -108,7 +108,6 @@ function NovelWorkspace({
   autoUnlockPage,
   readNextPage,
   unlockNextChapter,
-  unlockClue,
   finishNovel,
   CHAPTER_COSTS,
   upgrades,
@@ -898,65 +897,9 @@ function NovelWorkspace({
           </div>
         </div>
 
-        {/* Right Column: Case Memo, Clues Board, and Rhyme Previews */}
+        {/* Right Column: Case Memo */}
         <div className="workspace-right">
           {renderWorkspaceMemo()}
-
-          {/* Clues Board */}
-          <div className="clue-workspace card-rect" style={{ marginTop: '0px', marginBottom: '0px' }}>
-            <h3 className="card-title">物证线索墙</h3>
-            <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-              挂机搜寻线索，消耗 DI 分析物证获取挂机产出倍率
-            </span>
-            <div className="clue-grid" style={{ gridTemplateColumns: '1fr', gap: '8px' }}>
-              {availableClues.map(c => {
-                const discovered = isClueDiscovered(c);
-                const lvl = novelState.clueLevels?.[c.id] || 0;
-
-                if (!discovered) {
-                  return (
-                    <div 
-                      key={c.id} 
-                      className="clue-card"
-                      style={{ borderStyle: 'dashed', color: 'var(--text-muted)' }}
-                    >
-                      <div style={{ fontWeight: 'bold', fontSize: '12px' }}>[ 未搜寻到的线索物证 ]</div>
-                      <p style={{ fontSize: '11px', marginTop: '4px' }}>解密更多故事剧情以搜寻此线索</p>
-                    </div>
-                  );
-                }
-
-                const cost = Math.round(c.cost * Math.pow(1.5, lvl));
-                const bonus = lvl * 10; // +10% per level
-
-                return (
-                  <div 
-                    key={c.id} 
-                    className="clue-card unlocked"
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{c.nameZH}</div>
-                      <span className="mono" style={{ fontSize: '10px', color: 'var(--klein-blue)' }}>等级 {lvl}</span>
-                    </div>
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>{c.descriptionZH}</p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', borderTop: '1px dotted var(--border-color)', paddingTop: '6px' }}>
-                      <span className="mono" style={{ fontSize: '10px', color: 'var(--color-success)' }}>加成: +{bonus}% DI/s</span>
-                      <button 
-                        className="btn-rect color-klein" 
-                        style={{ fontSize: '10px', padding: '4px 8px' }}
-                        disabled={di < cost}
-                        onClick={() => unlockClue(novelId, c.id, cost)}
-                      >
-                        分析 (-{cost.toLocaleString()} DI)
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-
         </div>
 
       </div>

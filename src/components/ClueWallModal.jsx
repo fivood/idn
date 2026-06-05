@@ -41,7 +41,9 @@ function ClueWallModal({
   activeNovelId,
   clueWallPositions,
   updateClueWallPosition,
-  isStandalone = false
+  isStandalone = false,
+  di = 0,
+  unlockClue
 }) {
   const [selectedNovelId, setSelectedNovelId] = useState(activeNovelId || unlockedNovels[0] || 'attwn');
   const [draggedNode, setDraggedNode] = useState(null); // { nodeId, startX, startY, nodeStartX, nodeStartY, hasMoved }
@@ -439,6 +441,49 @@ function ClueWallModal({
                   <p style={{ fontSize: '13px', lineHeight: 1.5, marginBottom: '8px' }}>{selectedNode.descZH}</p>
                   <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic' }}>{selectedNode.descEN}</p>
                 </div>
+
+                {/* Evidence Upgrade / Analysis Section */}
+                {selectedNode.type === 'clue' && (() => {
+                  const clueId = selectedNode.id.substring(selectedNovelId.length + 1);
+                  const clue = currentNovelInfo?.clues?.find(c => c.id === clueId);
+                  if (!clue) return null;
+
+                  const lvl = currentNovelState.clueLevels?.[clueId] || 0;
+                  const cost = Math.round(clue.cost * Math.pow(1.5, lvl));
+                  const bonus = lvl * 10;
+
+                  return (
+                    <>
+                      <div className="clue-detail-divider" />
+                      <div className="clue-detail-section" style={{ backgroundColor: 'var(--bg-hover)', padding: '12px 14px', borderRadius: 'var(--border-radius)', marginTop: '8px', border: '1px solid var(--border-color)' }}>
+                        <h6 className="clue-detail-sec-title" style={{ borderBottomColor: 'var(--border-color)', color: 'var(--text-main)', marginTop: 0, paddingBottom: '4px', fontSize: '12px' }}>
+                          线索物证分析与加成 / Clue Analysis
+                        </h6>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '12px' }}>
+                          <div>
+                            <strong>当前分析级别:</strong> 等级 {lvl} / Level {lvl}
+                          </div>
+                          <div>
+                            <strong>挂机 DI/s 增益:</strong> <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>+{bonus}%</span>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginTop: '10px', paddingTop: '8px', borderTop: '1px dotted var(--border-color)' }}>
+                          <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            消耗: {cost.toLocaleString()} DI
+                          </span>
+                          <button
+                            className="btn-rect color-klein"
+                            style={{ padding: '4px 10px', fontSize: '11px', minWidth: '90px' }}
+                            disabled={di < cost}
+                            onClick={() => unlockClue && unlockClue(selectedNovelId, clueId, cost)}
+                          >
+                            分析 / Analyze
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {/* Extended Suspect Stats (Bilingual) */}
                 {suspect && (

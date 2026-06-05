@@ -747,6 +747,8 @@ function App() {
         clueWallPositions={clueWallPositions}
         updateClueWallPosition={updateClueWallPosition}
         isStandalone={true}
+        di={di}
+        unlockClue={unlockClue}
       />
     );
   }
@@ -977,6 +979,8 @@ function App() {
         activeNovelId={activeNovelId}
         clueWallPositions={clueWallPositions}
         updateClueWallPosition={updateClueWallPosition}
+        di={di}
+        unlockClue={unlockClue}
       />
     </div>
 
