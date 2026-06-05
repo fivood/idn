@@ -252,7 +252,7 @@ function NovelWorkspace({
     if (readerEndRef.current) {
       readerEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [novelState.pagesRead]);
+  }, [novelState.pagesRead, novelState.pagesUnlocked, novelId]);
 
   if (!currentChapterData) {
     return <div className="card-rect">正在加载案卷数据...</div>;
