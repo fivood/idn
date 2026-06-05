@@ -412,29 +412,10 @@ function ClueWallModal({
       <header className="clue-wall-header">
         <div className="clue-wall-title-area">
           <span style={{ fontSize: '18px', marginRight: '6px' }}>📌</span>
-          <h3>案卷线索墙 / {isStandalone ? '独立窗口 / Standalone Wall' : 'Interactive Clue Wall'}</h3>
+          <h3>案卷线索墙 - 《{currentNovelInfo?.titleZH}》<span style={{ fontSize: '11px', fontWeight: 'normal', color: 'var(--text-muted)', marginLeft: '8px' }}>({currentNovelInfo?.detectiveZH})</span></h3>
         </div>
         
         <div className="clue-wall-actions">
-          <div className="clue-wall-dropdown-container">
-            <label htmlFor="clue-wall-book-select" style={{ fontSize: '12px', marginRight: '6px', opacity: 0.8 }}>当前案卷:</label>
-            <select
-              id="clue-wall-book-select"
-              value={selectedNovelId}
-              onChange={(e) => {
-                setSelectedNovelId(e.target.value);
-                setSelectedNode(null);
-              }}
-              className="clue-wall-select"
-            >
-              {unlockedBooks.map(book => (
-                <option key={book.id} value={book.id}>
-                  《{book.titleZH}》 ({book.detectiveZH})
-                </option>
-              ))}
-            </select>
-          </div>
-          
           {isStandalone ? (
             <button className="btn-rect" style={{ fontSize: '12px', padding: '4px 10px' }} onClick={() => window.close()}>
               关闭窗口

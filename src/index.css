@@ -1191,10 +1191,10 @@ button.btn-rect.active {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-  max-width: 1040px;
-  width: 95vw;
-  height: 90vh;
-  max-height: 720px;
+  max-width: 1320px; /* Increased from 1040px */
+  width: 96vw;
+  height: 92vh; /* Increased from 90vh */
+  max-height: 780px; /* Increased from 720px */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1749,7 +1749,7 @@ button.btn-rect.active {
 }
 
 .clue-wall-sidebar-detail {
-  width: 330px;
+  width: 350px; /* Increased from 330px */
   flex-shrink: 0;
   border-left: 1px solid var(--border-color);
   background-color: var(--bg-panel);
