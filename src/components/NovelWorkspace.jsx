@@ -119,6 +119,32 @@ function NovelWorkspace({
   const [activeBookData, setActiveBookData] = useState(null);
   const [isTextLoading, setIsTextLoading] = useState(true);
 
+  // Safe fallback values when novelState is null/undefined during initial loading
+  const currentChapterId = novelState?.currentChapterId || 1;
+  const pagesRead = novelState?.pagesRead || 0;
+  const pagesUnlocked = novelState?.pagesUnlocked || 0;
+  const finished = novelState?.finished || false;
+
+  const [viewedChapterId, setViewedChapterId] = useState(currentChapterId);
+  const [langMode, setLangMode] = useState('zh');
+  const [selectedSuspect, setSelectedSuspect] = useState(null);
+  const [activeClueRelation, setActiveClueRelation] = useState(null);
+  const [activeMilestone, setActiveMilestone] = useState(null);
+  const [revealedChars, setRevealedChars] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(() => {
+    return localStorage.getItem('detective_auto_play') === 'true';
+  });
+  const [toastMessage, setToastMessage] = useState(null);
+  const [floatingRewards, setFloatingRewards] = useState([]);
+
+  const readerEndRef = useRef(null);
+
+  // Sync viewedChapterId when currentChapterId or novelId changes
+  useEffect(() => {
+    setViewedChapterId(currentChapterId);
+  }, [currentChapterId, novelId]);
+
+  // Load novel text dynamically
   useEffect(() => {
     let active = true;
     setIsTextLoading(true);
@@ -136,63 +162,10 @@ function NovelWorkspace({
     return () => { active = false; };
   }, [novelId]);
 
-  if (!novelState) {
-    return <div className="card-rect">正在加载案卷数据...</div>;
-  }
-
-  if (isTextLoading || !activeBookData) {
-    return <div className="card-rect" style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>正在装载案卷正文，请稍候...</div>;
-  }
-
-  const novelData = activeBookData;
-
-  const currentNovelInfo = novelsList.find(n => n.id === novelId);
-  const currentChapterId = novelState.currentChapterId;
-  
-  // Find current chapter content from the parsed json
-  const bookChapters = novelData[novelId]?.chapters || [];
-  const currentChapterData = bookChapters.find(c => c.id === currentChapterId);
-  const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
-  const currentPageObj = currentChapterData ? currentChapterData.pages[novelState.pagesRead] : null;
-  const maxLen = currentPageObj ? Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0) : 0;
-  const totalPagesAll = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
-  
-  // Chapter menu navigation
-  const [viewedChapterId, setViewedChapterId] = useState(currentChapterId);
-  
-  // Sync viewedChapterId when currentChapterId or novelId changes
-  useEffect(() => {
-    setViewedChapterId(currentChapterId);
-  }, [currentChapterId, novelId]);
-  
-  const viewedChapterData = bookChapters.find(c => c.id === viewedChapterId);
-
-  // Reader view options: zh, en
-  const [langMode, setLangMode] = useState('zh');
-  
-  // Active selected suspect for detailed profile card
-  const [selectedSuspect, setSelectedSuspect] = useState(null);
-  
-  // Clue highlight trigger (highlights matching suspect)
-  const [activeClueRelation, setActiveClueRelation] = useState(null);
-
-
-
-  // Milestone State (mapped to player reading progress pagesRead)
-  const [activeMilestone, setActiveMilestone] = useState(null);
-
-  // Typewriter effect state
-  const [revealedChars, setRevealedChars] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(() => {
-    return localStorage.getItem('detective_auto_play') === 'true';
-  });
-  const [toastMessage, setToastMessage] = useState(null);
-  const [floatingRewards, setFloatingRewards] = useState([]);
-
   const handleReadNextPage = useCallback(() => {
-    if (novelState.pagesRead < novelState.pagesUnlocked) {
+    if (novelState && pagesRead < pagesUnlocked) {
       const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
-      const reward = Math.round(baseReward * (1 + 0.01 * novelState.pagesRead));
+      const reward = Math.round(baseReward * (1 + 0.01 * pagesRead));
       
       const id = Date.now() + Math.random();
       setFloatingRewards(prev => [...prev, { id, amount: reward }]);
@@ -203,7 +176,7 @@ function NovelWorkspace({
         setFloatingRewards(prev => prev.filter(r => r.id !== id));
       }, 1200);
     }
-  }, [novelState.pagesRead, novelState.pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
+  }, [novelState, pagesRead, pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
 
   useEffect(() => {
     localStorage.setItem('detective_auto_play', autoPlay);
@@ -212,15 +185,19 @@ function NovelWorkspace({
   // Reset typewriter when page or chapter changes
   useEffect(() => {
     setRevealedChars(0);
-  }, [novelState.pagesRead, currentChapterId]);
+  }, [pagesRead, currentChapterId]);
+
+  // Derived static novel structures
+  const currentNovelInfo = novelsList.find(n => n.id === novelId) || {};
+  const suspects = currentNovelInfo.suspects || [];
 
   // Toast notifier for story events
   useEffect(() => {
-    if (novelState.pagesRead <= 0) return;
+    if (!novelState || pagesRead <= 0) return;
     
     // Check death triggers
     Object.entries(DEATH_PARAS).forEach(([suspectId, milestone]) => {
-      if (currentChapterId === milestone.chapterId && novelState.pagesRead === milestone.index) {
+      if (currentChapterId === milestone.chapterId && pagesRead === milestone.index) {
         const suspect = suspects.find(s => s.id === suspectId);
         if (suspect) {
           setToastMessage(`【案情通告】 嫌疑人 ${suspect.nameZH} 确认遇害！小兵玩偶破损，全局 DI 挂机产量提升 +30%！`);
@@ -231,25 +208,34 @@ function NovelWorkspace({
 
     // Check clue triggers
     Object.entries(CLUE_DISCOVER_PARAS).forEach(([clueId, milestone]) => {
-      if (currentChapterId === milestone.chapterId && novelState.pagesRead === milestone.index) {
-        const clue = currentNovelInfo.clues.find(c => c.id === clueId);
+      if (currentChapterId === milestone.chapterId && pagesRead === milestone.index) {
+        const clue = currentNovelInfo.clues?.find(c => c.id === clueId);
         if (clue) {
           setToastMessage(`【物证发现】 搜寻到新线索物证：${clue.nameZH}！可在右侧物证墙进行升级分析。`);
           setTimeout(() => setToastMessage(null), 6000);
         }
       }
     });
-  }, [novelState.pagesRead, currentChapterId]);
+  }, [pagesRead, currentChapterId, novelState, suspects, currentNovelInfo]);
+
+  // Derived data based on state loads
+  const novelData = activeBookData || {};
+  const bookChapters = novelData[novelId]?.chapters || [];
+  const currentChapterData = bookChapters.find(c => c.id === currentChapterId);
+  const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
+  const currentPageObj = currentChapterData ? currentChapterData.pages[pagesRead] : null;
+  const maxLen = currentPageObj ? Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0) : 0;
+  const totalPagesAll = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
+  const viewedChapterData = bookChapters.find(c => c.id === viewedChapterId);
 
   // Calculate page decryption interval based on "Assistant's Shorthand" upgrade level
-  // Base is 360 seconds (6 minutes), minimum limit 60 seconds (1 minute), speed up by global prestige (+10% per completed case)
   const assistantLevel = upgrades['assistant_journal'] || 0;
   const prestigeSpeedup = 1 + 0.1 * library.length;
   const decryptionInterval = Math.max(60, (360 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup);
 
-  // Typewriter tick loop (runs when there is unread text in buffer)
+  // Typewriter tick loop
   useEffect(() => {
-    if (novelState.pagesRead >= novelState.pagesUnlocked || novelState.finished) {
+    if (!novelState || pagesRead >= pagesUnlocked || finished) {
       return;
     }
 
@@ -257,12 +243,9 @@ function NovelWorkspace({
       return;
     }
 
-    const currentPageObj = currentChapterData?.pages[novelState.pagesRead];
     if (!currentPageObj) return;
 
-    const currentMaxLen = Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0);
-
-    if (revealedChars >= currentMaxLen) {
+    if (revealedChars >= maxLen) {
       if (autoPlay) {
         const timeout = setTimeout(() => {
           handleReadNextPage();
@@ -277,7 +260,7 @@ function NovelWorkspace({
     const interval = setInterval(() => {
       setRevealedChars(prev => {
         const next = prev + 1;
-        return next >= currentMaxLen ? currentMaxLen : next;
+        return next >= maxLen ? maxLen : next;
       });
     }, 20); // 20ms per character
 
@@ -285,30 +268,39 @@ function NovelWorkspace({
   }, [
     novelId,
     currentChapterId,
-    novelState.pagesRead,
-    novelState.pagesUnlocked,
+    pagesRead,
+    pagesUnlocked,
     revealedChars,
     autoPlay,
-    novelState.finished,
-    currentChapterData,
+    finished,
+    currentPageObj,
+    maxLen,
     handleReadNextPage,
-    viewedChapterId
+    viewedChapterId,
+    novelState
   ]);
 
   // Scroll to bottom of reader when new pages are read/revealed
-  const readerEndRef = useRef(null);
   useEffect(() => {
     if (readerEndRef.current) {
       readerEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [novelState.pagesRead, novelState.pagesUnlocked, novelId, viewedChapterId]);
+  }, [pagesRead, pagesUnlocked, novelId, viewedChapterId]);
+
+  // Early returns / Loading guards (Moved AFTER all hook declarations)
+  if (!novelState) {
+    return <div className="card-rect">正在加载案卷数据...</div>;
+  }
+
+  if (isTextLoading || !activeBookData) {
+    return <div className="card-rect" style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>正在装载案卷正文，请稍候...</div>;
+  }
 
   if (!currentChapterData) {
     return <div className="card-rect">正在加载案卷数据...</div>;
   }
 
-  // Get active suspects for this novel
-  const suspects = currentNovelInfo.suspects || [];
+
 
   // Derived state: check if a suspect is introduced at current reading point
   const isSuspectIntroduced = (s) => {
