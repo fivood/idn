@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { globalUpgrades, novelsList } from './data/game_data';
 import novelData from './data/novel_data.json';
-import Console from './components/Console';
 import NovelWorkspace from './components/NovelWorkspace';
 import Library from './components/Library';
 import BookReader from './components/BookReader';
@@ -665,10 +664,10 @@ function App() {
       {/* Tabs */}
       <nav className="nav-tabs">
         <button 
-          className={`tab-btn ${currentView === 'console' ? 'active' : ''}`}
-          onClick={() => setCurrentView('console')}
+          className={`tab-btn ${currentView === 'library' || currentView === 'reader' ? 'active' : ''}`}
+          onClick={() => setCurrentView('library')}
         >
-          控制中心
+          侦探书房
         </button>
         {activeNovelId && (
           <button 
@@ -678,29 +677,10 @@ function App() {
             现场侦查: 《{novelsList.find(n => n.id === activeNovelId)?.titleZH}》
           </button>
         )}
-        <button 
-          className={`tab-btn ${currentView === 'library' || currentView === 'reader' ? 'active' : ''}`}
-          onClick={() => setCurrentView('library')}
-        >
-          侦探书库 ({library.length})
-        </button>
       </nav>
 
       {/* View Switcher */}
       <main className={`view-content ${currentView === 'novel' ? 'view-novel' : ''}`}>
-        {currentView === 'console' && (
-          <Console 
-            di={di}
-            upgrades={upgrades}
-            buyUpgrade={buyUpgrade}
-            unlockedNovels={unlockedNovels}
-            handleSelectNovel={handleSelectNovel}
-            novelStates={novelStates}
-            library={library}
-            buyNovel={buyNovel}
-            activeNovelId={activeNovelId}
-          />
-        )}
         {currentView === 'novel' && activeNovelId && (
           <NovelWorkspace 
             di={di}
@@ -719,7 +699,15 @@ function App() {
         )}
         {currentView === 'library' && (
           <Library 
+            di={di}
+            upgrades={upgrades}
+            buyUpgrade={buyUpgrade}
+            unlockedNovels={unlockedNovels}
+            handleSelectNovel={handleSelectNovel}
+            novelStates={novelStates}
             library={library}
+            buyNovel={buyNovel}
+            activeNovelId={activeNovelId}
             handleReadBook={handleReadBook}
           />
         )}
