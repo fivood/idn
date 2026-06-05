@@ -126,12 +126,12 @@ export const getDIProgressStats = (rate) => {
 // Calculate color of the DI progress bar based on the current rate and active theme
 export const getProgressBarColor = (rate, isDark) => {
   const colors = [
-    '#e7ede6', // 0: BRIGHT STAR (最浅)
-    '#ccddcb', // 1: COOL GREY
-    '#8dc8bc', // 2: LIGHT SLATE
-    '#739f9f', // 3: DUSKY BLUE
-    '#087c80', // 4: MODERN NAVY
-    '#293535'  // 5: FULL MOON SKY (最深)
+    '#FFFAF2', // 0: Morning Mist (Lightest)
+    '#DBDAD5', // 1: Beige/Gray
+    '#9AB5AE', // 2: Sage Green
+    '#85ABAB', // 3: Sea Green
+    '#4C6665', // 4: Spruce
+    '#1F3345'  // 5: Slate Navy (Darkest)
   ];
   
   let index = 0;

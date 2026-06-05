@@ -1,74 +1,75 @@
 /* Minimalist Noir Stylesheet - Responsive Dual Theme */
 
 :root {
-  /* Default Light Mode - Raven Color Palette */
-  --bg-color: #E3E7ED;         /* raven-80 */
-  --bg-panel: #F8F9FC;         /* raven-95 */
-  --bg-viewer: #FFFFFF;        /* Pure white for reading area and inner items */
-  --bg-hover: #F2F4F8;         /* raven-90 */
-  --bg-locked: rgba(227, 231, 237, 0.75);
-  --bg-overlay: rgba(248, 249, 252, 0.95);
-  --bg-overlay-modal: rgba(20, 27, 42, 0.4);
+  /* Default Light Mode - Low Saturation Cozy Palette */
+  --bg-color: #F0EDE5;         /* Warm Beige background */
+  --bg-panel: #FFFAF2;         /* Morning Mist panel */
+  --bg-viewer: #FFFFFF;        /* Pure white reader area */
+  --bg-hover: #E5E2DA;         /* Slightly darker beige for hover states */
+  --bg-locked: rgba(229, 226, 218, 0.75);
+  --bg-overlay: rgba(255, 250, 242, 0.95);
+  --bg-overlay-modal: rgba(0, 25, 47, 0.4);
   
-  --text-main: #141B2A;        /* raven-10 */
-  --text-muted: #4D576A;       /* raven-40 */
-  --text-en: #30394B;          /* raven-30 */
-  --text-zh: #141B2A;          /* raven-10 */
+  --text-main: #00192F;        /* Navy text */
+  --text-muted: #4C6665;       /* Spruce gray-green for secondary/muted text */
+  --text-en: #4C6665;          /* English subtext in spruce */
+  --text-zh: #00192F;          /* Chinese main text in navy */
   
-  --border-color: #CED3DE;     /* raven-70 */
-  --border-highlight: #6C7689; /* raven-50 */
-  --border-disabled: #E3E7ED;  /* raven-80 */
+  --border-color: #DBDAD5;     /* Light Gray/Beige border */
+  --border-highlight: #C78F57; /* Gold highlight accent border */
+  --border-disabled: #E5E2DA;  
   
-  --color-success: #2e7d32;
+  --color-success: #3F4E36;    /* Matcha green success */
   
   /* Semantic Accent Colors */
-  --klein-blue: #30394B;       /* raven-30 */
-  --crimson-red: #8b0000;
+  --klein-blue: #4C6665;       /* Spruce for primary accents */
+  --crimson-red: #B54745;      /* Muted Red for warnings/deaths */
   
   --font-mono: Consolas, Menlo, Monaco, "Courier New", Courier, "Microsoft YaHei", "微软雅黑", monospace;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", "微软雅黑", sans-serif;
   --border-radius: 4px;
 
-  /* 3D Cube Colors */
-  --cube-top: #CED3DE;         /* raven-70 */
-  --cube-left: #6C7689;        /* raven-50 */
-  --cube-right: #30394B;       /* raven-30 */
+  /* Cube Colors */
+  --cube-top: #DBDAD5;
+  --cube-left: #9AB5AE;        /* Sage Green */
+  --cube-right: #4C6665;       /* Spruce */
 
   /* Active Button Colors */
   --btn-active-text: #ffffff;
 }
 
 [data-theme="dark"] {
-  /* Dark Mode Override - Raven Dark Palette */
-  --bg-color: #0B111D;         /* raven-5 */
-  --bg-panel: #141B2A;         /* raven-10 */
-  --bg-viewer: #0B111D;        /* raven-5 */
-  --bg-hover: #212A3B;         /* raven-20 */
-  --bg-locked: rgba(20, 27, 42, 0.75);
-  --bg-overlay: rgba(11, 17, 29, 0.95);
-  --bg-overlay-modal: rgba(11, 17, 29, 0.85);
+  /* Dark Mode Override - Deep Blue and Slate Navy Palette */
+  --bg-color: #00192F;         /* Deep Navy background */
+  --bg-panel: #1F3345;         /* Slate Navy panel */
+  --bg-viewer: #00192F;        /* Deep Navy reader area */
+  --bg-hover: #182C3F;         /* Darker Navy for hover states */
+  --bg-locked: rgba(31, 51, 69, 0.75);
+  --bg-overlay: rgba(0, 25, 47, 0.95);
+  --bg-overlay-modal: rgba(0, 25, 47, 0.85);
   
-  --text-main: #FBFCFD;        /* raven-99 */
-  --text-muted: #969FB0;       /* raven-60 */
-  --text-en: #E3E7ED;          /* raven-80 */
-  --text-zh: #FBFCFD;          /* raven-99 */
+  --text-main: #FFFAF2;        /* Morning Mist main text */
+  --text-muted: #9AB5AE;       /* Sage Green for muted subtext */
+  --text-en: #DBDAD5;          /* Light beige/gray for English subtext */
+  --text-zh: #FFFAF2;          
   
-  --border-color: #30394B;     /* raven-30 */
-  --border-highlight: #CED3DE; /* raven-70 */
-  --border-disabled: #141B2A;  /* raven-10 */
+  --border-color: #1F3345;     
+  --border-highlight: #85ABAB; /* Muted Sea Green highlight border */
+  --border-disabled: #182C3F;  
   
-  --color-success: #4caf50;
-  --klein-blue: #CED3DE;       /* raven-70 */
-  --crimson-red: #b93a3a;
+  --color-success: #9AB5AE;    /* Sage Green success */
+  --klein-blue: #85ABAB;       /* Sea Green accent */
+  --crimson-red: #B54745;      /* Muted Red warning */
 
-  /* 3D Cube Colors */
-  --cube-top: #FBFCFD;         /* raven-99 */
-  --cube-left: #CED3DE;        /* raven-70 */
-  --cube-right: #969FB0;       /* raven-60 */
+  /* Cube Colors */
+  --cube-top: #1F3345;
+  --cube-left: #4C6665;        /* Spruce */
+  --cube-right: #85ABAB;       /* Sea Green */
 
   /* Active Button Colors */
-  --btn-active-text: #141B2A;  /* raven-10 (dark background contrast) */
+  --btn-active-text: #00192F;  
 }
+
 
 
 * {
@@ -930,4 +931,140 @@ button.btn-rect.active {
   left: 0;
   transition: width 100ms linear, background-color 0.3s ease;
 }
+
+/* Flat Bookshelf Layout & Book Inspector Styles */
+.library-view-layout {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 16px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.bookshelf-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.bookshelves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 12px;
+}
+
+.bookshelf-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.bookshelf-author-header {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-main);
+  margin-bottom: 6px;
+  border-left: 3px solid var(--border-highlight);
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.bookshelf-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.bookshelf-books {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding-left: 12px;
+  min-height: 165px;
+}
+
+.bookshelf-shelf-line {
+  height: 3px;
+  background-color: var(--border-highlight);
+  border-radius: 1px;
+  width: 100%;
+  margin-top: -1px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.book-spine-flat {
+  position: relative;
+  width: 42px;
+  height: 155px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.215, 0.61, 0.355, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 2px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.08);
+}
+
+.book-spine-flat:hover {
+  transform: translateY(-8px);
+  box-shadow: 2px 6px 10px rgba(0,0,0,0.12);
+  z-index: 5;
+}
+
+.book-spine-flat.selected {
+  border-color: var(--border-highlight) !important;
+  box-shadow: 0 0 6px var(--border-highlight) !important;
+}
+
+.book-spine-flat.locked {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.book-spine-flat.locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.book-spine-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-align: center;
+  margin-top: 4px;
+  max-height: 112px;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.book-spine-status {
+  font-size: 9px;
+  margin-bottom: 2px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 12px;
+}
+
+.book-inspector-card {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .library-view-layout {
+    grid-template-columns: 1fr;
+  }
+  .book-inspector-card {
+    margin-top: 12px;
+  }
+}
+
 
