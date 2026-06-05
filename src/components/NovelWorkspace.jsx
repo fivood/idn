@@ -383,33 +383,8 @@ function NovelWorkspace({
     <div className="novel-workspace">
       <div className="workspace-layout">
         
-        {/* Left Column: Suspect Cards & Rhyme Panel */}
+        {/* Left Column: Suspect Cards */}
         <div className="workspace-left">
-          {/* Standing Figurine Count (Only for And Then There Were None) */}
-          {novelId === 'attwn' && (
-            <div className="rhyme-panel">
-              <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
-                小兵玩偶
-              </h4>
-              <div className="figurines-row">
-                {Array.from({ length: 10 }).map((_, idx) => {
-                  const isBroken = idx >= standingCount;
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`figurine-indicator ${isBroken ? 'broken' : ''}`}
-                    >
-                      {isBroken ? "X" : "|"}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                存活玩偶: {standingCount} / 10 (全局产量倍率: +{deceasedCount * 30}%)
-              </div>
-            </div>
-          )}
-
           {/* Suspects Cards */}
           <div className="suspect-grid">
             <h4 style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
@@ -442,6 +417,24 @@ function NovelWorkspace({
                     <span style={{ display: 'block', fontSize: '9px', fontWeight: 'normal', color: 'var(--text-muted)', marginTop: '2px' }}>{s.nameEN}</span>
                   </div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginTop: '2px', lineHeight: '1.2' }}>{s.titleZH} / {s.titleEN}</div>
+                  {novelId === 'attwn' && (
+                    <div style={{ position: 'absolute', top: '6px', right: deceased ? '40px' : '6px', display: 'flex', alignItems: 'center' }} title={deceased ? "玩偶已碎裂" : "小兵玩偶完好"}>
+                      {deceased ? (
+                        <svg viewBox="0 0 100 100" width="12" height="12" style={{ fill: 'var(--palette-red)', opacity: 0.5 }}>
+                          <circle cx="45" cy="35" r="15" />
+                          <path d="M35 55 L48 55 L45 90 L30 90 Z" fill="var(--palette-red)" />
+                          <path d="M53 55 L65 55 L60 90 L50 90 Z" fill="var(--palette-red)" />
+                          <rect x="38" y="8" width="12" height="12" transform="rotate(-15 38 8)" fill="var(--palette-red)" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 100 100" width="12" height="12" style={{ fill: 'var(--text-muted)', opacity: 0.8 }}>
+                          <circle cx="50" cy="30" r="15" fill="var(--text-muted)" />
+                          <path d="M35 50 L65 50 L60 90 L40 90 Z" fill="var(--text-muted)" />
+                          <rect x="42" y="5" width="16" height="12" fill="var(--text-muted)" />
+                        </svg>
+                      )}
+                    </div>
+                  )}
                   {deceased && (
                     <div className="deceased-stamp">遇害</div>
                   )}
@@ -547,6 +540,17 @@ function NovelWorkspace({
                   <div style={{ background: 'var(--crimson-red)', height: '100%', width: `${(deceasedCount / totalSuspects) * 100}%` }}></div>
                 </div>
               </div>
+              {novelId === 'attwn' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                    <span>玩偶全局倍率</span>
+                    <span className="mono" style={{ color: 'var(--palette-red)', fontWeight: 'bold' }}>+{deceasedCount * 30}%</span>
+                  </div>
+                  <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
+                    <div style={{ background: 'var(--palette-red)', height: '100%', width: `${(deceasedCount / 10) * 100}%` }}></div>
+                  </div>
+                </div>
+              )}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
                   <span>收集物证数</span>
