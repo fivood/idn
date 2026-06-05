@@ -1635,7 +1635,8 @@ button.btn-rect.active {
 }
 
 .clue-detail-body {
-  max-height: 280px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 6px;
 }
