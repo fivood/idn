@@ -27,7 +27,8 @@ function ClueWallModal({
   unlockedNovels,
   activeNovelId,
   clueWallPositions,
-  updateClueWallPosition
+  updateClueWallPosition,
+  isStandalone = false
 }) {
   const [selectedNovelId, setSelectedNovelId] = useState(activeNovelId || unlockedNovels[0] || 'attwn');
   const [draggedNode, setDraggedNode] = useState(null); // { nodeId, startX, startY, nodeStartX, nodeStartY, hasMoved }
@@ -45,6 +46,7 @@ function ClueWallModal({
 
   // Prevent scroll propagation when modal is open
   useEffect(() => {
+    if (isStandalone) return;
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -53,9 +55,9 @@ function ClueWallModal({
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, isStandalone]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !isStandalone) return null;
 
   const currentNovelInfo = novelsList.find(n => n.id === selectedNovelId);
   const currentNovelState = novelStates[selectedNovelId] || {
@@ -185,275 +187,293 @@ function ClueWallModal({
 
   const unlockedBooks = novelsList.filter(book => unlockedNovels.includes(book.id));
 
-  return (
-    <div className="clue-wall-overlay">
-      <div className="clue-wall-container">
+  const renderContainer = (
+    <div className="clue-wall-container" style={isStandalone ? { width: '100vw', height: '100vh', maxWidth: 'none', maxHeight: 'none', borderRadius: 0, border: 'none' } : {}}>
+      
+      {/* Header section with book switcher and close buttons */}
+      <header className="clue-wall-header">
+        <div className="clue-wall-title-area">
+          <span style={{ fontSize: '18px', marginRight: '6px' }}>📌</span>
+          <h3>案卷线索墙 / {isStandalone ? '独立窗口 / Standalone Wall' : 'Interactive Clue Wall'}</h3>
+        </div>
         
-        {/* Header section with book switcher and close buttons */}
-        <header className="clue-wall-header">
-          <div className="clue-wall-title-area">
-            <span style={{ fontSize: '18px', marginRight: '6px' }}>📌</span>
-            <h3>案卷线索墙 / Interactive Clue Wall</h3>
+        <div className="clue-wall-actions">
+          <div className="clue-wall-dropdown-container">
+            <label htmlFor="clue-wall-book-select" style={{ fontSize: '12px', marginRight: '6px', opacity: 0.8 }}>当前案卷:</label>
+            <select
+              id="clue-wall-book-select"
+              value={selectedNovelId}
+              onChange={(e) => {
+                setSelectedNovelId(e.target.value);
+                setSelectedNode(null);
+              }}
+              className="clue-wall-select"
+            >
+              {unlockedBooks.map(book => (
+                <option key={book.id} value={book.id}>
+                  《{book.titleZH}》 ({book.detectiveZH})
+                </option>
+              ))}
+            </select>
           </div>
           
-          <div className="clue-wall-actions">
-            <div className="clue-wall-dropdown-container">
-              <label htmlFor="clue-wall-book-select" style={{ fontSize: '12px', marginRight: '6px', opacity: 0.8 }}>当前案卷:</label>
-              <select
-                id="clue-wall-book-select"
-                value={selectedNovelId}
-                onChange={(e) => {
-                  setSelectedNovelId(e.target.value);
-                  setSelectedNode(null);
-                }}
-                className="clue-wall-select"
-              >
-                {unlockedBooks.map(book => (
-                  <option key={book.id} value={book.id}>
-                    《{book.titleZH}》 ({book.detectiveZH})
-                  </option>
-                ))}
-              </select>
-            </div>
-            
+          {isStandalone ? (
+            <button className="btn-rect" style={{ fontSize: '12px', padding: '4px 10px' }} onClick={() => window.close()}>
+              关闭窗口
+            </button>
+          ) : (
             <button className="clue-wall-close-btn" onClick={onClose} aria-label="关闭线索墙">
               &times;
             </button>
-          </div>
-        </header>
+          )}
+        </div>
+      </header>
 
-        {/* Board Outer Scrollable Wrapper */}
-        <div className="clue-wall-board-wrapper" ref={boardRef}>
-          <div className="clue-wall-board">
+      {/* Board Outer Scrollable Wrapper */}
+      <div className="clue-wall-board-wrapper" ref={boardRef}>
+        <div className="clue-wall-board">
+          
+          {/* SVG Connection Layer */}
+          <svg className="clue-wall-svg-layer">
+            <defs>
+              {/* Wool/string drop shadow filter */}
+              <filter id="yarn-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.5" />
+              </filter>
+            </defs>
             
-            {/* SVG Connection Layer */}
-            <svg className="clue-wall-svg-layer">
-              <defs>
-                {/* Wool/string drop shadow filter */}
-                <filter id="yarn-shadow" x="-10%" y="-10%" width="120%" height="120%">
-                  <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.5" />
-                </filter>
-              </defs>
+            {/* Render connecting lines */}
+            {unlockedLinks.map(link => {
+              const fromNode = unlockedNodes.find(n => n.id === link.from);
+              const toNode = unlockedNodes.find(n => n.id === link.to);
+              if (!fromNode || !toNode) return null;
               
-              {/* Render connecting lines */}
-              {unlockedLinks.map(link => {
-                const fromNode = unlockedNodes.find(n => n.id === link.from);
-                const toNode = unlockedNodes.find(n => n.id === link.to);
-                if (!fromNode || !toNode) return null;
-                
-                const start = getNodeCenter(fromNode);
-                const end = getNodeCenter(toNode);
-                
-                return (
-                  <g key={link.id}>
-                    {/* The red yarn line */}
-                    <line
-                      x1={start.x}
-                      y1={start.y}
-                      x2={end.x}
-                      y2={end.y}
-                      stroke="#bf3030"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      filter="url(#yarn-shadow)"
-                      className="yarn-line"
-                    />
-                    {/* Pushpins at connection points */}
-                    <circle cx={start.x} cy={start.y} r="5.5" fill="#e03030" stroke="#8a1111" strokeWidth="1" />
-                    <circle cx={end.x} cy={end.y} r="5.5" fill="#e03030" stroke="#8a1111" strokeWidth="1" />
-                  </g>
-                );
-              })}
-            </svg>
-
-            {/* Cards Layer */}
-            {unlockedNodes.map(node => {
-              const x = clueWallPositions?.[selectedNovelId]?.[node.id]?.x ?? node.x;
-              const y = clueWallPositions?.[selectedNovelId]?.[node.id]?.y ?? node.y;
+              const start = getNodeCenter(fromNode);
+              const end = getNodeCenter(toNode);
               
-              const isDeceasedInfo = getSuspectStatus(node.id);
-              const isDeceased = isDeceasedInfo?.isDeceased || false;
-
-              // Card styling depending on type
-              let cardClass = "clue-card";
-              if (node.type === 'suspect' || node.type === 'victim') {
-                cardClass += " polaroid-node";
-              } else if (node.type === 'clue') {
-                cardClass += " postit-node";
-              } else {
-                cardClass += " clipping-node";
-              }
-
-              if (draggedNode?.nodeId === node.id) {
-                cardClass += " dragging";
-              }
-
               return (
-                <div
-                  key={node.id}
-                  className={cardClass}
-                  style={{
-                    transform: `translate(${x}px, ${y}px)`,
-                    position: 'absolute',
-                    touchAction: 'none'
-                  }}
-                  onMouseDown={(e) => handleDragStart(e, node, x, y)}
-                  onTouchStart={(e) => handleDragStart(e, node, x, y)}
-                >
-                  {/* Polaroid Content */}
-                  {(node.type === 'suspect' || node.type === 'victim') && (
-                    <div className="polaroid-inner">
-                      <div className="polaroid-photo">
-                        {/* Silhouette/Sketch representation */}
-                        <svg className="polaroid-avatar-svg" viewBox="0 0 100 100">
-                          <rect width="100%" height="100%" fill="var(--bg-viewer)" />
-                          <circle cx="50" cy="40" r="18" fill="var(--border-color)" />
-                          <path d="M22 80 C 22 55, 78 55, 78 80" fill="var(--border-color)" />
-                        </svg>
-                        
-                        {/* Deceased Stamp */}
-                        {isDeceased && (
-                          <div className="deceased-stamp-badge">
-                            遇害 DECEASED
-                          </div>
-                        )}
-                      </div>
-                      <div className="polaroid-label">
-                        {node.labelZH}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Sticky Post-it Note Content */}
-                  {node.type === 'clue' && (
-                    <div className="postit-inner">
-                      <div className="postit-tape" />
-                      <div className="postit-content">
-                        <span className="postit-pin">📌</span>
-                        <div className="postit-title">{node.labelZH}</div>
-                        <div className="postit-subtitle">Evidence / 物证</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Newspaper Clipping Content */}
-                  {node.type === 'event' && (
-                    <div className="clipping-inner">
-                      <div className="clipping-header">DAILY NEWS</div>
-                      <div className="clipping-content">
-                        <div className="clipping-title">{node.labelZH}</div>
-                        <div className="clipping-body-teaser">
-                          调查发现：关键剧情线索在此解锁...
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
+                <g key={link.id}>
+                  {/* The red yarn line */}
+                  <line
+                    x1={start.x}
+                    y1={start.y}
+                    x2={end.x}
+                    y2={end.y}
+                    stroke="#bf3030"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    filter="url(#yarn-shadow)"
+                    className="yarn-line"
+                  />
+                  {/* Pushpins at connection points */}
+                  <circle cx={start.x} cy={start.y} r="5.5" fill="#e03030" stroke="#8a1111" strokeWidth="1" />
+                  <circle cx={end.x} cy={end.y} r="5.5" fill="#e03030" stroke="#8a1111" strokeWidth="1" />
+                </g>
               );
             })}
+          </svg>
+
+          {/* Cards Layer */}
+          {unlockedNodes.map(node => {
+            const x = clueWallPositions?.[selectedNovelId]?.[node.id]?.x ?? node.x;
+            const y = clueWallPositions?.[selectedNovelId]?.[node.id]?.y ?? node.y;
             
-            {/* Center Hint if Board Empty */}
-            {unlockedNodes.length === 0 && (
-              <div className="clue-wall-empty-state">
-                <h4>此案卷尚待开启调查</h4>
-                <p style={{ fontSize: '12px', opacity: 0.7 }}>请先在侦探书房中解锁此书并解密第一章文本。</p>
-              </div>
-            )}
+            const isDeceasedInfo = getSuspectStatus(node.id);
+            const isDeceased = isDeceasedInfo?.isDeceased || false;
 
-          </div>
-        </div>
+            // Card styling depending on type
+            let cardClass = "clue-card";
+            if (node.type === 'suspect' || node.type === 'victim') {
+              cardClass += " polaroid-node";
+            } else if (node.type === 'clue') {
+              cardClass += " postit-node";
+            } else {
+              cardClass += " clipping-node";
+            }
 
-        {/* Floating Detail Panel (Folder Box) */}
-        {selectedNode && (() => {
-          const suspectData = getSuspectStatus(selectedNode.id);
-          const suspect = suspectData?.suspect;
-          const isDeceased = suspectData?.isDeceased || false;
+            if (draggedNode?.nodeId === node.id) {
+              cardClass += " dragging";
+            }
 
-          return (
-            <div className="clue-detail-overlay" onClick={() => setSelectedNode(null)}>
-              <div className="clue-detail-panel" onClick={(e) => e.stopPropagation()}>
-                
-                <div className="clue-detail-folder-tab">
-                  CASE FILE: {selectedNode.id.toUpperCase()}
-                </div>
-                
-                <header className="clue-detail-header">
-                  <div>
-                    <span className="clue-detail-type-tag">
-                      {selectedNode.type === 'suspect' || selectedNode.type === 'victim' 
-                        ? (isDeceased ? '遇害人 / DECEASED' : '嫌疑人 / SUSPECT') 
-                        : selectedNode.type === 'clue' ? '案件物证 / EVIDENCE' : '关键事件 / EVENT'}
-                    </span>
-                    <h4 className="clue-detail-title-zh">{selectedNode.labelZH}</h4>
-                    <h5 className="clue-detail-title-en">{selectedNode.labelEN}</h5>
-                  </div>
-                  <button className="clue-detail-close-btn" onClick={() => setSelectedNode(null)}>
-                    &times;
-                  </button>
-                </header>
-
-                <div className="clue-detail-body">
-                  {/* Basic description */}
-                  <div className="clue-detail-section">
-                    <h6 className="clue-detail-sec-title">案卷摘要 / Description</h6>
-                    <p style={{ fontSize: '13px', lineHeight: 1.5, marginBottom: '8px' }}>{selectedNode.descZH}</p>
-                    <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic' }}>{selectedNode.descEN}</p>
-                  </div>
-
-                  {/* Extended Suspect Stats (Bilingual) */}
-                  {suspect && (
-                    <>
-                      <div className="clue-detail-divider" />
+            return (
+              <div
+                key={node.id}
+                className={cardClass}
+                style={{
+                  transform: `translate(${x}px, ${y}px)`,
+                  position: 'absolute',
+                  touchAction: 'none'
+                }}
+                onMouseDown={(e) => handleDragStart(e, node, x, y)}
+                onTouchStart={(e) => handleDragStart(e, node, x, y)}
+              >
+                {/* Polaroid Content */}
+                {(node.type === 'suspect' || node.type === 'victim') && (
+                  <div className="polaroid-inner">
+                    <div className="polaroid-photo">
+                      {/* Silhouette/Sketch representation */}
+                      <svg className="polaroid-avatar-svg" viewBox="0 0 100 100">
+                        <rect width="100%" height="100%" fill="var(--bg-viewer)" />
+                        <circle cx="50" cy="40" r="18" fill="var(--border-color)" />
+                        <path d="M22 80 C 22 55, 78 55, 78 80" fill="var(--border-color)" />
+                      </svg>
                       
-                      <div className="clue-detail-section">
-                        <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
-                        <p style={{ fontSize: '13px' }}><strong>{suspect.nameZH}</strong> - {suspect.titleZH}</p>
-                        <p style={{ fontSize: '11px', opacity: 0.7 }}><strong>{suspect.nameEN}</strong> - {suspect.titleEN}</p>
-                      </div>
-                      
-                      <div className="clue-detail-divider" />
-
-                      <div className="clue-detail-section">
-                        <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
-                        <p style={{ fontSize: '13px', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.accusationZH}</p>
-                        <p style={{ fontSize: '11px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic' }}>{suspect.accusationEN}</p>
-                      </div>
-
-                      <div className="clue-detail-divider" />
-
-                      <div className="clue-detail-section">
-                        <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
-                        <p style={{ fontSize: '13px', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.alibiZH}</p>
-                        <p style={{ fontSize: '11px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic' }}>{suspect.alibiEN}</p>
-                      </div>
-
-                      {isDeceased && suspect.deathMethodZH && (
-                        <>
-                          <div className="clue-detail-divider" style={{ borderTop: '1px solid #c24646' }} />
-                          <div className="clue-detail-section deceased-section">
-                            <h6 className="clue-detail-sec-title" style={{ color: '#b22222' }}>遇害实录 / Death Circumstance</h6>
-                            <p style={{ fontSize: '13px', color: '#b22222', fontWeight: '500', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.deathMethodZH}</p>
-                            <p style={{ fontSize: '11px', color: '#c24646', fontStyle: 'italic', lineHeight: 1.3 }}>{suspect.deathMethodEN}</p>
-                          </div>
-                        </>
+                      {/* Deceased Stamp */}
+                      {isDeceased && (
+                        <div className="deceased-stamp-badge">
+                          遇害 DECEASED
+                        </div>
                       )}
-                    </>
-                  )}
-                </div>
+                    </div>
+                    <div className="polaroid-label">
+                      {node.labelZH}
+                    </div>
+                  </div>
+                )}
 
-                <footer className="clue-detail-footer">
-                  <button className="btn-rect" style={{ padding: '5px 15px', fontSize: '12px' }} onClick={() => setSelectedNode(null)}>
-                    合上案卷 (Close File)
-                  </button>
-                </footer>
+                {/* Sticky Post-it Note Content */}
+                {node.type === 'clue' && (
+                  <div className="postit-inner">
+                    <div className="postit-tape" />
+                    <div className="postit-content">
+                      <span className="postit-pin">📌</span>
+                      <div className="postit-title">{node.labelZH}</div>
+                      <div className="postit-subtitle">Evidence / 物证</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Newspaper Clipping Content */}
+                {node.type === 'event' && (
+                  <div className="clipping-inner">
+                    <div className="clipping-header">DAILY NEWS</div>
+                    <div className="clipping-content">
+                      <div className="clipping-title">{node.labelZH}</div>
+                      <div className="clipping-body-teaser">
+                        调查发现：关键剧情线索在此解锁...
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               </div>
+            );
+          })}
+          
+          {/* Center Hint if Board Empty */}
+          {unlockedNodes.length === 0 && (
+            <div className="clue-wall-empty-state">
+              <h4>此案卷尚待开启调查</h4>
+              <p style={{ fontSize: '12px', opacity: 0.7 }}>请先在侦探书房中解锁此书并解密第一章文本。</p>
             </div>
-          );
-        })()}
+          )}
 
+        </div>
       </div>
+
+      {/* Floating Detail Panel (Folder Box) */}
+      {selectedNode && (() => {
+        const suspectData = getSuspectStatus(selectedNode.id);
+        const suspect = suspectData?.suspect;
+        const isDeceased = suspectData?.isDeceased || false;
+
+        return (
+          <div className="clue-detail-overlay" onClick={() => setSelectedNode(null)}>
+            <div className="clue-detail-panel" onClick={(e) => e.stopPropagation()}>
+              
+              <div className="clue-detail-folder-tab">
+                CASE FILE: {selectedNode.id.toUpperCase()}
+              </div>
+              
+              <header className="clue-detail-header">
+                <div>
+                  <span className="clue-detail-type-tag">
+                    {selectedNode.type === 'suspect' || selectedNode.type === 'victim' 
+                      ? (isDeceased ? '遇害人 / DECEASED' : '嫌疑人 / SUSPECT') 
+                      : selectedNode.type === 'clue' ? '案件物证 / EVIDENCE' : '关键事件 / EVENT'}
+                  </span>
+                  <h4 className="clue-detail-title-zh">{selectedNode.labelZH}</h4>
+                  <h5 className="clue-detail-title-en">{selectedNode.labelEN}</h5>
+                </div>
+                <button className="clue-detail-close-btn" onClick={() => setSelectedNode(null)}>
+                  &times;
+                </button>
+              </header>
+
+              <div className="clue-detail-body">
+                {/* Basic description */}
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">案卷摘要 / Description</h6>
+                  <p style={{ fontSize: '13px', lineHeight: 1.5, marginBottom: '8px' }}>{selectedNode.descZH}</p>
+                  <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic' }}>{selectedNode.descEN}</p>
+                </div>
+
+                {/* Extended Suspect Stats (Bilingual) */}
+                {suspect && (
+                  <>
+                    <div className="clue-detail-divider" />
+                    
+                    <div className="clue-detail-section">
+                      <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
+                      <p style={{ fontSize: '13px' }}><strong>{suspect.nameZH}</strong> - {suspect.titleZH}</p>
+                      <p style={{ fontSize: '11px', opacity: 0.7 }}><strong>{suspect.nameEN}</strong> - {suspect.titleEN}</p>
+                    </div>
+                    
+                    <div className="clue-detail-divider" />
+
+                    <div className="clue-detail-section">
+                      <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
+                      <p style={{ fontSize: '13px', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.accusationZH}</p>
+                      <p style={{ fontSize: '11px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic' }}>{suspect.accusationEN}</p>
+                    </div>
+
+                    <div className="clue-detail-divider" />
+
+                    <div className="clue-detail-section">
+                      <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
+                      <p style={{ fontSize: '13px', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.alibiZH}</p>
+                      <p style={{ fontSize: '11px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic' }}>{suspect.alibiEN}</p>
+                    </div>
+
+                    {isDeceased && suspect.deathMethodZH && (
+                      <>
+                        <div className="clue-detail-divider" style={{ borderTop: '1px solid #c24646' }} />
+                        <div className="clue-detail-section deceased-section">
+                          <h6 className="clue-detail-sec-title" style={{ color: '#b22222' }}>遇害实录 / Death Circumstance</h6>
+                          <p style={{ fontSize: '13px', color: '#b22222', fontWeight: '500', lineHeight: 1.4, marginBottom: '4px' }}>{suspect.deathMethodZH}</p>
+                          <p style={{ fontSize: '11px', color: '#c24646', fontStyle: 'italic', lineHeight: 1.3 }}>{suspect.deathMethodEN}</p>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <footer className="clue-detail-footer">
+                <button className="btn-rect" style={{ padding: '5px 15px', fontSize: '12px' }} onClick={() => setSelectedNode(null)}>
+                  合上案卷 (Close File)
+                </button>
+              </footer>
+
+            </div>
+          </div>
+        );
+      })()}
+
+    </div>
+  );
+
+  if (isStandalone) {
+    return (
+      <div className="clue-wall-standalone-page" style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        {renderContainer}
+      </div>
+    );
+  }
+
+  return (
+    <div className="clue-wall-overlay">
+      {renderContainer}
     </div>
   );
 }

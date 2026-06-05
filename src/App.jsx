@@ -176,15 +176,77 @@ function App() {
   
   const [isClueWallOpen, setIsClueWallOpen] = useState(false);
   const [clueWallPositions, setClueWallPositions] = useState({});
+  const [isStandaloneClueWall, setIsStandaloneClueWall] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'cluewall') {
+      setIsStandaloneClueWall(true);
+    }
+  }, []);
+
+  // Synchronize state from other tabs (local storage changes) in standalone clue wall window
+  useEffect(() => {
+    if (!isStandaloneClueWall) return;
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'detective_console_save') {
+        try {
+          const data = JSON.parse(e.newValue);
+          if (data.clueWallPositions !== undefined) setClueWallPositions(data.clueWallPositions);
+          if (data.novelStates !== undefined) setNovelStates(data.novelStates);
+          if (data.unlockedNovels !== undefined) setUnlockedNovels(data.unlockedNovels);
+          if (data.activeNovelId !== undefined) setActiveNovelId(data.activeNovelId);
+          if (data.library !== undefined) setLibrary(data.library);
+          if (data.di !== undefined) setDi(data.di);
+        } catch (err) {
+          console.error("Failed to sync storage in standalone window", err);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [isStandaloneClueWall]);
 
   const updateClueWallPosition = (novelId, nodeId, x, y) => {
-    setClueWallPositions(prev => ({
-      ...prev,
-      [novelId]: {
-        ...(prev[novelId] || {}),
-        [nodeId]: { x, y }
+    setClueWallPositions(prev => {
+      const nextPositions = {
+        ...prev,
+        [novelId]: {
+          ...(prev[novelId] || {}),
+          [nodeId]: { x, y }
+        }
+      };
+      
+      if (isStandaloneClueWall) {
+        // Save immediately in standalone mode
+        const saved = localStorage.getItem('detective_console_save');
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+            data.clueWallPositions = nextPositions;
+            localStorage.setItem('detective_console_save', JSON.stringify(data));
+          } catch (e) {
+            console.error(e);
+          }
+        }
       }
-    }));
+      
+      return nextPositions;
+    });
+  };
+
+  const openClueWallWindow = () => {
+    const width = 1040;
+    const height = 700;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+    window.open(
+      window.location.origin + window.location.pathname + '?view=cluewall',
+      'ClueWallWindow',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=no`
+    );
   };
   
   // Cache diRate to avoid running calculation on every tick
@@ -337,6 +399,7 @@ function App() {
   saveStateRef.current = { di, upgrades, unlockedNovels, activeNovelId, library, novelStates, currentView, readerBookId, clueWallPositions };
 
   useEffect(() => {
+    if (isStandaloneClueWall) return;
     const interval = setInterval(() => {
       const state = saveStateRef.current;
       localStorage.setItem('detective_console_save', JSON.stringify({
@@ -345,10 +408,11 @@ function App() {
       }));
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isStandaloneClueWall]);
 
   // Core Idle Game Loop (Ticks every 100ms)
   useEffect(() => {
+    if (isStandaloneClueWall) return;
     const tick = setInterval(() => {
       const state = loopStateRef.current;
       if (!state) return;
@@ -414,7 +478,7 @@ function App() {
       }
     }, 100);
     return () => clearInterval(tick);
-  }, []);
+  }, [isStandaloneClueWall]);
 
   // Upgrade Purchase Action
   const buyUpgrade = (upgradeId) => {
@@ -627,6 +691,21 @@ function App() {
     return parts.join(' ');
   };
 
+  if (isStandaloneClueWall) {
+    return (
+      <ClueWallModal 
+        isOpen={true}
+        onClose={() => window.close()}
+        novelStates={novelStates}
+        unlockedNovels={unlockedNovels}
+        activeNovelId={activeNovelId}
+        clueWallPositions={clueWallPositions}
+        updateClueWallPosition={updateClueWallPosition}
+        isStandalone={true}
+      />
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Global Header */}
@@ -642,7 +721,7 @@ function App() {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button className="btn-rect" onClick={() => setIsClueWallOpen(true)}>
+          <button className="btn-rect" onClick={openClueWallWindow}>
             📌 案卷线索墙
           </button>
           <button className="btn-rect" onClick={toggleTheme}>
@@ -761,17 +840,6 @@ function App() {
           </div>
         </div>
       )}
-
-      {/* Clue wall modal */}
-      <ClueWallModal 
-        isOpen={isClueWallOpen}
-        onClose={() => setIsClueWallOpen(false)}
-        novelStates={novelStates}
-        unlockedNovels={unlockedNovels}
-        activeNovelId={activeNovelId}
-        clueWallPositions={clueWallPositions}
-        updateClueWallPosition={updateClueWallPosition}
-      />
     </div>
   );
 }
