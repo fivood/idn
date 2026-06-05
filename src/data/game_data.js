@@ -492,7 +492,7 @@ export const novelsList = [
     detectiveEN: "Daniel Hawthorne",
     descriptionZH: "一位名门名媛在亲自为自己预办丧礼的六小时后，在寓所中离奇遇害。她那闻名全球的演员儿子也随之陷入嫌疑。前警探霍桑受命介入调查，并拉上了小说家霍洛维茨作为记录员，展开了一场虚实交织的追凶之旅。",
     descriptionEN: "A wealthy woman arranges her own funeral and is murdered six hours later. Her famous actor son becomes a suspect. Ex-detective Hawthorne takes the case and recruits writer Horowitz to document his investigation.",
-    baseCost: 500,
+    baseCost: 0, // First novel of the Hawthorne series is free to unlock
     totalChapters: 24,
     suspects: [
       {

@@ -153,21 +153,10 @@ export const getProgressBarColor = (rate, isDark) => {
 function App() {
   const [di, setDi] = useState(0);
   const [upgrades, setUpgrades] = useState({});
-  const [unlockedNovels, setUnlockedNovels] = useState(['attwn']);
+  const [unlockedNovels, setUnlockedNovels] = useState([]);
   const [activeNovelId, setActiveNovelId] = useState(null);
   const [library, setLibrary] = useState([]);
-  const [novelStates, setNovelStates] = useState({
-    attwn: {
-      unlockedChapters: [1],
-      currentChapterId: 1,
-      pagesUnlocked: 0,
-      pagesRead: 0,
-      clueLevels: {}, // clueId -> level
-      finished: false,
-      timeElapsed: 0,
-      accusedSuspectId: null
-    }
-  });
+  const [novelStates, setNovelStates] = useState({});
   const [visualProgress, setVisualProgress] = useState(0);
   
   const [currentView, setCurrentView] = useState('library'); // Start on the bookshelf system
