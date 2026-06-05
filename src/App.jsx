@@ -764,7 +764,7 @@ function App() {
           <div>
             <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '6px' }}>
               贝克街私家侦探档案柜
-              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.2.2</span>
+              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.2.3</span>
             </h1>
             <span className="di-rate" style={{ fontSize: '11px', display: 'block', marginTop: '2px' }}>
               侦查效率: {diRate < 0.1 ? diRate.toFixed(3) : diRate < 1 ? diRate.toFixed(2) : diRate.toFixed(1)} DI/秒
@@ -919,6 +919,9 @@ function App() {
                   检查失败：{
                     (() => {
                       const err = updateStatus.error.toLowerCase();
+                      if (err.includes('release json') || err.includes('valid release') || err.includes('remote')) {
+                        return `获取更新包配置失败。这通常是由于启用了代理软件/虚拟网卡（VPN），导致网络请求被拦截、代理服务返回了非 JSON 格式的报错响应（如代理提示 HTML 页面）或 SSL 证书信任失败。请尝试：1. 切换为直连/规则模式；2. 更换可用代理节点；3. 暂时关闭代理后再试。(${updateStatus.error})`;
+                      }
                       if (err.includes('connect') || err.includes('timeout') || err.includes('dns') || err.includes('network') || err.includes('host') || err.includes('reqwest')) {
                         return `网络连接失败，无法连接 GitHub。请检查互联网连接或代理设置。(${updateStatus.error})`;
                       }

@@ -1,7 +1,7 @@
 {
   "name": "idn",
   "private": true,
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Bilingual Idle Detective Console",
   "main": "index.js",
   "scripts": {
