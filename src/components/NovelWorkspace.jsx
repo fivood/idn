@@ -671,72 +671,70 @@ function NovelWorkspace({
             <div ref={readerEndRef} />
           </div>
 
-          {novelState.pagesRead < novelState.pagesUnlocked && (
-            <div className="reader-controls-card" style={{ marginBottom: '12px', position: 'relative' }}>
-              <div className="controls-left">
-                <span className="inventory-badge">
-                  未读缓存: <strong>{novelState.pagesUnlocked - novelState.pagesRead}</strong> 页
-                  {novelState.pagesRead < novelState.pagesUnlocked && (() => {
-                    const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
-                    const reward = Math.round(baseReward * (1 + 0.01 * novelState.pagesRead));
-                    return <span style={{ color: 'var(--color-success)', marginLeft: '8px' }}>(阅读可得 +{reward} DI)</span>;
-                  })()}
-                </span>
-              </div>
-              
-              <div className="controls-actions">
-                <button 
-                  className={`btn-rect ${autoPlay ? 'color-klein active' : ''}`}
-                  onClick={() => setAutoPlay(prev => !prev)}
-                  style={{ minWidth: '130px' }}
-                >
-                  {autoPlay ? '自动播放: 开启' : '自动播放: 关闭'}
-                </button>
+          {/* Bottom Action Area (Mutually Exclusive) */}
+          <div style={{ marginTop: '4px' }}>
+            {novelState.pagesRead < novelState.pagesUnlocked ? (
+              <div className="reader-controls-card" style={{ marginBottom: '0px', position: 'relative' }}>
+                <div className="controls-left">
+                  <span className="inventory-badge">
+                    未读缓存: <strong>{novelState.pagesUnlocked - novelState.pagesRead}</strong> 页
+                    {novelState.pagesRead < novelState.pagesUnlocked && (() => {
+                      const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
+                      const reward = Math.round(baseReward * (1 + 0.01 * novelState.pagesRead));
+                      return <span style={{ color: 'var(--color-success)', marginLeft: '8px' }}>(阅读可得 +{reward} DI)</span>;
+                    })()}
+                  </span>
+                </div>
                 
-                {revealedChars < maxLen ? (
-                  <>
-                    <button 
-                      className="btn-rect"
-                      onClick={() => setRevealedChars(prev => Math.min(maxLen, prev + 5))}
-                    >
-                      点击手动推进 (+5字)
-                    </button>
-                    <button 
-                      className="btn-rect"
-                      onClick={() => setRevealedChars(maxLen)}
-                    >
-                      瞬间显现
-                    </button>
-                  </>
-                ) : (
+                <div className="controls-actions">
                   <button 
-                    className="btn-rect color-klein"
-                    onClick={() => {
-                      handleReadNextPage();
-                      setRevealedChars(0);
-                    }}
-                    style={{ fontWeight: 'bold', paddingLeft: '24px', paddingRight: '24px' }}
+                    className={`btn-rect ${autoPlay ? 'color-klein active' : ''}`}
+                    onClick={() => setAutoPlay(prev => !prev)}
+                    style={{ minWidth: '130px' }}
                   >
-                    翻阅下一段
+                    {autoPlay ? '自动播放: 开启' : '自动播放: 关闭'}
                   </button>
-                )}
-              </div>
+                  
+                  {revealedChars < maxLen ? (
+                    <>
+                      <button 
+                        className="btn-rect"
+                        onClick={() => setRevealedChars(prev => Math.min(maxLen, prev + 5))}
+                      >
+                        点击手动推进 (+5字)
+                      </button>
+                      <button 
+                        className="btn-rect"
+                        onClick={() => setRevealedChars(maxLen)}
+                      >
+                        瞬间显现
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      className="btn-rect color-klein"
+                      onClick={() => {
+                        handleReadNextPage();
+                        setRevealedChars(0);
+                      }}
+                      style={{ fontWeight: 'bold', paddingLeft: '24px', paddingRight: '24px' }}
+                    >
+                      翻阅下一段
+                    </button>
+                  )}
+                </div>
 
-              {/* Floating rewards container */}
-              <div className="floating-rewards-container">
-                {floatingRewards.map(r => (
-                  <div key={r.id} className="floating-reward">
-                    +{r.amount} DI
-                  </div>
-                ))}
+                {/* Floating rewards container */}
+                <div className="floating-rewards-container">
+                  {floatingRewards.map(r => (
+                    <div key={r.id} className="floating-reward">
+                      +{r.amount} DI
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Footer Controls: Chapter Transition */}
-          <div>
-            {allPagesRead && (
-              <div className="card-rect" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px' }}>
+            ) : allPagesRead ? (
+              <div className="card-rect" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px', padding: '10px 16px' }}>
                 <div className="mono" style={{ fontSize: '13px' }}>
                   [ 本章文字解锁完毕 ]
                 </div>
@@ -746,25 +744,22 @@ function NovelWorkspace({
                       className="btn-rect color-klein"
                       disabled={di < CHAPTER_COSTS[currentChapterId + 1]}
                       onClick={() => unlockNextChapter(novelId, currentChapterId + 1)}
-                      style={{ padding: '12px 24px', fontWeight: 'bold' }}
+                      style={{ padding: '8px 16px', fontWeight: 'bold' }}
                     >
-                      结案归档并开启下一章<br />
-                      <span className="mono" style={{ fontSize: '11px' }}>
-                        -{CHAPTER_COSTS[currentChapterId + 1].toLocaleString()} DI
-                      </span>
+                      结案归档并开启下一章 (-{CHAPTER_COSTS[currentChapterId + 1].toLocaleString()} DI)
                     </button>
                   ) : (
                     <button 
                       className="btn-rect color-crimson"
                       onClick={() => finishNovel(novelId)}
-                      style={{ padding: '12px 24px', fontWeight: 'bold' }}
+                      style={{ padding: '8px 16px', fontWeight: 'bold' }}
                     >
                       终结全案归档
                     </button>
                   )}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
