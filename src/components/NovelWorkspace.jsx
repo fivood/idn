@@ -134,6 +134,10 @@ function NovelWorkspace({
   const [autoPlay, setAutoPlay] = useState(() => {
     return localStorage.getItem('detective_auto_play') === 'true';
   });
+  const [playSpeed, setPlaySpeed] = useState(() => {
+    const saved = localStorage.getItem('detective_play_speed');
+    return saved ? parseFloat(saved) : 1.0;
+  });
   const [toastMessage, setToastMessage] = useState(null);
   const [floatingRewards, setFloatingRewards] = useState([]);
 
@@ -181,6 +185,10 @@ function NovelWorkspace({
   useEffect(() => {
     localStorage.setItem('detective_auto_play', autoPlay);
   }, [autoPlay]);
+
+  useEffect(() => {
+    localStorage.setItem('detective_play_speed', playSpeed);
+  }, [playSpeed]);
 
   // Reset typewriter when page or chapter changes
   useEffect(() => {
@@ -247,9 +255,10 @@ function NovelWorkspace({
 
     if (revealedChars >= maxLen) {
       if (autoPlay) {
+        const delayTime = Math.max(100, Math.round(1200 / playSpeed));
         const timeout = setTimeout(() => {
           handleReadNextPage();
-        }, 1200);
+        }, delayTime);
         return () => clearTimeout(timeout);
       }
       return;
@@ -257,12 +266,13 @@ function NovelWorkspace({
 
     if (!autoPlay) return;
 
+    const intervalTime = Math.max(5, Math.round(20 / playSpeed));
     const interval = setInterval(() => {
       setRevealedChars(prev => {
         const next = prev + 1;
         return next >= maxLen ? maxLen : next;
       });
-    }, 20); // 20ms per character
+    }, intervalTime);
 
     return () => clearInterval(interval);
   }, [
@@ -276,7 +286,8 @@ function NovelWorkspace({
     currentPageObj,
     maxLen,
     handleReadNextPage,
-    viewedChapterId
+    viewedChapterId,
+    playSpeed
   ]);
 
   // Scroll to bottom of reader when new pages are read/revealed
@@ -777,7 +788,28 @@ function NovelWorkspace({
                   </span>
                 </div>
                 
-                <div className="controls-actions">
+                <div className="controls-actions" style={{ alignItems: 'center' }}>
+                  <div style={{ display: 'inline-flex', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', overflow: 'hidden', marginRight: '4px' }}>
+                    {[0.5, 1.0, 1.5, 2.0].map((speed, idx) => (
+                      <button
+                        key={speed}
+                        className={`btn-rect ${playSpeed === speed ? 'active' : ''}`}
+                        onClick={() => setPlaySpeed(speed)}
+                        style={{ 
+                          padding: '4px 8px', 
+                          fontSize: '10px', 
+                          border: 'none', 
+                          borderRight: idx < 3 ? '1px solid var(--border-color)' : 'none',
+                          borderRadius: 0,
+                          minWidth: '38px',
+                          textAlign: 'center'
+                        }}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
+
                   <button 
                     className={`btn-rect ${autoPlay ? 'active' : ''}`}
                     onClick={() => setAutoPlay(true)}
