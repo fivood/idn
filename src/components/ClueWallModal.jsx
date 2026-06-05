@@ -105,12 +105,13 @@ function ClueWallModal({
   };
 
   // 2. Filter nodes and links by progress
+  const unlockedChapters = currentNovelState.unlockedChapters || [1];
   const unlockedNodes = currentNovelInfo?.clueWall?.nodes?.filter(node => {
-    return currentNovelState.unlockedChapters.includes(node.unlockChapter) || currentNovelState.currentChapterId >= node.unlockChapter;
+    return unlockedChapters.includes(node.unlockChapter) || currentNovelState.currentChapterId >= node.unlockChapter;
   }) || [];
 
   const unlockedLinks = currentNovelInfo?.clueWall?.links?.filter(link => {
-    const isLinkChapterUnlocked = currentNovelState.unlockedChapters.includes(link.unlockChapter) || currentNovelState.currentChapterId >= link.unlockChapter;
+    const isLinkChapterUnlocked = unlockedChapters.includes(link.unlockChapter) || currentNovelState.currentChapterId >= link.unlockChapter;
     const isFromNodeVisible = unlockedNodes.some(n => n.id === link.from);
     const isToNodeVisible = unlockedNodes.some(n => n.id === link.to);
     return isLinkChapterUnlocked && isFromNodeVisible && isToNodeVisible;
