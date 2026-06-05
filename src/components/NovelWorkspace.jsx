@@ -598,25 +598,18 @@ function NovelWorkspace({
                   </select>
                 </div>
                 <button 
-                  className="btn-rect color-klein"
-                  onClick={onOpenClueWall}
-                  style={{ padding: '4px 8px', fontSize: '11px' }}
-                >
-                  📌 案卷线索墙
-                </button>
-                <button 
                   className={`btn-rect ${langMode === 'zh' ? 'active' : ''}`}
                   onClick={() => setLangMode('zh')}
                   style={{ padding: '4px 8px', fontSize: '11px' }}
                 >
-                  中文
+                  中
                 </button>
                 <button 
                   className={`btn-rect ${langMode === 'en' ? 'active' : ''}`}
                   onClick={() => setLangMode('en')}
                   style={{ padding: '4px 8px', fontSize: '11px' }}
                 >
-                  英文
+                  EN
                 </button>
               </div>
             </div>
@@ -871,6 +864,23 @@ function NovelWorkspace({
 
         {/* Right Column: Case Memo */}
         <div className="workspace-right">
+          <button 
+            className="btn-rect color-klein"
+            onClick={onOpenClueWall}
+            style={{ 
+              width: '100%', 
+              padding: '10px 14px', 
+              fontSize: '12px', 
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}
+          >
+            📌 案卷线索墙
+          </button>
           {renderWorkspaceMemo()}
 
           {/* Case File Statistics Panel */}
