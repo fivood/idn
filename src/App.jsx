@@ -5,6 +5,7 @@ import Console from './components/Console';
 import NovelWorkspace from './components/NovelWorkspace';
 import Library from './components/Library';
 import BookReader from './components/BookReader';
+import Logo from './components/Logo';
 
 // Chapter Unlock Costs
 const CHAPTER_COSTS = {
@@ -169,7 +170,7 @@ function App() {
   });
   const [visualProgress, setVisualProgress] = useState(0);
   
-  const [currentView, setCurrentView] = useState('console'); // console, novel, library, reader
+  const [currentView, setCurrentView] = useState('library'); // Start on the bookshelf system
   const [readerBookId, setReaderBookId] = useState(null);
   const [offlineReport, setOfflineReport] = useState(null);
   
@@ -616,11 +617,14 @@ function App() {
     <div className="app-container">
       {/* Global Header */}
       <header className="global-header">
-        <div>
-          <h1 style={{ fontSize: '18px' }}>侦查控制台</h1>
-          <span className="di-rate">
-            侦查效率: {diRate.toFixed(1)} DI/秒
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Logo size={26} style={{ color: 'var(--text-main)' }} />
+          <div>
+            <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0, lineHeight: 1.2 }}>贝克街私家侦探档案柜</h1>
+            <span className="di-rate" style={{ fontSize: '11px', display: 'block', marginTop: '2px' }}>
+              侦查效率: {diRate.toFixed(1)} DI/秒
+            </span>
+          </div>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
