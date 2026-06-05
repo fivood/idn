@@ -99,7 +99,7 @@ const INTRODUCED_PARAS = {
 
 const formatBracketText = (text) => {
   if (!text) return "";
-  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">[$1]</span>');
+  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">$1</span>');
 };
 
 function NovelWorkspace({
@@ -397,7 +397,7 @@ function NovelWorkspace({
     
     return (
       <div className="card-rect" style={{ borderLeft: '4px solid var(--border-highlight)', marginBottom: '0px' }}>
-        <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px', fontSize: '13px' }}>
+        <h4 className="column-title color-gold" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px', fontSize: '13px' }}>
           当前侦查指令
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
@@ -425,7 +425,7 @@ function NovelWorkspace({
         <div className="workspace-left">
           {/* Suspects Cards */}
           <div className="suspect-grid">
-            <h4 style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+            <h4 className="column-title color-red" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
               现场嫌疑人列表
             </h4>
             {suspects.filter(s => isSuspectIntroduced(s)).map(s => {
@@ -875,7 +875,7 @@ function NovelWorkspace({
 
           {/* Case File Statistics Panel */}
           <div className="card-rect" style={{ fontSize: '12px', marginTop: 'auto', marginBottom: '0px' }}>
-            <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+            <h4 className="column-title color-spruce" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
               案情侦破进度统计
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

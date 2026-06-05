@@ -79,7 +79,7 @@ const CHAPTER_SUMMARIES = {
 
 const formatBracketText = (text) => {
   if (!text) return "";
-  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">[$1]</span>');
+  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">$1</span>');
 };
 
 function BookReader({ novelId, handleBack }) {
