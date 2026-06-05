@@ -96,6 +96,11 @@ const INTRODUCED_PARAS = {
   arthur: { chapterId: 3, index: 0 }
 };
 
+const formatBracketText = (text) => {
+  if (!text) return "";
+  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">[$1]</span>');
+};
+
 function NovelWorkspace({
   di,
   novelId,
@@ -126,6 +131,16 @@ function NovelWorkspace({
   const maxLen = currentPageObj ? Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0) : 0;
   const totalPagesAll = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
   
+  // Chapter menu navigation
+  const [viewedChapterId, setViewedChapterId] = useState(currentChapterId);
+  
+  // Sync viewedChapterId when currentChapterId or novelId changes
+  useEffect(() => {
+    setViewedChapterId(currentChapterId);
+  }, [currentChapterId, novelId]);
+  
+  const viewedChapterData = bookChapters.find(c => c.id === viewedChapterId);
+
   // Reader view options: zh, en
   const [langMode, setLangMode] = useState('zh');
   
@@ -212,6 +227,10 @@ function NovelWorkspace({
       return;
     }
 
+    if (viewedChapterId !== currentChapterId) {
+      return;
+    }
+
     const currentPageObj = currentChapterData?.pages[novelState.pagesRead];
     if (!currentPageObj) return;
 
@@ -246,7 +265,8 @@ function NovelWorkspace({
     autoPlay,
     novelState.finished,
     currentChapterData,
-    handleReadNextPage
+    handleReadNextPage,
+    viewedChapterId
   ]);
 
   // Scroll to bottom of reader when new pages are read/revealed
@@ -255,7 +275,7 @@ function NovelWorkspace({
     if (readerEndRef.current) {
       readerEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [novelState.pagesRead, novelState.pagesUnlocked, novelId]);
+  }, [novelState.pagesRead, novelState.pagesUnlocked, novelId, viewedChapterId]);
 
   if (!currentChapterData) {
     return <div className="card-rect">正在加载案卷数据...</div>;
@@ -579,9 +599,33 @@ function NovelWorkspace({
           <div className="chapter-header-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '8px' }}>
               <h2 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>
-                《{currentNovelInfo.titleZH}》 - {currentChapterData.titleZH} / {currentChapterData.titleEN}
+                《{currentNovelInfo.titleZH}》 - {viewedChapterData?.titleZH || ""} / {viewedChapterData?.titleEN || ""}
               </h2>
               <div className="reader-settings" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '4px' }}>
+                  <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>章节:</span>
+                  <select 
+                    style={{ 
+                      backgroundColor: 'var(--bg-panel)', 
+                      color: 'var(--text-main)', 
+                      border: '1px solid var(--border-color)', 
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontFamily: 'monospace',
+                      outline: 'none',
+                      cursor: 'pointer',
+                      borderRadius: 'var(--border-radius)'
+                    }}
+                    value={viewedChapterId}
+                    onChange={(e) => setViewedChapterId(parseInt(e.target.value))}
+                  >
+                    {bookChapters.filter(c => c.id <= (novelState.finished ? currentNovelInfo.totalChapters : currentChapterId)).map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.id === currentChapterId && !novelState.finished ? `第 ${c.id} 章 (侦查中)` : `第 ${c.id} 章 (已通关)`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button 
                   className="btn-rect color-klein"
                   onClick={onOpenClueWall}
@@ -609,8 +653,14 @@ function NovelWorkspace({
             {/* Combined Progress Indicators Row */}
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '11px', width: '100%', flexWrap: 'wrap', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ color: 'var(--text-muted)' }}>当前章节解密:</span>
-                <span className="mono" style={{ fontWeight: 'bold' }}>第 {novelState.pagesRead} / {totalPages} 页</span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {viewedChapterId === currentChapterId ? "当前章节解密:" : "回顾章节页数:"}
+                </span>
+                <span className="mono" style={{ fontWeight: 'bold' }}>
+                  {viewedChapterId === currentChapterId 
+                    ? `第 ${novelState.pagesRead} / ${totalPages} 页` 
+                    : `共 ${viewedChapterData?.pages.length || 0} 页`}
+                </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '180px' }}>
                 <span style={{ color: 'var(--text-muted)' }}>全案总解密:</span>
@@ -641,78 +691,95 @@ function NovelWorkspace({
 
           {/* Reading Viewer */}
           <div className="text-viewer">
-            {currentChapterData.pages.slice(0, novelState.pagesRead).map((p, idx) => (
-              <div key={idx} className="para-block">
-                {langMode !== 'zh' && p.en && (
-                  <p className="para-en" dangerouslySetInnerHTML={{ __html: p.en }}></p>
-                )}
-                {langMode !== 'en' && p.zh && (
-                  <p className="para-zh" dangerouslySetInnerHTML={{ __html: p.zh }}></p>
-                )}
-                
-                {p.zh.includes("童谣") && (
-                  <span className="clue-tag">发现疑点：童谣壁挂</span>
-                )}
-                {p.zh.includes("唱片") && (
-                  <span className="clue-tag">发现疑点：留声机审判</span>
-                )}
-              </div>
-            ))}
-
-            {/* Currently typing page */}
-            {novelState.pagesRead < novelState.pagesUnlocked && (() => {
-              const p = currentPageObj;
-              if (!p) return null;
-              
-              const isDone = revealedChars >= maxLen;
-              
-              // Slice text proportionally
-              const zhLen = maxLen > 0 ? Math.round(p.zh.length * (revealedChars / maxLen)) : 0;
-              const enLen = maxLen > 0 ? Math.round(p.en.length * (revealedChars / maxLen)) : 0;
-              const zhText = p.zh.slice(0, zhLen);
-              const enText = p.en.slice(0, enLen);
-              
-              return (
-                <div className="para-block current-typing" style={{ borderLeft: '3px solid var(--klein-blue)', paddingLeft: '8px' }}>
+            {viewedChapterId < currentChapterId ? (
+              // Reviewing completed chapter: show all pages
+              viewedChapterData?.pages.map((p, idx) => (
+                <div key={idx} className="para-block">
                   {langMode !== 'zh' && p.en && (
-                    <p className="para-en">
-                      <span dangerouslySetInnerHTML={{ __html: enText }}></span>
-                      {!isDone && <span className="typing-cursor">|</span>}
-                    </p>
+                    <p className="para-en" dangerouslySetInnerHTML={{ __html: formatBracketText(p.en) }}></p>
                   )}
                   {langMode !== 'en' && p.zh && (
-                    <p className="para-zh" style={{ marginTop: '6px' }}>
-                      <span dangerouslySetInnerHTML={{ __html: zhText }}></span>
-                      {!isDone && <span className="typing-cursor">|</span>}
-                    </p>
-                  )}
-                  
-                  {isDone && p.zh.includes("童谣") && (
-                    <span className="clue-tag">发现疑点：童谣壁挂</span>
-                  )}
-                  {isDone && p.zh.includes("唱片") && (
-                    <span className="clue-tag">发现疑点：留声机审判</span>
+                    <p className="para-zh" dangerouslySetInnerHTML={{ __html: formatBracketText(p.zh) }}></p>
                   )}
                 </div>
-              );
-            })()}
+              ))
+            ) : (
+              // Active chapter
+              <>
+                {viewedChapterData?.pages.slice(0, novelState.pagesRead).map((p, idx) => (
+                  <div key={idx} className="para-block">
+                    {langMode !== 'zh' && p.en && (
+                      <p className="para-en" dangerouslySetInnerHTML={{ __html: formatBracketText(p.en) }}></p>
+                    )}
+                    {langMode !== 'en' && p.zh && (
+                      <p className="para-zh" dangerouslySetInnerHTML={{ __html: formatBracketText(p.zh) }}></p>
+                    )}
+                    
+                    {p.zh.includes("童谣") && (
+                      <span className="clue-tag">发现疑点：童谣壁挂</span>
+                    )}
+                    {p.zh.includes("唱片") && (
+                      <span className="clue-tag">发现疑点：留声机审判</span>
+                    )}
+                  </div>
+                ))}
 
-            {/* Page Auto-Decryption Progress Indicator */}
-            {!allPagesUnlocked && novelState.pagesRead === novelState.pagesUnlocked && (
-              <div className="para-block locked">
-                <div style={{ marginBottom: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  [ 正在解密下一页原文本中... ]
-                </div>
-                <div className="decryption-timer-container">
-                  <div 
-                    className="decryption-timer-bar" 
-                    style={{ width: `${((novelState.timeElapsed || 0) / decryptionInterval) * 100}%` }}
-                  ></div>
-                </div>
-                <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  解密进度: {(novelState.timeElapsed || 0).toFixed(1)}秒 / {(decryptionInterval).toFixed(1)}秒
-                </div>
-              </div>
+                {/* Currently typing page */}
+                {novelState.pagesRead < novelState.pagesUnlocked && (() => {
+                  const p = currentPageObj;
+                  if (!p) return null;
+                  
+                  const isDone = revealedChars >= maxLen;
+                  
+                  // Slice text proportionally
+                  const zhLen = maxLen > 0 ? Math.round(p.zh.length * (revealedChars / maxLen)) : 0;
+                  const enLen = maxLen > 0 ? Math.round(p.en.length * (revealedChars / maxLen)) : 0;
+                  const zhText = p.zh.slice(0, zhLen);
+                  const enText = p.en.slice(0, enLen);
+                  
+                  return (
+                    <div className="para-block current-typing" style={{ borderLeft: '3px solid var(--klein-blue)', paddingLeft: '8px' }}>
+                      {langMode !== 'zh' && p.en && (
+                        <p className="para-en">
+                          <span dangerouslySetInnerHTML={{ __html: formatBracketText(enText) }}></span>
+                          {!isDone && <span className="typing-cursor">|</span>}
+                        </p>
+                      )}
+                      {langMode !== 'en' && p.zh && (
+                        <p className="para-zh" style={{ marginTop: '6px' }}>
+                          <span dangerouslySetInnerHTML={{ __html: formatBracketText(zhText) }}></span>
+                          {!isDone && <span className="typing-cursor">|</span>}
+                        </p>
+                      )}
+                      
+                      {isDone && p.zh.includes("童谣") && (
+                        <span className="clue-tag">发现疑点：童谣壁挂</span>
+                      )}
+                      {isDone && p.zh.includes("唱片") && (
+                        <span className="clue-tag">发现疑点：留声机审判</span>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Page Auto-Decryption Progress Indicator */}
+                {!allPagesUnlocked && novelState.pagesRead === novelState.pagesUnlocked && (
+                  <div className="para-block locked">
+                    <div style={{ marginBottom: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      [ 正在解密下一页原文本中... ]
+                    </div>
+                    <div className="decryption-timer-container">
+                      <div 
+                        className="decryption-timer-bar" 
+                        style={{ width: `${((novelState.timeElapsed || 0) / decryptionInterval) * 100}%` }}
+                      ></div>
+                    </div>
+                    <div className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                      解密进度: {(novelState.timeElapsed || 0).toFixed(1)}秒 / {(decryptionInterval).toFixed(1)}秒
+                    </div>
+                  </div>
+                )}
+              </>
             )}
             
             <div ref={readerEndRef} />
@@ -720,7 +787,21 @@ function NovelWorkspace({
 
           {/* Bottom Action Area (Mutually Exclusive) */}
           <div style={{ marginTop: '4px' }}>
-            {novelState.pagesRead < novelState.pagesUnlocked ? (
+            {viewedChapterId < currentChapterId ? (
+              // Reviewing historical chapters action card
+              <div className="reader-controls-card" style={{ marginBottom: '0px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                  当前正在回顾第 <strong>{viewedChapterId}</strong> 章 (已通关)
+                </span>
+                <button 
+                  className="btn-rect color-klein"
+                  onClick={() => setViewedChapterId(currentChapterId)}
+                  style={{ fontWeight: 'bold' }}
+                >
+                  返回当前侦查第 {currentChapterId} 章
+                </button>
+              </div>
+            ) : novelState.pagesRead < novelState.pagesUnlocked ? (
               <div className="reader-controls-card" style={{ marginBottom: '0px', position: 'relative' }}>
                 <div className="controls-left">
                   <span className="inventory-badge">

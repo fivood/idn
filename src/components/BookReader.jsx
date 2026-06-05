@@ -76,6 +76,11 @@ const CHAPTER_SUMMARIES = {
   }
 };
 
+const formatBracketText = (text) => {
+  if (!text) return "";
+  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">[$1]</span>');
+};
+
 function BookReader({ novelId, handleBack }) {
   const [currentChapter, setCurrentChapter] = useState(1);
   const [langMode, setLangMode] = useState('zh');
@@ -166,10 +171,10 @@ function BookReader({ novelId, handleBack }) {
           {currentBookData?.pages.map((p, idx) => (
             <div key={idx} className="para-block" style={{ borderBottom: 'none', marginBottom: '20px' }}>
               {langMode !== 'zh' && p.en && (
-                <p className="para-en" style={{ marginBottom: '6px' }} dangerouslySetInnerHTML={{ __html: p.en }}></p>
+                <p className="para-en" style={{ marginBottom: '6px' }} dangerouslySetInnerHTML={{ __html: formatBracketText(p.en) }}></p>
               )}
               {langMode !== 'en' && p.zh && (
-                <p className="para-zh" dangerouslySetInnerHTML={{ __html: p.zh }}></p>
+                <p className="para-zh" dangerouslySetInnerHTML={{ __html: formatBracketText(p.zh) }}></p>
               )}
             </div>
           ))}

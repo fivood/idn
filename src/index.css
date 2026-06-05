@@ -604,6 +604,13 @@ button.btn-rect.color-crimson:hover:not(:disabled) {
   margin-top: 6px;
 }
 
+.bracket-highlight {
+  color: var(--palette-gold);
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-block;
+}
+
 /* Clue investigation board */
 .clue-workspace {
   margin-top: 16px;
