@@ -106,6 +106,43 @@ const RHYME_LINES = [
   { textZH: "一个小兵孤伶伶，悬梁自尽一个不剩。", suspectId: "vera" }
 ];
 
+const PRE_DEATH_DESCS = {
+  word_diana: {
+    zh: "富有的戴安娜·考珀，居住在自己公寓中，是名演员达米安·考珀的母亲。她今天前往殡仪馆，出人意料地为自己预先筹办了一场葬礼。",
+    en: "Wealthy Diana Cowper, living in her own flat, is the mother of famous actor Damian Cowper. Today, she visited a funeral parlor to plan her own funeral."
+  },
+  sentence_pryce: {
+    zh: "身价斐然的离婚大律师，以强硬无情的诉讼风格闻名，但也因此结怨甚多。",
+    en: "A highly successful and aggressive divorce lawyer, known for his ruthless litigation style."
+  },
+  line_mesurier: {
+    zh: "奥尔德尼岛上的地产富豪，性格傲慢刻薄，在岛上推行多项备受争议的开发计划。",
+    en: "Alderney's wealthy landowner, arrogant and controversial, spearheading several disputed development projects on the island."
+  },
+  line_helen: {
+    zh: "查尔斯·勒·梅苏里尔的妻子，性格温和低调，默默忍受着丈夫的坏脾气和强势作风。",
+    en: "The gentle and low-profile wife of Charles Le Mesurier, patiently enduring her husband's harsh temper."
+  },
+  twist_harriet: {
+    zh: "名声在外的戏剧评论家，文风尖酸刻薄，曾公开嘲讽并批评安东尼·霍洛维茨的新剧。",
+    en: "A notorious drama critic known for her cruel reviews, who recently publicly mocked and panned Anthony Horowitz's new play."
+  }
+};
+
+const getNodeDisplayDescription = (node, isDeceased) => {
+  if (!isDeceased && PRE_DEATH_DESCS[node.id]) {
+    return PRE_DEATH_DESCS[node.id];
+  }
+  return { zh: node.descZH, en: node.descEN };
+};
+
+const getSuspectDisplayTitle = (suspect, isDeceased) => {
+  if (!isDeceased && (suspect.titleZH === '被害人' || suspect.titleZH === '死者' || suspect.titleZH === '遇害者' || suspect.id === 'diana' || suspect.id === 'pryce' || suspect.id === 'mesurier' || suspect.id === 'helen' || suspect.id === 'harriet')) {
+    return { zh: '关系人', en: 'Associate' };
+  }
+  return { zh: suspect.titleZH, en: suspect.titleEN };
+};
+
 function ClueWallModal({
   isOpen,
   onClose,
@@ -432,8 +469,12 @@ function ClueWallModal({
           {/* Basic description */}
           <div className="clue-detail-section">
             <h6 className="clue-detail-sec-title">案卷摘要 / Description</h6>
-            <p style={{ fontSize: '12.5px', lineHeight: 1.5, marginBottom: '6px', margin: 0 }}>{selectedNode.descZH}</p>
-            <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic', margin: 0 }}>{selectedNode.descEN}</p>
+            <p style={{ fontSize: '12.5px', lineHeight: 1.5, marginBottom: '6px', margin: 0 }}>
+              {getNodeDisplayDescription(selectedNode, isDeceased).zh}
+            </p>
+            <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic', margin: 0 }}>
+              {getNodeDisplayDescription(selectedNode, isDeceased).en}
+            </p>
           </div>
 
           {/* Special Child Content for Nursery Rhyme Clue */}
@@ -508,8 +549,12 @@ function ClueWallModal({
               
               <div className="clue-detail-section">
                 <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
-                <p style={{ fontSize: '12px', margin: '2px 0' }}><strong>{suspect.nameZH}</strong> - {suspect.titleZH}</p>
-                <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}><strong>{suspect.nameEN}</strong> - {suspect.titleEN}</p>
+                <p style={{ fontSize: '12px', margin: '2px 0' }}>
+                  <strong>{suspect.nameZH}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).zh}
+                </p>
+                <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}>
+                  <strong>{suspect.nameEN}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).en}
+                </p>
               </div>
               
               <div className="clue-detail-divider" />

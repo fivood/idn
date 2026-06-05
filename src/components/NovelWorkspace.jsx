@@ -335,6 +335,14 @@ function NovelWorkspace({
     return false;
   };
 
+  const getSuspectDisplayTitle = (s) => {
+    const deceased = isSuspectDeceased(s);
+    if (!deceased && (s.titleZH === '被害人' || s.titleZH === '死者' || s.titleZH === '遇害者' || s.id === 'diana' || s.id === 'pryce' || s.id === 'mesurier' || s.id === 'helen' || s.id === 'harriet')) {
+      return { zh: '关系人', en: 'Associate' };
+    }
+    return { zh: s.titleZH, en: s.titleEN };
+  };
+
   // Derived state: check if a clue is discovered at current reading point (prevent spoilers)
   const isClueDiscovered = (c) => {
     const discover = CLUE_DISCOVER_PARAS[c.id];
@@ -467,7 +475,12 @@ function NovelWorkspace({
                     {s.nameZH}
                     <span style={{ display: 'block', fontSize: '9px', fontWeight: 'normal', color: 'var(--text-muted)', marginTop: '2px' }}>{s.nameEN}</span>
                   </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginTop: '2px', lineHeight: '1.2' }}>{s.titleZH} / {s.titleEN}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginTop: '2px', lineHeight: '1.2' }}>
+                    {(() => {
+                      const displayTitle = getSuspectDisplayTitle(s);
+                      return `${displayTitle.zh} / ${displayTitle.en}`;
+                    })()}
+                  </div>
                   {novelId === 'attwn' && (
                     <div style={{ position: 'absolute', top: '6px', right: deceased ? '40px' : '6px', display: 'flex', alignItems: 'center' }} title={deceased ? "玩偶已碎裂" : "小兵玩偶完好"}>
                       {deceased ? (
@@ -522,7 +535,12 @@ function NovelWorkspace({
                   [关闭]
                 </button>
               </div>
-              <div style={{ marginBottom: '6px' }}><strong>身份 / Title:</strong> {selectedSuspect.titleZH} / {selectedSuspect.titleEN}</div>
+              <div style={{ marginBottom: '6px' }}>
+                <strong>身份 / Title:</strong> {(() => {
+                  const displayTitle = getSuspectDisplayTitle(selectedSuspect);
+                  return `${displayTitle.zh} / ${displayTitle.en}`;
+                })()}
+              </div>
               <div style={{ marginBottom: '6px' }}>
                 <strong>留声机指控 / Indictment:</strong> 
                 {isAccusationRevealed() ? (
