@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "1.2.1"
+version = "1.2.4"
 description = "贝克街私家侦探档案柜"
 authors = ["fivood"]
 license = "ISC"
@@ -15,7 +15,7 @@ name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.6.2" }
+tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
 serde_json = "1.0"

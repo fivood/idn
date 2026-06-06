@@ -39,6 +39,13 @@ function Library({
     return 'var(--palette-spruce)'; // Spruce (Daniel Hawthorne series)
   };
 
+  const getPrerequisiteNovel = (bookId) => {
+    if (bookId === 'sentence_is_death') return 'word_is_murder';
+    if (bookId === 'line_to_kill') return 'sentence_is_death';
+    if (bookId === 'twist_of_knife') return 'line_to_kill';
+    return null;
+  };
+
   const getBookTotalPages = (bookId) => {
     const bookChapters = novelData[bookId]?.chapters || [];
     return bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
@@ -99,13 +106,13 @@ function Library({
 
     return (
       <div className="card-rect" style={{ borderLeft: '4px solid var(--border-highlight)', marginBottom: '0', padding: '6px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '2px', marginBottom: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+        <h4 className="column-title color-gold" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '2px', marginBottom: '4px', fontSize: '11px', fontWeight: 'bold' }}>
           案情备忘录
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
           {tasks.map((task, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: task.done ? 'var(--text-muted)' : 'var(--text-main)' }}>
-              <span>{task.done ? "[√]" : "[ ]"}</span>
+              <span>{task.done ? "✓" : "•"}</span>
               <span style={{ textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</span>
             </div>
           ))}
@@ -118,8 +125,8 @@ function Library({
     if (library.length === 0) {
       return (
         <div className="card-rect" style={{ borderLeft: '4px solid var(--border-color)', marginBottom: '0', padding: '6px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--bg-panel)' }}>
-          <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '2px', marginBottom: '4px', fontSize: '11px', fontWeight: 'bold' }}>
-            ☉ 侦探生涯荣誉
+          <h4 className="column-title color-klein" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '2px', marginBottom: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+            侦探生涯荣誉
           </h4>
           <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
             您目前尚未有宣告破案的案卷。读完小说并支付 DI 进行“结案归档”后，即可在此解锁永久生涯荣誉与全局加成。
@@ -130,8 +137,8 @@ function Library({
 
     return (
       <div className="card-rect" style={{ borderLeft: '4px solid var(--klein-blue)', marginBottom: '0', padding: '6px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--bg-panel)' }}>
-        <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '2px', marginBottom: '4px', fontSize: '11px', fontWeight: 'bold', color: 'var(--text-main)' }}>
-          ☉ 侦探生涯荣誉
+        <h4 className="column-title color-klein" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '2px', marginBottom: '4px', fontSize: '11px', fontWeight: 'bold' }}>
+          侦探生涯荣誉
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
           <p style={{ lineHeight: '1.4', color: 'var(--text-muted)' }}>
@@ -198,12 +205,6 @@ function Library({
     }
 
     // Locked case
-    const getPrerequisiteNovel = (bookId) => {
-      if (bookId === 'sentence_is_death') return 'word_is_murder';
-      if (bookId === 'line_to_kill') return 'sentence_is_death';
-      if (bookId === 'twist_of_knife') return 'line_to_kill';
-      return null;
-    };
     const prereqId = getPrerequisiteNovel(selectedBook.id);
     const prereqNovel = prereqId ? novelsList.find(x => x.id === prereqId) : null;
     const isPrereqMet = prereqId ? library.includes(prereqId) : true;
@@ -282,7 +283,7 @@ function Library({
           
           {/* Bookshelf Panel */}
           <div className="bookshelf-panel card-rect">
-            <h2 className="card-title">档案架案卷</h2>
+            <h2 className="card-title color-klein">档案架案卷</h2>
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '20px' }}>
               此处陈列所有侦探书籍。彩色为已解锁的案卷，灰色为尚未解锁的卷宗。顶部带绿点表示当前现场调查的案件。
             </p>
@@ -305,11 +306,13 @@ function Library({
                         const isSelected = selectedBook && selectedBook.id === book.id;
                         const isActive = activeNovelId === book.id;
                         const spineColor = getSpineColor(book);
+                        const prereqId = getPrerequisiteNovel(book.id);
+                        const isPrereqMet = prereqId ? library.includes(prereqId) : true;
 
                         return (
                           <div
                             key={book.id}
-                            className={`book-spine-flat ${isUnlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''}`}
+                            className={`book-spine-flat ${isUnlocked ? '' : 'locked'} ${!isUnlocked && isPrereqMet ? 'unlockable' : ''} ${isSelected ? 'selected' : ''}`}
                             style={{
                               backgroundColor: isUnlocked ? spineColor : 'var(--bg-hover)',
                               borderColor: isSelected ? 'var(--border-highlight)' : 'var(--border-color)',
@@ -365,7 +368,7 @@ function Library({
 
           {/* Upgrades Panel below the bookshelf */}
           <div className="card-rect">
-            <h2 className="card-title">侦查装备与助手</h2>
+            <h2 className="card-title color-spruce">侦查装备与助手</h2>
             <div className="upgrade-grid">
               {globalUpgrades.map(u => {
                 const lvl = upgrades[u.id] || 0;
@@ -377,7 +380,7 @@ function Library({
                   <div key={u.id} className="upgrade-item">
                     <div className="upgrade-info">
                       <div className="upgrade-name" style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                        {u.nameZH} <span className="mono" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>[等级 {lvl}]</span>
+                        {u.nameZH} <span className="mono" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>(等级 {lvl})</span>
                       </div>
                       <div className="upgrade-desc" style={{ fontSize: '10px', marginTop: '2px', lineHeight: '1.3' }}>
                         {u.descriptionZH}
@@ -453,7 +456,7 @@ function Library({
               </div>
 
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <h4 style={{ fontSize: '11px', marginBottom: '6px', color: 'var(--text-main)' }}>案情梗概:</h4>
+                <h4 className="column-title color-gold" style={{ fontSize: '11px', marginBottom: '6px' }}>案情梗概:</h4>
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.5', overflowY: 'auto', flex: 1, maxHeight: '200px' }}>
                   {selectedBook.descriptionZH}
                 </p>

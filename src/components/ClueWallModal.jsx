@@ -20,6 +20,79 @@ const DEATH_PARAS = {
   harriet: 42
 };
 
+// Clue discovery page milestones
+const CLUE_DISCOVER_PARAS = {
+  rhyme_poster: { chapterId: 2, index: 1 },
+  gramophone_record: { chapterId: 3, index: 9 },
+  soldiers_table: { chapterId: 4, index: 13 },
+  sleeping_draft: { chapterId: 6, index: 3 },
+  wool_missing: { chapterId: 10, index: 8 },
+  syringe_missing: { chapterId: 12, index: 5 },
+  revolver: { chapterId: 14, index: 0 },
+  manuscript_bottle: { chapterId: 18, index: 0 },
+  
+  // The Word Is Murder
+  funeral_plan: { chapterId: 1, index: 0 },
+  car_accident: { chapterId: 4, index: 0 },
+  will_draft: { chapterId: 8, index: 0 },
+  green_coat: { chapterId: 13, index: 0 },
+
+  // The Sentence is Death
+  wine_bottle: { chapterId: 1, index: 0 },
+  wall_graffiti: { chapterId: 3, index: 0 },
+  divorce_file: { chapterId: 7, index: 0 },
+  dog_leash: { chapterId: 14, index: 0 },
+
+  // A Line to Kill
+  paper_knife: { chapterId: 8, index: 0 },
+  blood_footprint: { chapterId: 9, index: 0 },
+  secret_camera: { chapterId: 16, index: 0 },
+
+  // The Twist of a Knife
+  indian_dagger: { chapterId: 5, index: 0 },
+  throsby_review: { chapterId: 5, index: 0 },
+  annabelle_letters: { chapterId: 12, index: 0 }
+};
+
+// Suspect introduction milestones
+const INTRODUCED_PARAS = {
+  // And Then There Were None (Suspect introduction pages in Chapter 1)
+  wargrave: { chapterId: 1, index: 0 },
+  vera: { chapterId: 1, index: 3 },
+  lombard: { chapterId: 1, index: 6 },
+  brent: { chapterId: 1, index: 8 },
+  macarthur: { chapterId: 1, index: 12 },
+  armstrong: { chapterId: 1, index: 13 },
+  marston: { chapterId: 1, index: 16 },
+  blore: { chapterId: 1, index: 18 },
+  rogers_mr: { chapterId: 1, index: 18 },
+  rogers_mrs: { chapterId: 1, index: 18 },
+
+  // The Word Is Murder (Diana is the victim, others introduced in Chapters 3, 5, 8)
+  diana: { chapterId: 1, index: 0 },
+  damian: { chapterId: 3, index: 0 },
+  judith: { chapterId: 5, index: 0 },
+  grace: { chapterId: 8, index: 0 },
+
+  // The Sentence is Death (Pryce is the victim, others introduced in Chapters 4, 5, 7)
+  pryce: { chapterId: 1, index: 0 },
+  akira: { chapterId: 4, index: 0 },
+  davina: { chapterId: 5, index: 0 },
+  gregory: { chapterId: 7, index: 0 },
+
+  // A Line to Kill
+  mesurier: { chapterId: 1, index: 0 },
+  helen: { chapterId: 1, index: 0 },
+  derek: { chapterId: 2, index: 0 },
+  colin: { chapterId: 3, index: 0 },
+
+  // The Twist of a Knife
+  harriet: { chapterId: 1, index: 0 },
+  yurdakul: { chapterId: 1, index: 0 },
+  olivia: { chapterId: 2, index: 0 },
+  arthur: { chapterId: 3, index: 0 }
+};
+
 const RHYME_LINES = [
   { textZH: "十个小兵去吃饭，一个噎死剩九个。", suspectId: "marston" },
   { textZH: "九个小兵睡得迟，一个一觉睡不醒剩八个。", suspectId: "rogers_mrs" },
@@ -32,6 +105,87 @@ const RHYME_LINES = [
   { textZH: "两个小兵晒太阳，一个烤焦剩一个。", suspectId: "lombard" },
   { textZH: "一个小兵孤伶伶，悬梁自尽一个不剩。", suspectId: "vera" }
 ];
+
+const PRE_DEATH_DESCS = {
+  word_diana: {
+    zh: "富有的戴安娜·考珀，居住在自己公寓中，是名演员达米安·考珀的母亲。她今天前往殡仪馆，出人意料地为自己预先筹办了一场葬礼。",
+    en: "Wealthy Diana Cowper, living in her own flat, is the mother of famous actor Damian Cowper. Today, she visited a funeral parlor to plan her own funeral."
+  },
+  sentence_pryce: {
+    zh: "身价斐然的离婚大律师，以强硬无情的诉讼风格闻名，但也因此结怨甚多。",
+    en: "A highly successful and aggressive divorce lawyer, known for his ruthless litigation style."
+  },
+  line_mesurier: {
+    zh: "奥尔德尼岛上的地产富豪，性格傲慢刻薄，在岛上推行多项备受争议的开发计划。",
+    en: "Alderney's wealthy landowner, arrogant and controversial, spearheading several disputed development projects on the island."
+  },
+  line_helen: {
+    zh: "查尔斯·勒·梅苏里尔的妻子，性格温和低调，默默忍受着丈夫的坏脾气和强势作风。",
+    en: "The gentle and low-profile wife of Charles Le Mesurier, patiently enduring her husband's harsh temper."
+  },
+  twist_harriet: {
+    zh: "名声在外的戏剧评论家，文风尖酸刻薄，曾公开嘲讽并批评安东尼·霍洛维茨的新剧。",
+    en: "A notorious drama critic known for her cruel reviews, who recently publicly mocked and panned Anthony Horowitz's new play."
+  }
+};
+
+const getNodeDisplayDescription = (node, isDeceased) => {
+  if (!isDeceased && PRE_DEATH_DESCS[node.id]) {
+    return PRE_DEATH_DESCS[node.id];
+  }
+  return { zh: node.descZH, en: node.descEN };
+};
+
+const getSuspectDisplayTitle = (suspect, isDeceased) => {
+  const zhTitle = suspect.titleZH || '';
+  const enTitle = suspect.titleEN || '';
+  if (!isDeceased && (
+    zhTitle.includes('被害人') || zhTitle.includes('死者') || zhTitle.includes('遇害者') ||
+    enTitle.toLowerCase().includes('victim') || enTitle.toLowerCase().includes('deceased') ||
+    ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(suspect.id)
+  )) {
+    return { zh: '关系人', en: 'Associate' };
+  }
+  return { zh: suspect.titleZH, en: suspect.titleEN };
+};
+
+const getSuspectDisplayAccusationAndAlibi = (suspect, isDeceased, suspectsListInBook, allSuspectsDeceasedMap) => {
+  let accusationZH = suspect.accusationZH;
+  let accusationEN = suspect.accusationEN;
+  let alibiZH = suspect.alibiZH;
+  let alibiEN = suspect.alibiEN;
+
+  // If the suspect is a victim and is not deceased yet, hide their "Deceased, no alibi." alibi.
+  if (!isDeceased) {
+    if (suspect.alibiZH === '已遇害，无答辩。' || ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(suspect.id)) {
+      alibiZH = '生存，暂无涉及案件答辩。';
+      alibiEN = 'Alive, no case response needed yet.';
+    }
+  }
+
+  // Helen's accusation contains husband's death spoiler when Charles is still alive
+  if (suspect.id === 'helen') {
+    const isCharlesDeceased = allSuspectsDeceasedMap['mesurier'];
+    if (!isCharlesDeceased) {
+      accusationZH = '指控她背叛丈夫与当地医生偷情。';
+      accusationEN = 'Accused of an affair with the local doctor.';
+    }
+  }
+
+  // Olivia and Arthur accusations in Book 5 mention Harriet's murder before she dies
+  const isHarrietDeceased = allSuspectsDeceasedMap['harriet'];
+  if (!isHarrietDeceased) {
+    if (suspect.id === 'olivia') {
+      accusationZH = '极度厌恶母亲的强势控制与冷酷言语，与其关系十分紧张。';
+      accusationEN = "Deeply resented her mother's controlling and cruel nature, causing high tension.";
+    } else if (suspect.id === 'arthur') {
+      accusationZH = '多年来生活在妻子的无休止指责下，夫妻感情极度不和。';
+      accusationEN = 'Suffered years of constant berating and marital discord with his wife.';
+    }
+  }
+
+  return { accusationZH, accusationEN, alibiZH, alibiEN };
+};
 
 function ClueWallModal({
   isOpen,
@@ -137,7 +291,7 @@ function ClueWallModal({
         isDeceased = true;
       } else if (currentChapterId === suspect.deceasedChapter) {
         const deathPara = DEATH_PARAS[suspect.id];
-        if (deathPara !== undefined && pagesRead >= deathPara) {
+        if (deathPara !== undefined && pagesRead > deathPara) {
           isDeceased = true;
         }
       }
@@ -145,9 +299,82 @@ function ClueWallModal({
     return { suspect, isDeceased };
   };
 
+  // Helper to check if suspect node is introduced in progress
+  const isNodeSuspectIntroduced = (node) => {
+    if (!currentNovelInfo) return false;
+    const suspect = currentNovelInfo.suspects.find(s => node.id.endsWith(s.id));
+    if (!suspect) return true; // Show immediately if not in suspects list (e.g. Hawthorne / Horowitz)
+
+    const intro = INTRODUCED_PARAS[suspect.id];
+    if (!intro) return true;
+    if (currentChapterId > intro.chapterId) return true;
+    if (currentChapterId === intro.chapterId && pagesRead > intro.index) return true;
+    return false;
+  };
+
+  // Helper to check if clue node is discovered in progress
+  const isNodeClueDiscovered = (node) => {
+    if (!currentNovelInfo) return false;
+    const clue = currentNovelInfo.clues?.find(c => node.id.endsWith(c.id));
+    if (!clue) {
+      // Loose prefix matching
+      const parts = node.id.split('_');
+      const nodePart = parts.slice(1).join('_');
+      const fuzzyClue = currentNovelInfo.clues?.find(c => c.id.includes(nodePart) || nodePart.includes(c.id));
+      if (!fuzzyClue) return true;
+
+      const discover = CLUE_DISCOVER_PARAS[fuzzyClue.id];
+      if (!discover) return true;
+      if (currentChapterId > discover.chapterId) return true;
+      if (currentChapterId === discover.chapterId && pagesRead > discover.index) return true;
+      return false;
+    }
+
+    const discover = CLUE_DISCOVER_PARAS[clue.id];
+    if (!discover) return true;
+    if (currentChapterId > discover.chapterId) return true;
+    if (currentChapterId === discover.chapterId && pagesRead > discover.index) return true;
+    return false;
+  };
+
+  // Helper to check if event node (e.g. death) is discovered in progress
+  const isNodeEventDiscovered = (node) => {
+    if (!currentNovelInfo) return false;
+
+    // Check if it's a death event
+    if (node.id.endsWith('_dead')) {
+      const parts = node.id.split('_');
+      const suspectId = parts[parts.length - 2];
+      const suspect = currentNovelInfo.suspects.find(s => s.id === suspectId);
+      if (!suspect) return true;
+
+      if (suspect.deceasedChapter) {
+        if (currentChapterId > suspect.deceasedChapter) return true;
+        if (currentChapterId === suspect.deceasedChapter) {
+          const deathPara = DEATH_PARAS[suspect.id];
+          if (deathPara !== undefined && pagesRead > deathPara) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+    return true;
+  };
+
   // 2. Filter nodes and links by progress
   const unlockedNodes = currentNovelInfo?.clueWall?.nodes?.filter(node => {
-    return unlockedChapters.includes(node.unlockChapter) || currentChapterId >= node.unlockChapter;
+    const isChapterUnlocked = unlockedChapters.includes(node.unlockChapter) || currentChapterId >= node.unlockChapter;
+    if (!isChapterUnlocked) return false;
+
+    if (node.type === 'suspect' || node.type === 'victim') {
+      return isNodeSuspectIntroduced(node);
+    } else if (node.type === 'clue') {
+      return isNodeClueDiscovered(node);
+    } else if (node.type === 'event') {
+      return isNodeEventDiscovered(node);
+    }
+    return true;
   }) || [];
 
   const unlockedLinks = currentNovelInfo?.clueWall?.links?.filter(link => {
@@ -260,6 +487,14 @@ function ClueWallModal({
     const suspect = suspectData?.suspect;
     const isDeceased = suspectData?.isDeceased || false;
 
+    const allSuspectsDeceasedMap = {};
+    if (currentNovelInfo && currentNovelInfo.suspects) {
+      currentNovelInfo.suspects.forEach(s => {
+        const status = getSuspectStatus(s.id);
+        allSuspectsDeceasedMap[s.id] = status ? status.isDeceased : false;
+      });
+    }
+
     return (
       <div className="clue-detail-sidebar-content" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
         <header className="clue-detail-header" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -286,8 +521,12 @@ function ClueWallModal({
           {/* Basic description */}
           <div className="clue-detail-section">
             <h6 className="clue-detail-sec-title">案卷摘要 / Description</h6>
-            <p style={{ fontSize: '12.5px', lineHeight: 1.5, marginBottom: '6px', margin: 0 }}>{selectedNode.descZH}</p>
-            <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic', margin: 0 }}>{selectedNode.descEN}</p>
+            <p style={{ fontSize: '12.5px', lineHeight: 1.5, marginBottom: '6px', margin: 0 }}>
+              {getNodeDisplayDescription(selectedNode, isDeceased).zh}
+            </p>
+            <p style={{ fontSize: '11px', lineHeight: 1.4, opacity: 0.7, fontStyle: 'italic', margin: 0 }}>
+              {getNodeDisplayDescription(selectedNode, isDeceased).en}
+            </p>
           </div>
 
           {/* Special Child Content for Nursery Rhyme Clue */}
@@ -356,44 +595,51 @@ function ClueWallModal({
           })()}
 
           {/* Extended Suspect Stats (Bilingual) */}
-          {suspect && (
-            <>
-              <div className="clue-detail-divider" />
-              
-              <div className="clue-detail-section">
-                <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
-                <p style={{ fontSize: '12px', margin: '2px 0' }}><strong>{suspect.nameZH}</strong> - {suspect.titleZH}</p>
-                <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}><strong>{suspect.nameEN}</strong> - {suspect.titleEN}</p>
-              </div>
-              
-              <div className="clue-detail-divider" />
+          {suspect && (() => {
+            const displayInfo = getSuspectDisplayAccusationAndAlibi(suspect, isDeceased, currentNovelInfo.suspects, allSuspectsDeceasedMap);
+            return (
+              <>
+                <div className="clue-detail-divider" />
+                
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
+                  <p style={{ fontSize: '12px', margin: '2px 0' }}>
+                    <strong>{suspect.nameZH}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).zh}
+                  </p>
+                  <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}>
+                    <strong>{suspect.nameEN}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).en}
+                  </p>
+                </div>
+                
+                <div className="clue-detail-divider" />
 
-              <div className="clue-detail-section">
-                <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
-                <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{suspect.accusationZH}</p>
-                <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{suspect.accusationEN}</p>
-              </div>
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
+                  <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.accusationZH}</p>
+                  <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.accusationEN}</p>
+                </div>
 
-              <div className="clue-detail-divider" />
+                <div className="clue-detail-divider" />
 
-              <div className="clue-detail-section">
-                <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
-                <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{suspect.alibiZH}</p>
-                <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{suspect.alibiEN}</p>
-              </div>
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
+                  <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.alibiZH}</p>
+                  <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.alibiEN}</p>
+                </div>
 
-              {isDeceased && suspect.deathMethodZH && (
-                <>
-                  <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
-                  <div className="clue-detail-section deceased-section" style={{ padding: '6px 8px' }}>
-                    <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)', marginTop: 0 }}>遇害实录 / Death Circumstance</h6>
-                    <p style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, margin: '2px 0' }}>{suspect.deathMethodZH}</p>
-                    <p style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3, margin: '2px 0' }}>{suspect.deathMethodEN}</p>
-                  </div>
-                </>
-              )}
-            </>
-          )}
+                {isDeceased && suspect.deathMethodZH && (
+                  <>
+                    <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
+                    <div className="clue-detail-section deceased-section" style={{ padding: '6px 8px' }}>
+                      <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)', marginTop: 0 }}>遇害实录 / Death Circumstance</h6>
+                      <p style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, margin: '2px 0' }}>{suspect.deathMethodZH}</p>
+                      <p style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3, margin: '2px 0' }}>{suspect.deathMethodEN}</p>
+                    </div>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
         
         <footer className="clue-detail-footer" style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>

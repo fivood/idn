@@ -38,20 +38,28 @@ const CHAPTER_COSTS = {
   15: 12000000,
   16: 28000000,
   17: 65000000,
-  18: 160000000
+  18: 160000000,
+  19: 350000000,
+  20: 800000000,
+  21: 1800000000,
+  22: 4000000000,
+  23: 9000000000,
+  24: 20000000000,
+  25: 45000000000,
+  26: 100000000000
 };
 
 // Death milestones page lookup for suspects
 export const DEATH_PARAS = {
-  marston: 13,
+  marston: 12,
   rogers_mrs: 2,
-  macarthur: 9,
-  rogers_mr: 3,
-  brent: 5,
-  wargrave: 13,
-  blore: 8,
+  macarthur: 20,
+  rogers_mr: 5,
+  brent: 7,
+  wargrave: 14,
+  blore: 9,
   armstrong: 11,
-  lombard: 1,
+  lombard: 2,
   vera: 4,
   diana: 6,
   pryce: 1,
@@ -77,7 +85,7 @@ export const getActiveNovelMultiplier = (novelId, state) => {
         deceasedCount++;
       } else if (currentChapterId === s.deceasedChapter) {
         const deathPara = DEATH_PARAS[s.id];
-        if (deathPara !== undefined && pagesRead >= deathPara) {
+        if (deathPara !== undefined && pagesRead > deathPara) {
           deceasedCount++;
         }
       }
@@ -374,6 +382,24 @@ function App() {
 
         if (data.novelStates !== undefined) {
           const migrated = { ...data.novelStates };
+          
+          // Ensure all unlocked novels have states initialized
+          const unlockedList = data.unlockedNovels || [];
+          unlockedList.forEach(novelId => {
+            if (!migrated[novelId]) {
+              migrated[novelId] = {
+                unlockedChapters: [1],
+                currentChapterId: 1,
+                pagesUnlocked: 1,
+                pagesRead: 0,
+                clueLevels: {},
+                finished: false,
+                timeElapsed: 0,
+                accusedSuspectId: null
+              };
+            }
+          });
+
           Object.keys(migrated).forEach(k => {
             // Migrate from old paragraph-based to page-based structure
             if (migrated[k].paragraphsUnlocked !== undefined) {
@@ -570,7 +596,7 @@ function App() {
         [novelId]: {
           unlockedChapters: [1],
           currentChapterId: 1,
-          pagesUnlocked: 0,
+          pagesUnlocked: 1,
           pagesRead: 0,
           clueLevels: {},
           finished: false,
@@ -595,7 +621,7 @@ function App() {
               ...bookState,
               unlockedChapters: [...bookState.unlockedChapters, chapterId],
               currentChapterId: chapterId,
-              pagesUnlocked: 0,
+              pagesUnlocked: 1,
               pagesRead: 0,
               timeElapsed: 0
             }
@@ -608,6 +634,24 @@ function App() {
 
   // Switch Active Novel in Workspace
   const handleSelectNovel = (novelId) => {
+    setNovelStates(prev => {
+      if (!prev[novelId]) {
+        return {
+          ...prev,
+          [novelId]: {
+            unlockedChapters: [1],
+            currentChapterId: 1,
+            pagesUnlocked: 1,
+            pagesRead: 0,
+            clueLevels: {},
+            finished: false,
+            timeElapsed: 0,
+            accusedSuspectId: null
+          }
+        };
+      }
+      return prev;
+    });
     setActiveNovelId(novelId);
     setCurrentView('novel');
   };
@@ -641,11 +685,22 @@ function App() {
         // Directly award DI points
         setDi(d => d + reward);
 
+        const nextPagesRead = bookState.pagesRead + 1;
+        const currentChapterData = novelData[novelId]?.chapters?.find(c => c.id === chapterId);
+        const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
+        
+        let nextPagesUnlocked = bookState.pagesUnlocked;
+        if (nextPagesRead === nextPagesUnlocked && nextPagesUnlocked < totalPages) {
+          nextPagesUnlocked = nextPagesUnlocked + 1;
+        }
+
         return {
           ...prev,
           [novelId]: {
             ...bookState,
-            pagesRead: bookState.pagesRead + 1
+            pagesRead: nextPagesRead,
+            pagesUnlocked: nextPagesUnlocked,
+            timeElapsed: 0
           }
         };
       }
@@ -764,7 +819,7 @@ function App() {
           <div>
             <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '6px' }}>
               贝克街私家侦探档案柜
-              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.2.1</span>
+              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.2.4</span>
             </h1>
             <span className="di-rate" style={{ fontSize: '11px', display: 'block', marginTop: '2px' }}>
               侦查效率: {diRate < 0.1 ? diRate.toFixed(3) : diRate < 1 ? diRate.toFixed(2) : diRate.toFixed(1)} DI/秒
@@ -919,6 +974,9 @@ function App() {
                   检查失败：{
                     (() => {
                       const err = updateStatus.error.toLowerCase();
+                      if (err.includes('release json') || err.includes('valid release') || err.includes('remote')) {
+                        return `获取更新包配置失败。这通常是由于启用了代理软件/虚拟网卡（VPN），导致网络请求被拦截、代理服务返回了非 JSON 格式的报错响应（如代理提示 HTML 页面）或 SSL 证书信任失败。请尝试：1. 切换为直连/规则模式；2. 更换可用代理节点；3. 暂时关闭代理后再试。(${updateStatus.error})`;
+                      }
                       if (err.includes('connect') || err.includes('timeout') || err.includes('dns') || err.includes('network') || err.includes('host') || err.includes('reqwest')) {
                         return `网络连接失败，无法连接 GitHub。请检查互联网连接或代理设置。(${updateStatus.error})`;
                       }

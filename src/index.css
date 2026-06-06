@@ -128,6 +128,7 @@ h1, h2, h3, h4 {
 }
 
 .card-title::before,
+.column-title::before,
 .rhyme-panel h4::before,
 .suspect-grid h4::before,
 .chapter-header-row h2::before,
@@ -140,6 +141,35 @@ h1, h2, h3, h4 {
   margin-right: 6px;
 }
 
+/* Column and Card Title Color Overrides */
+.color-red {
+  color: var(--palette-red) !important;
+}
+.color-gold {
+  color: var(--palette-gold) !important;
+}
+.color-spruce {
+  color: var(--palette-spruce) !important;
+}
+.color-klein {
+  color: var(--klein-blue) !important;
+}
+
+/* Bullet Prefix Color Matching */
+.color-red::before {
+  color: var(--palette-red) !important;
+}
+.color-gold::before {
+  color: var(--palette-gold) !important;
+}
+.color-spruce::before {
+  color: var(--palette-spruce) !important;
+}
+.color-klein::before {
+  color: var(--klein-blue) !important;
+}
+
+
 code, pre, .mono {
   font-family: var(--font-mono);
 }
@@ -150,12 +180,7 @@ code, pre, .mono {
   flex-direction: column;
   background-color: var(--bg-color);
   width: 100vw;
-  height: calc(100vw * 9 / 16);
-  max-height: 100vh;
-  max-width: calc(100vh * 16 / 9);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  height: 100vh;
   position: relative;
   overflow: hidden;
 }
@@ -1095,6 +1120,16 @@ button.btn-rect.active {
 .book-spine-flat.locked:hover {
   transform: none;
   box-shadow: none;
+}
+
+.book-spine-flat.locked.unlockable {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.book-spine-flat.locked.unlockable:hover {
+  transform: translateY(-8px);
+  box-shadow: 2px 6px 10px rgba(0, 0, 0, 0.12);
 }
 
 .book-spine-text {

@@ -60,17 +60,17 @@ const CLUE_DISCOVER_PARAS = {
 
 // Suspect introduction milestones (prevent showing characters before they appear in the player's read progress)
 const INTRODUCED_PARAS = {
-  // And Then There Were None (All 10 are introduced in Chapter 1)
+  // And Then There Were None (Suspect introduction pages in Chapter 1)
   wargrave: { chapterId: 1, index: 0 },
-  vera: { chapterId: 1, index: 0 },
-  lombard: { chapterId: 1, index: 0 },
-  brent: { chapterId: 1, index: 0 },
-  macarthur: { chapterId: 1, index: 0 },
-  armstrong: { chapterId: 1, index: 0 },
-  marston: { chapterId: 1, index: 0 },
-  blore: { chapterId: 1, index: 0 },
-  rogers_mr: { chapterId: 1, index: 0 },
-  rogers_mrs: { chapterId: 1, index: 0 },
+  vera: { chapterId: 1, index: 3 },
+  lombard: { chapterId: 1, index: 6 },
+  brent: { chapterId: 1, index: 8 },
+  macarthur: { chapterId: 1, index: 12 },
+  armstrong: { chapterId: 1, index: 13 },
+  marston: { chapterId: 1, index: 16 },
+  blore: { chapterId: 1, index: 18 },
+  rogers_mr: { chapterId: 1, index: 18 },
+  rogers_mrs: { chapterId: 1, index: 18 },
 
   // The Word Is Murder (Diana is the victim, others introduced in Chapters 3, 5, 8)
   diana: { chapterId: 1, index: 0 },
@@ -99,7 +99,7 @@ const INTRODUCED_PARAS = {
 
 const formatBracketText = (text) => {
   if (!text) return "";
-  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">[$1]</span>');
+  return text.replace(/\[(.*?)\]/g, '<span class="bracket-highlight">$1</span>');
 };
 
 function NovelWorkspace({
@@ -119,6 +119,36 @@ function NovelWorkspace({
   const [activeBookData, setActiveBookData] = useState(null);
   const [isTextLoading, setIsTextLoading] = useState(true);
 
+  // Safe fallback values when novelState is null/undefined during initial loading
+  const currentChapterId = novelState?.currentChapterId || 1;
+  const pagesRead = novelState?.pagesRead || 0;
+  const pagesUnlocked = novelState?.pagesUnlocked || 0;
+  const finished = novelState?.finished || false;
+
+  const [viewedChapterId, setViewedChapterId] = useState(currentChapterId);
+  const [langMode, setLangMode] = useState('zh');
+  const [selectedSuspect, setSelectedSuspect] = useState(null);
+  const [activeClueRelation, setActiveClueRelation] = useState(null);
+  const [activeMilestone, setActiveMilestone] = useState(null);
+  const [revealedChars, setRevealedChars] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(() => {
+    return localStorage.getItem('detective_auto_play') === 'true';
+  });
+  const [playSpeed, setPlaySpeed] = useState(() => {
+    const saved = localStorage.getItem('detective_play_speed');
+    return saved ? parseFloat(saved) : 1.0;
+  });
+  const [toastMessage, setToastMessage] = useState(null);
+  const [floatingRewards, setFloatingRewards] = useState([]);
+
+  const readerEndRef = useRef(null);
+
+  // Sync viewedChapterId when currentChapterId or novelId changes
+  useEffect(() => {
+    setViewedChapterId(currentChapterId);
+  }, [currentChapterId, novelId]);
+
+  // Load novel text dynamically
   useEffect(() => {
     let active = true;
     setIsTextLoading(true);
@@ -136,63 +166,10 @@ function NovelWorkspace({
     return () => { active = false; };
   }, [novelId]);
 
-  if (!novelState) {
-    return <div className="card-rect">正在加载案卷数据...</div>;
-  }
-
-  if (isTextLoading || !activeBookData) {
-    return <div className="card-rect" style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>正在装载案卷正文，请稍候...</div>;
-  }
-
-  const novelData = activeBookData;
-
-  const currentNovelInfo = novelsList.find(n => n.id === novelId);
-  const currentChapterId = novelState.currentChapterId;
-  
-  // Find current chapter content from the parsed json
-  const bookChapters = novelData[novelId]?.chapters || [];
-  const currentChapterData = bookChapters.find(c => c.id === currentChapterId);
-  const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
-  const currentPageObj = currentChapterData ? currentChapterData.pages[novelState.pagesRead] : null;
-  const maxLen = currentPageObj ? Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0) : 0;
-  const totalPagesAll = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
-  
-  // Chapter menu navigation
-  const [viewedChapterId, setViewedChapterId] = useState(currentChapterId);
-  
-  // Sync viewedChapterId when currentChapterId or novelId changes
-  useEffect(() => {
-    setViewedChapterId(currentChapterId);
-  }, [currentChapterId, novelId]);
-  
-  const viewedChapterData = bookChapters.find(c => c.id === viewedChapterId);
-
-  // Reader view options: zh, en
-  const [langMode, setLangMode] = useState('zh');
-  
-  // Active selected suspect for detailed profile card
-  const [selectedSuspect, setSelectedSuspect] = useState(null);
-  
-  // Clue highlight trigger (highlights matching suspect)
-  const [activeClueRelation, setActiveClueRelation] = useState(null);
-
-
-
-  // Milestone State (mapped to player reading progress pagesRead)
-  const [activeMilestone, setActiveMilestone] = useState(null);
-
-  // Typewriter effect state
-  const [revealedChars, setRevealedChars] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(() => {
-    return localStorage.getItem('detective_auto_play') === 'true';
-  });
-  const [toastMessage, setToastMessage] = useState(null);
-  const [floatingRewards, setFloatingRewards] = useState([]);
-
   const handleReadNextPage = useCallback(() => {
-    if (novelState.pagesRead < novelState.pagesUnlocked) {
+    if (pagesRead < pagesUnlocked) {
       const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
-      const reward = Math.round(baseReward * (1 + 0.01 * novelState.pagesRead));
+      const reward = Math.round(baseReward * (1 + 0.01 * pagesRead));
       
       const id = Date.now() + Math.random();
       setFloatingRewards(prev => [...prev, { id, amount: reward }]);
@@ -203,24 +180,32 @@ function NovelWorkspace({
         setFloatingRewards(prev => prev.filter(r => r.id !== id));
       }, 1200);
     }
-  }, [novelState.pagesRead, novelState.pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
+  }, [pagesRead, pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
 
   useEffect(() => {
     localStorage.setItem('detective_auto_play', autoPlay);
   }, [autoPlay]);
 
+  useEffect(() => {
+    localStorage.setItem('detective_play_speed', playSpeed);
+  }, [playSpeed]);
+
   // Reset typewriter when page or chapter changes
   useEffect(() => {
     setRevealedChars(0);
-  }, [novelState.pagesRead, currentChapterId]);
+  }, [pagesRead, currentChapterId]);
+
+  // Derived static novel structures
+  const currentNovelInfo = novelsList.find(n => n.id === novelId) || {};
+  const suspects = currentNovelInfo.suspects || [];
 
   // Toast notifier for story events
   useEffect(() => {
-    if (novelState.pagesRead <= 0) return;
+    if (!novelState || pagesRead <= 0) return;
     
     // Check death triggers
     Object.entries(DEATH_PARAS).forEach(([suspectId, milestone]) => {
-      if (currentChapterId === milestone.chapterId && novelState.pagesRead === milestone.index) {
+      if (currentChapterId === milestone.chapterId && pagesRead === milestone.index) {
         const suspect = suspects.find(s => s.id === suspectId);
         if (suspect) {
           setToastMessage(`【案情通告】 嫌疑人 ${suspect.nameZH} 确认遇害！小兵玩偶破损，全局 DI 挂机产量提升 +30%！`);
@@ -231,25 +216,34 @@ function NovelWorkspace({
 
     // Check clue triggers
     Object.entries(CLUE_DISCOVER_PARAS).forEach(([clueId, milestone]) => {
-      if (currentChapterId === milestone.chapterId && novelState.pagesRead === milestone.index) {
-        const clue = currentNovelInfo.clues.find(c => c.id === clueId);
+      if (currentChapterId === milestone.chapterId && pagesRead === milestone.index) {
+        const clue = currentNovelInfo.clues?.find(c => c.id === clueId);
         if (clue) {
           setToastMessage(`【物证发现】 搜寻到新线索物证：${clue.nameZH}！可在右侧物证墙进行升级分析。`);
           setTimeout(() => setToastMessage(null), 6000);
         }
       }
     });
-  }, [novelState.pagesRead, currentChapterId]);
+  }, [pagesRead, currentChapterId, suspects, currentNovelInfo]);
+
+  // Derived data based on state loads
+  const novelData = activeBookData || {};
+  const bookChapters = novelData[novelId]?.chapters || [];
+  const currentChapterData = bookChapters.find(c => c.id === currentChapterId);
+  const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
+  const currentPageObj = currentChapterData ? currentChapterData.pages[pagesRead] : null;
+  const maxLen = currentPageObj ? Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0) : 0;
+  const totalPagesAll = bookChapters.reduce((sum, ch) => sum + ch.pages.length, 0);
+  const viewedChapterData = bookChapters.find(c => c.id === viewedChapterId);
 
   // Calculate page decryption interval based on "Assistant's Shorthand" upgrade level
-  // Base is 360 seconds (6 minutes), minimum limit 60 seconds (1 minute), speed up by global prestige (+10% per completed case)
   const assistantLevel = upgrades['assistant_journal'] || 0;
   const prestigeSpeedup = 1 + 0.1 * library.length;
   const decryptionInterval = Math.max(60, (360 / (1 + 0.1 * assistantLevel)) / prestigeSpeedup);
 
-  // Typewriter tick loop (runs when there is unread text in buffer)
+  // Typewriter tick loop
   useEffect(() => {
-    if (novelState.pagesRead >= novelState.pagesUnlocked || novelState.finished) {
+    if (!novelState || pagesRead >= pagesUnlocked || finished) {
       return;
     }
 
@@ -257,16 +251,14 @@ function NovelWorkspace({
       return;
     }
 
-    const currentPageObj = currentChapterData?.pages[novelState.pagesRead];
     if (!currentPageObj) return;
 
-    const currentMaxLen = Math.max(currentPageObj.zh?.length || 0, currentPageObj.en?.length || 0);
-
-    if (revealedChars >= currentMaxLen) {
+    if (revealedChars >= maxLen) {
       if (autoPlay) {
+        const delayTime = Math.max(100, Math.round(1200 / playSpeed));
         const timeout = setTimeout(() => {
           handleReadNextPage();
-        }, 1200);
+        }, delayTime);
         return () => clearTimeout(timeout);
       }
       return;
@@ -274,48 +266,58 @@ function NovelWorkspace({
 
     if (!autoPlay) return;
 
+    const intervalTime = Math.max(5, Math.round(20 / playSpeed));
     const interval = setInterval(() => {
       setRevealedChars(prev => {
         const next = prev + 1;
-        return next >= currentMaxLen ? currentMaxLen : next;
+        return next >= maxLen ? maxLen : next;
       });
-    }, 20); // 20ms per character
+    }, intervalTime);
 
     return () => clearInterval(interval);
   }, [
     novelId,
     currentChapterId,
-    novelState.pagesRead,
-    novelState.pagesUnlocked,
+    pagesRead,
+    pagesUnlocked,
     revealedChars,
     autoPlay,
-    novelState.finished,
-    currentChapterData,
+    finished,
+    currentPageObj,
+    maxLen,
     handleReadNextPage,
-    viewedChapterId
+    viewedChapterId,
+    playSpeed
   ]);
 
   // Scroll to bottom of reader when new pages are read/revealed
-  const readerEndRef = useRef(null);
   useEffect(() => {
     if (readerEndRef.current) {
       readerEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [novelState.pagesRead, novelState.pagesUnlocked, novelId, viewedChapterId]);
+  }, [pagesRead, pagesUnlocked, novelId, viewedChapterId]);
+
+  // Early returns / Loading guards (Moved AFTER all hook declarations)
+  if (!novelState) {
+    return <div className="card-rect">正在加载案卷数据...</div>;
+  }
+
+  if (isTextLoading || !activeBookData) {
+    return <div className="card-rect" style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>正在装载案卷正文，请稍候...</div>;
+  }
 
   if (!currentChapterData) {
     return <div className="card-rect">正在加载案卷数据...</div>;
   }
 
-  // Get active suspects for this novel
-  const suspects = currentNovelInfo.suspects || [];
+
 
   // Derived state: check if a suspect is introduced at current reading point
   const isSuspectIntroduced = (s) => {
     const intro = INTRODUCED_PARAS[s.id];
     if (!intro) return true;
     if (currentChapterId > intro.chapterId) return true;
-    if (currentChapterId === intro.chapterId && novelState.pagesRead >= intro.index) return true;
+    if (currentChapterId === intro.chapterId && pagesRead > intro.index) return true;
     return false;
   };
   
@@ -329,8 +331,63 @@ function NovelWorkspace({
       return false;
     }
     if (currentChapterId > death.chapterId) return true;
-    if (currentChapterId === death.chapterId && novelState.pagesRead >= death.index) return true;
+    if (currentChapterId === death.chapterId && pagesRead > death.index) return true;
     return false;
+  };
+
+  const getSuspectDisplayTitle = (s) => {
+    const deceased = isSuspectDeceased(s);
+    const zhTitle = s.titleZH || '';
+    const enTitle = s.titleEN || '';
+    if (!deceased && (
+      zhTitle.includes('被害人') || zhTitle.includes('死者') || zhTitle.includes('遇害者') ||
+      enTitle.toLowerCase().includes('victim') || enTitle.toLowerCase().includes('deceased') ||
+      ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(s.id)
+    )) {
+      return { zh: '关系人', en: 'Associate' };
+    }
+    return { zh: s.titleZH, en: s.titleEN };
+  };
+
+  const getSuspectDisplayAccusationAndAlibi = (s) => {
+    const deceased = isSuspectDeceased(s);
+    let accusationZH = s.accusationZH;
+    let accusationEN = s.accusationEN;
+    let alibiZH = s.alibiZH;
+    let alibiEN = s.alibiEN;
+
+    // If the suspect is a victim and is not deceased yet, hide their "Deceased, no alibi." alibi.
+    if (!deceased) {
+      if (s.alibiZH === '已遇害，无答辩。' || ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(s.id)) {
+        alibiZH = '生存，暂无涉及案件答辩。';
+        alibiEN = 'Alive, no case response needed yet.';
+      }
+    }
+
+    // Helen's accusation contains husband's death spoiler when Charles is still alive
+    if (s.id === 'helen') {
+      const charles = suspects.find(x => x.id === 'mesurier');
+      const isCharlesDeceased = charles ? isSuspectDeceased(charles) : false;
+      if (!isCharlesDeceased) {
+        accusationZH = '指控她背叛丈夫与当地医生偷情。';
+        accusationEN = 'Accused of an affair with the local doctor.';
+      }
+    }
+
+    // Olivia and Arthur accusations in Book 5 mention Harriet's murder before she dies
+    const harriet = suspects.find(x => x.id === 'harriet');
+    const isHarrietDeceased = harriet ? isSuspectDeceased(harriet) : false;
+    if (!isHarrietDeceased) {
+      if (s.id === 'olivia') {
+        accusationZH = '极度厌恶母亲的强势控制与冷酷言语，与其关系十分紧张。';
+        accusationEN = "Deeply resented her mother's controlling and cruel nature, causing high tension.";
+      } else if (s.id === 'arthur') {
+        accusationZH = '多年来生活在妻子的无休止指责下，夫妻感情极度不和。';
+        accusationEN = 'Suffered years of constant berating and marital discord with his wife.';
+      }
+    }
+
+    return { accusationZH, accusationEN, alibiZH, alibiEN };
   };
 
   // Derived state: check if a clue is discovered at current reading point (prevent spoilers)
@@ -338,14 +395,14 @@ function NovelWorkspace({
     const discover = CLUE_DISCOVER_PARAS[c.id];
     if (!discover) return false;
     if (currentChapterId > discover.chapterId) return true;
-    if (currentChapterId === discover.chapterId && novelState.pagesRead >= discover.index) return true;
+    if (currentChapterId === discover.chapterId && pagesRead > discover.index) return true;
     return false;
   };
 
   // Derived state: check if gramophone accusation is revealed (Chapter 3 page 15+)
   const isAccusationRevealed = () => {
     if (currentChapterId > 3) return true;
-    if (currentChapterId === 3 && novelState.pagesRead >= 15) return true;
+    if (currentChapterId === 3 && pagesRead > 15) return true;
     return false;
   };
 
@@ -405,13 +462,13 @@ function NovelWorkspace({
     
     return (
       <div className="card-rect" style={{ borderLeft: '4px solid var(--border-highlight)', marginBottom: '0px' }}>
-        <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px', fontSize: '13px' }}>
+        <h4 className="column-title color-gold" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px', fontSize: '13px' }}>
           当前侦查指令
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
           {tasks.map((task, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: task.done ? 'var(--text-muted)' : 'var(--text-main)' }}>
-              <span>{task.done ? "[√]" : "[ ]"}</span>
+              <span>{task.done ? "✓" : "•"}</span>
               <span style={{ textDecoration: task.done ? 'line-through' : 'none' }}>{task.text}</span>
             </div>
           ))}
@@ -421,9 +478,12 @@ function NovelWorkspace({
   };
 
   // Case File Statistics Panel
-  const totalSuspects = suspects.length;
   const unlockedCluesCount = availableClues.filter(c => isClueDiscovered(c)).length;
-  const totalClues = availableClues.length;
+  const currentChapterCluesCount = availableClues.filter(c => {
+    const discover = CLUE_DISCOVER_PARAS[c.id];
+    if (!discover) return false;
+    return currentChapterId >= discover.chapterId;
+  }).length;
 
   return (
     <div className="novel-workspace">
@@ -433,7 +493,7 @@ function NovelWorkspace({
         <div className="workspace-left">
           {/* Suspects Cards */}
           <div className="suspect-grid">
-            <h4 style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+            <h4 className="column-title color-red" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
               现场嫌疑人列表
             </h4>
             {suspects.filter(s => isSuspectIntroduced(s)).map(s => {
@@ -462,7 +522,12 @@ function NovelWorkspace({
                     {s.nameZH}
                     <span style={{ display: 'block', fontSize: '9px', fontWeight: 'normal', color: 'var(--text-muted)', marginTop: '2px' }}>{s.nameEN}</span>
                   </div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginTop: '2px', lineHeight: '1.2' }}>{s.titleZH} / {s.titleEN}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '9px', marginTop: '2px', lineHeight: '1.2' }}>
+                    {(() => {
+                      const displayTitle = getSuspectDisplayTitle(s);
+                      return `${displayTitle.zh} / ${displayTitle.en}`;
+                    })()}
+                  </div>
                   {novelId === 'attwn' && (
                     <div style={{ position: 'absolute', top: '6px', right: deceased ? '40px' : '6px', display: 'flex', alignItems: 'center' }} title={deceased ? "玩偶已碎裂" : "小兵玩偶完好"}>
                       {deceased ? (
@@ -517,25 +582,37 @@ function NovelWorkspace({
                   [关闭]
                 </button>
               </div>
-              <div style={{ marginBottom: '6px' }}><strong>身份 / Title:</strong> {selectedSuspect.titleZH} / {selectedSuspect.titleEN}</div>
               <div style={{ marginBottom: '6px' }}>
-                <strong>留声机指控 / Indictment:</strong> 
-                {isAccusationRevealed() ? (
-                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
-                    <p style={{ margin: '2px 0' }}>{selectedSuspect.accusationZH}</p>
-                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.accusationEN}</p>
-                  </div>
-                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>[线索尚未浮现，待调查]</span>}
+                <strong>身份 / Title:</strong> {(() => {
+                  const displayTitle = getSuspectDisplayTitle(selectedSuspect);
+                  return `${displayTitle.zh} / ${displayTitle.en}`;
+                })()}
               </div>
-              <div style={{ marginBottom: '6px' }}>
-                <strong>指控辩解 / Alibi:</strong> 
-                {isAccusationRevealed() ? (
-                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
-                    <p style={{ margin: '2px 0' }}>{selectedSuspect.alibiZH}</p>
-                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.alibiEN}</p>
-                  </div>
-                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>[线索尚未浮现，待调查]</span>}
-              </div>
+              {(() => {
+                const displayInfo = getSuspectDisplayAccusationAndAlibi(selectedSuspect);
+                return (
+                  <>
+                    <div style={{ marginBottom: '6px' }}>
+                      <strong>留声机指控 / Indictment:</strong> 
+                      {isAccusationRevealed() ? (
+                        <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
+                          <p style={{ margin: '2px 0' }}>{displayInfo.accusationZH}</p>
+                          <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{displayInfo.accusationEN}</p>
+                        </div>
+                      ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
+                    </div>
+                    <div style={{ marginBottom: '6px' }}>
+                      <strong>指控辩解 / Alibi:</strong> 
+                      {isAccusationRevealed() ? (
+                        <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
+                          <p style={{ margin: '2px 0' }}>{displayInfo.alibiZH}</p>
+                          <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{displayInfo.alibiEN}</p>
+                        </div>
+                      ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
+                    </div>
+                  </>
+                );
+              })()}
               <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--crimson-red)', color: isSuspectDeceased(selectedSuspect) ? 'var(--crimson-red)' : 'var(--text-muted)' }}>
                 <strong>死亡状况 / Death:</strong> 
                 {isSuspectDeceased(selectedSuspect) ? (
@@ -543,7 +620,7 @@ function NovelWorkspace({
                     <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedSuspect.deathMethodZH}</p>
                     <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.deathMethodEN}</p>
                   </div>
-                ) : <span style={{ marginLeft: '4px' }}>[生存 / 案情调查中]</span>}
+                ) : <span style={{ marginLeft: '4px' }}>生存 / 案情调查中</span>}
               </div>
               
               {/* Accusation gameplay for And Then There Were None */}
@@ -606,25 +683,18 @@ function NovelWorkspace({
                   </select>
                 </div>
                 <button 
-                  className="btn-rect color-klein"
-                  onClick={onOpenClueWall}
-                  style={{ padding: '4px 8px', fontSize: '11px' }}
-                >
-                  📌 案卷线索墙
-                </button>
-                <button 
                   className={`btn-rect ${langMode === 'zh' ? 'active' : ''}`}
                   onClick={() => setLangMode('zh')}
                   style={{ padding: '4px 8px', fontSize: '11px' }}
                 >
-                  中文
+                  中
                 </button>
                 <button 
                   className={`btn-rect ${langMode === 'en' ? 'active' : ''}`}
                   onClick={() => setLangMode('en')}
                   style={{ padding: '4px 8px', fontSize: '11px' }}
                 >
-                  英文
+                  EN
                 </button>
               </div>
             </div>
@@ -745,7 +815,7 @@ function NovelWorkspace({
                 {!allPagesUnlocked && novelState.pagesRead === novelState.pagesUnlocked && (
                   <div className="para-block locked">
                     <div style={{ marginBottom: '10px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                      [ 正在解密下一页原文本中... ]
+                      正在解密下一页原文本中...
                     </div>
                     <div className="decryption-timer-container">
                       <div 
@@ -793,7 +863,28 @@ function NovelWorkspace({
                   </span>
                 </div>
                 
-                <div className="controls-actions">
+                <div className="controls-actions" style={{ alignItems: 'center' }}>
+                  <div style={{ display: 'inline-flex', border: '1px solid var(--border-color)', borderRadius: 'var(--border-radius)', overflow: 'hidden', marginRight: '4px' }}>
+                    {[0.5, 1.0, 1.5, 2.0].map((speed, idx) => (
+                      <button
+                        key={speed}
+                        className={`btn-rect ${playSpeed === speed ? 'active' : ''}`}
+                        onClick={() => setPlaySpeed(speed)}
+                        style={{ 
+                          padding: '4px 8px', 
+                          fontSize: '10px', 
+                          border: 'none', 
+                          borderRight: idx < 3 ? '1px solid var(--border-color)' : 'none',
+                          borderRadius: 0,
+                          minWidth: '38px',
+                          textAlign: 'center'
+                        }}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
+
                   <button 
                     className={`btn-rect ${autoPlay ? 'active' : ''}`}
                     onClick={() => setAutoPlay(true)}
@@ -850,7 +941,7 @@ function NovelWorkspace({
             ) : allPagesRead ? (
               <div className="card-rect" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0px', padding: '10px 16px' }}>
                 <div className="mono" style={{ fontSize: '13px' }}>
-                  [ 本章文字解锁完毕 ]
+                  本章文字解锁完毕
                 </div>
                 <div>
                   {currentChapterId < currentNovelInfo.totalChapters ? (
@@ -879,41 +970,52 @@ function NovelWorkspace({
 
         {/* Right Column: Case Memo */}
         <div className="workspace-right">
+          <button 
+            className="btn-rect color-klein"
+            onClick={onOpenClueWall}
+            style={{ 
+              width: '100%', 
+              padding: '10px 14px', 
+              fontSize: '12px', 
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}
+          >
+            📌 案卷线索墙
+          </button>
           {renderWorkspaceMemo()}
 
           {/* Case File Statistics Panel */}
           <div className="card-rect" style={{ fontSize: '12px', marginTop: 'auto', marginBottom: '0px' }}>
-            <h4 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
+            <h4 className="column-title color-spruce" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '8px' }}>
               案情侦破进度统计
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <span>遇害者人数</span>
-                  <span className="mono">{deceasedCount} / {totalSuspects}</span>
-                </div>
-                <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--crimson-red)', height: '100%', width: `${(deceasedCount / totalSuspects) * 100}%` }}></div>
+                  <span className="mono" style={{ color: deceasedCount > 0 ? 'var(--crimson-red)' : 'var(--text-muted)', fontWeight: deceasedCount > 0 ? 'bold' : 'normal' }}>{deceasedCount} 人</span>
                 </div>
               </div>
               {novelId === 'attwn' && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
                     <span>玩偶全局倍率</span>
                     <span className="mono" style={{ color: 'var(--palette-red)', fontWeight: 'bold' }}>+{deceasedCount * 30}%</span>
-                  </div>
-                  <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                    <div style={{ background: 'var(--palette-red)', height: '100%', width: `${(deceasedCount / 10) * 100}%` }}></div>
                   </div>
                 </div>
               )}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>
                   <span>收集物证数</span>
-                  <span className="mono">{unlockedCluesCount} / {totalClues}</span>
+                  <span className="mono">{unlockedCluesCount} / {currentChapterCluesCount}</span>
                 </div>
                 <div style={{ border: '1px solid var(--border-color)', height: '4px', background: 'var(--bg-hover)' }}>
-                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${totalClues > 0 ? (unlockedCluesCount / totalClues) * 100 : 0}%` }}></div>
+                  <div style={{ background: 'var(--klein-blue)', height: '100%', width: `${currentChapterCluesCount > 0 ? (unlockedCluesCount / currentChapterCluesCount) * 100 : 0}%` }}></div>
                 </div>
               </div>
               <div>
