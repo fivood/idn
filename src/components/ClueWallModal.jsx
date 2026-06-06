@@ -137,10 +137,54 @@ const getNodeDisplayDescription = (node, isDeceased) => {
 };
 
 const getSuspectDisplayTitle = (suspect, isDeceased) => {
-  if (!isDeceased && (suspect.titleZH === '被害人' || suspect.titleZH === '死者' || suspect.titleZH === '遇害者' || suspect.id === 'diana' || suspect.id === 'pryce' || suspect.id === 'mesurier' || suspect.id === 'helen' || suspect.id === 'harriet')) {
+  const zhTitle = suspect.titleZH || '';
+  const enTitle = suspect.titleEN || '';
+  if (!isDeceased && (
+    zhTitle.includes('被害人') || zhTitle.includes('死者') || zhTitle.includes('遇害者') ||
+    enTitle.toLowerCase().includes('victim') || enTitle.toLowerCase().includes('deceased') ||
+    ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(suspect.id)
+  )) {
     return { zh: '关系人', en: 'Associate' };
   }
   return { zh: suspect.titleZH, en: suspect.titleEN };
+};
+
+const getSuspectDisplayAccusationAndAlibi = (suspect, isDeceased, suspectsListInBook, allSuspectsDeceasedMap) => {
+  let accusationZH = suspect.accusationZH;
+  let accusationEN = suspect.accusationEN;
+  let alibiZH = suspect.alibiZH;
+  let alibiEN = suspect.alibiEN;
+
+  // If the suspect is a victim and is not deceased yet, hide their "Deceased, no alibi." alibi.
+  if (!isDeceased) {
+    if (suspect.alibiZH === '已遇害，无答辩。' || ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(suspect.id)) {
+      alibiZH = '生存，暂无涉及案件答辩。';
+      alibiEN = 'Alive, no case response needed yet.';
+    }
+  }
+
+  // Helen's accusation contains husband's death spoiler when Charles is still alive
+  if (suspect.id === 'helen') {
+    const isCharlesDeceased = allSuspectsDeceasedMap['mesurier'];
+    if (!isCharlesDeceased) {
+      accusationZH = '指控她背叛丈夫与当地医生偷情。';
+      accusationEN = 'Accused of an affair with the local doctor.';
+    }
+  }
+
+  // Olivia and Arthur accusations in Book 5 mention Harriet's murder before she dies
+  const isHarrietDeceased = allSuspectsDeceasedMap['harriet'];
+  if (!isHarrietDeceased) {
+    if (suspect.id === 'olivia') {
+      accusationZH = '极度厌恶母亲的强势控制与冷酷言语，与其关系十分紧张。';
+      accusationEN = "Deeply resented her mother's controlling and cruel nature, causing high tension.";
+    } else if (suspect.id === 'arthur') {
+      accusationZH = '多年来生活在妻子的无休止指责下，夫妻感情极度不和。';
+      accusationEN = 'Suffered years of constant berating and marital discord with his wife.';
+    }
+  }
+
+  return { accusationZH, accusationEN, alibiZH, alibiEN };
 };
 
 function ClueWallModal({
@@ -443,6 +487,14 @@ function ClueWallModal({
     const suspect = suspectData?.suspect;
     const isDeceased = suspectData?.isDeceased || false;
 
+    const allSuspectsDeceasedMap = {};
+    if (currentNovelInfo && currentNovelInfo.suspects) {
+      currentNovelInfo.suspects.forEach(s => {
+        const status = getSuspectStatus(s.id);
+        allSuspectsDeceasedMap[s.id] = status ? status.isDeceased : false;
+      });
+    }
+
     return (
       <div className="clue-detail-sidebar-content" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
         <header className="clue-detail-header" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -543,48 +595,51 @@ function ClueWallModal({
           })()}
 
           {/* Extended Suspect Stats (Bilingual) */}
-          {suspect && (
-            <>
-              <div className="clue-detail-divider" />
-              
-              <div className="clue-detail-section">
-                <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
-                <p style={{ fontSize: '12px', margin: '2px 0' }}>
-                  <strong>{suspect.nameZH}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).zh}
-                </p>
-                <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}>
-                  <strong>{suspect.nameEN}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).en}
-                </p>
-              </div>
-              
-              <div className="clue-detail-divider" />
+          {suspect && (() => {
+            const displayInfo = getSuspectDisplayAccusationAndAlibi(suspect, isDeceased, currentNovelInfo.suspects, allSuspectsDeceasedMap);
+            return (
+              <>
+                <div className="clue-detail-divider" />
+                
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">身份信息 / Identity</h6>
+                  <p style={{ fontSize: '12px', margin: '2px 0' }}>
+                    <strong>{suspect.nameZH}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).zh}
+                  </p>
+                  <p style={{ fontSize: '10px', opacity: 0.7, margin: '2px 0' }}>
+                    <strong>{suspect.nameEN}</strong> - {getSuspectDisplayTitle(suspect, isDeceased).en}
+                  </p>
+                </div>
+                
+                <div className="clue-detail-divider" />
 
-              <div className="clue-detail-section">
-                <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
-                <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{suspect.accusationZH}</p>
-                <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{suspect.accusationEN}</p>
-              </div>
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
+                  <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.accusationZH}</p>
+                  <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.accusationEN}</p>
+                </div>
 
-              <div className="clue-detail-divider" />
+                <div className="clue-detail-divider" />
 
-              <div className="clue-detail-section">
-                <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
-                <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{suspect.alibiZH}</p>
-                <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{suspect.alibiEN}</p>
-              </div>
+                <div className="clue-detail-section">
+                  <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
+                  <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.alibiZH}</p>
+                  <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.alibiEN}</p>
+                </div>
 
-              {isDeceased && suspect.deathMethodZH && (
-                <>
-                  <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
-                  <div className="clue-detail-section deceased-section" style={{ padding: '6px 8px' }}>
-                    <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)', marginTop: 0 }}>遇害实录 / Death Circumstance</h6>
-                    <p style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, margin: '2px 0' }}>{suspect.deathMethodZH}</p>
-                    <p style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3, margin: '2px 0' }}>{suspect.deathMethodEN}</p>
-                  </div>
-                </>
-              )}
-            </>
-          )}
+                {isDeceased && suspect.deathMethodZH && (
+                  <>
+                    <div className="clue-detail-divider" style={{ borderTop: '1px solid var(--palette-red)' }} />
+                    <div className="clue-detail-section deceased-section" style={{ padding: '6px 8px' }}>
+                      <h6 className="clue-detail-sec-title" style={{ color: 'var(--palette-red)', borderBottomColor: 'rgba(181, 71, 69, 0.3)', marginTop: 0 }}>遇害实录 / Death Circumstance</h6>
+                      <p style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '500', lineHeight: 1.4, margin: '2px 0' }}>{suspect.deathMethodZH}</p>
+                      <p style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.3, margin: '2px 0' }}>{suspect.deathMethodEN}</p>
+                    </div>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
         
         <footer className="clue-detail-footer" style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>

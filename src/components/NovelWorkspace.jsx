@@ -337,10 +337,57 @@ function NovelWorkspace({
 
   const getSuspectDisplayTitle = (s) => {
     const deceased = isSuspectDeceased(s);
-    if (!deceased && (s.titleZH === '被害人' || s.titleZH === '死者' || s.titleZH === '遇害者' || s.id === 'diana' || s.id === 'pryce' || s.id === 'mesurier' || s.id === 'helen' || s.id === 'harriet')) {
+    const zhTitle = s.titleZH || '';
+    const enTitle = s.titleEN || '';
+    if (!deceased && (
+      zhTitle.includes('被害人') || zhTitle.includes('死者') || zhTitle.includes('遇害者') ||
+      enTitle.toLowerCase().includes('victim') || enTitle.toLowerCase().includes('deceased') ||
+      ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(s.id)
+    )) {
       return { zh: '关系人', en: 'Associate' };
     }
     return { zh: s.titleZH, en: s.titleEN };
+  };
+
+  const getSuspectDisplayAccusationAndAlibi = (s) => {
+    const deceased = isSuspectDeceased(s);
+    let accusationZH = s.accusationZH;
+    let accusationEN = s.accusationEN;
+    let alibiZH = s.alibiZH;
+    let alibiEN = s.alibiEN;
+
+    // If the suspect is a victim and is not deceased yet, hide their "Deceased, no alibi." alibi.
+    if (!deceased) {
+      if (s.alibiZH === '已遇害，无答辩。' || ['diana', 'pryce', 'mesurier', 'helen', 'harriet'].includes(s.id)) {
+        alibiZH = '生存，暂无涉及案件答辩。';
+        alibiEN = 'Alive, no case response needed yet.';
+      }
+    }
+
+    // Helen's accusation contains husband's death spoiler when Charles is still alive
+    if (s.id === 'helen') {
+      const charles = suspects.find(x => x.id === 'mesurier');
+      const isCharlesDeceased = charles ? isSuspectDeceased(charles) : false;
+      if (!isCharlesDeceased) {
+        accusationZH = '指控她背叛丈夫与当地医生偷情。';
+        accusationEN = 'Accused of an affair with the local doctor.';
+      }
+    }
+
+    // Olivia and Arthur accusations in Book 5 mention Harriet's murder before she dies
+    const harriet = suspects.find(x => x.id === 'harriet');
+    const isHarrietDeceased = harriet ? isSuspectDeceased(harriet) : false;
+    if (!isHarrietDeceased) {
+      if (s.id === 'olivia') {
+        accusationZH = '极度厌恶母亲的强势控制与冷酷言语，与其关系十分紧张。';
+        accusationEN = "Deeply resented her mother's controlling and cruel nature, causing high tension.";
+      } else if (s.id === 'arthur') {
+        accusationZH = '多年来生活在妻子的无休止指责下，夫妻感情极度不和。';
+        accusationEN = 'Suffered years of constant berating and marital discord with his wife.';
+      }
+    }
+
+    return { accusationZH, accusationEN, alibiZH, alibiEN };
   };
 
   // Derived state: check if a clue is discovered at current reading point (prevent spoilers)
@@ -541,24 +588,31 @@ function NovelWorkspace({
                   return `${displayTitle.zh} / ${displayTitle.en}`;
                 })()}
               </div>
-              <div style={{ marginBottom: '6px' }}>
-                <strong>留声机指控 / Indictment:</strong> 
-                {isAccusationRevealed() ? (
-                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
-                    <p style={{ margin: '2px 0' }}>{selectedSuspect.accusationZH}</p>
-                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.accusationEN}</p>
-                  </div>
-                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
-              </div>
-              <div style={{ marginBottom: '6px' }}>
-                <strong>指控辩解 / Alibi:</strong> 
-                {isAccusationRevealed() ? (
-                  <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
-                    <p style={{ margin: '2px 0' }}>{selectedSuspect.alibiZH}</p>
-                    <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{selectedSuspect.alibiEN}</p>
-                  </div>
-                ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
-              </div>
+              {(() => {
+                const displayInfo = getSuspectDisplayAccusationAndAlibi(selectedSuspect);
+                return (
+                  <>
+                    <div style={{ marginBottom: '6px' }}>
+                      <strong>留声机指控 / Indictment:</strong> 
+                      {isAccusationRevealed() ? (
+                        <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
+                          <p style={{ margin: '2px 0' }}>{displayInfo.accusationZH}</p>
+                          <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{displayInfo.accusationEN}</p>
+                        </div>
+                      ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
+                    </div>
+                    <div style={{ marginBottom: '6px' }}>
+                      <strong>指控辩解 / Alibi:</strong> 
+                      {isAccusationRevealed() ? (
+                        <div style={{ marginTop: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--border-color)' }}>
+                          <p style={{ margin: '2px 0' }}>{displayInfo.alibiZH}</p>
+                          <p style={{ margin: '2px 0', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11px' }}>{displayInfo.alibiEN}</p>
+                        </div>
+                      ) : <span style={{ color: 'var(--text-muted)', marginLeft: '4px' }}>线索尚未浮现，待调查</span>}
+                    </div>
+                  </>
+                );
+              })()}
               <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--crimson-red)', color: isSuspectDeceased(selectedSuspect) ? 'var(--crimson-red)' : 'var(--text-muted)' }}>
                 <strong>死亡状况 / Death:</strong> 
                 {isSuspectDeceased(selectedSuspect) ? (

@@ -38,7 +38,15 @@ const CHAPTER_COSTS = {
   15: 12000000,
   16: 28000000,
   17: 65000000,
-  18: 160000000
+  18: 160000000,
+  19: 350000000,
+  20: 800000000,
+  21: 1800000000,
+  22: 4000000000,
+  23: 9000000000,
+  24: 20000000000,
+  25: 45000000000,
+  26: 100000000000
 };
 
 // Death milestones page lookup for suspects
@@ -374,6 +382,24 @@ function App() {
 
         if (data.novelStates !== undefined) {
           const migrated = { ...data.novelStates };
+          
+          // Ensure all unlocked novels have states initialized
+          const unlockedList = data.unlockedNovels || [];
+          unlockedList.forEach(novelId => {
+            if (!migrated[novelId]) {
+              migrated[novelId] = {
+                unlockedChapters: [1],
+                currentChapterId: 1,
+                pagesUnlocked: 1,
+                pagesRead: 0,
+                clueLevels: {},
+                finished: false,
+                timeElapsed: 0,
+                accusedSuspectId: null
+              };
+            }
+          });
+
           Object.keys(migrated).forEach(k => {
             // Migrate from old paragraph-based to page-based structure
             if (migrated[k].paragraphsUnlocked !== undefined) {
@@ -570,7 +596,7 @@ function App() {
         [novelId]: {
           unlockedChapters: [1],
           currentChapterId: 1,
-          pagesUnlocked: 0,
+          pagesUnlocked: 1,
           pagesRead: 0,
           clueLevels: {},
           finished: false,
@@ -595,7 +621,7 @@ function App() {
               ...bookState,
               unlockedChapters: [...bookState.unlockedChapters, chapterId],
               currentChapterId: chapterId,
-              pagesUnlocked: 0,
+              pagesUnlocked: 1,
               pagesRead: 0,
               timeElapsed: 0
             }
@@ -608,6 +634,24 @@ function App() {
 
   // Switch Active Novel in Workspace
   const handleSelectNovel = (novelId) => {
+    setNovelStates(prev => {
+      if (!prev[novelId]) {
+        return {
+          ...prev,
+          [novelId]: {
+            unlockedChapters: [1],
+            currentChapterId: 1,
+            pagesUnlocked: 1,
+            pagesRead: 0,
+            clueLevels: {},
+            finished: false,
+            timeElapsed: 0,
+            accusedSuspectId: null
+          }
+        };
+      }
+      return prev;
+    });
     setActiveNovelId(novelId);
     setCurrentView('novel');
   };
@@ -641,11 +685,22 @@ function App() {
         // Directly award DI points
         setDi(d => d + reward);
 
+        const nextPagesRead = bookState.pagesRead + 1;
+        const currentChapterData = novelData[novelId]?.chapters?.find(c => c.id === chapterId);
+        const totalPages = currentChapterData ? currentChapterData.pages.length : 0;
+        
+        let nextPagesUnlocked = bookState.pagesUnlocked;
+        if (nextPagesRead === nextPagesUnlocked && nextPagesUnlocked < totalPages) {
+          nextPagesUnlocked = nextPagesUnlocked + 1;
+        }
+
         return {
           ...prev,
           [novelId]: {
             ...bookState,
-            pagesRead: bookState.pagesRead + 1
+            pagesRead: nextPagesRead,
+            pagesUnlocked: nextPagesUnlocked,
+            timeElapsed: 0
           }
         };
       }
