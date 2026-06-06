@@ -113,30 +113,12 @@ export const getParagraphUnlockCost = (chapterId, paraIndex) => {
 export const getDIProgressStats = (rate) => {
   if (rate <= 0) return { reward: 1, duration: 999999 };
   
-  // Target duration: 2 seconds per cycle
-  const targetReward = rate * 2;
+  // Growth rate of 1 pixel per second means cycle duration is exactly screen width in seconds
+  const width = typeof window !== 'undefined' ? window.innerWidth : 1200;
   
-  // For very small rates, reward fractional DI to keep cycle duration at ~2 seconds
-  if (targetReward < 0.05) {
-    return { reward: 0.01, duration: 0.01 / rate };
-  }
-  if (targetReward < 0.3) {
-    return { reward: 0.1, duration: 0.1 / rate };
-  }
-  if (targetReward < 1.5) {
-    return { reward: 1, duration: 1 / rate };
-  }
-  
-  // For larger rates, scale reward to clean numbers: 5, 10, 20, 50, 100, 200, 500, 1000...
-  const magnitude = Math.pow(10, Math.floor(Math.log10(targetReward)));
-  const ratio = targetReward / magnitude;
-  
-  let reward = magnitude;
-  if (ratio >= 5) {
-    reward = magnitude * 5;
-  } else if (ratio >= 2) {
-    reward = magnitude * 2;
-  }
+  // Calculate reward, keeping it at least 0.01 to prevent 0 or division-by-zero errors
+  const rawReward = rate * width;
+  const reward = Math.max(0.01, Math.round(rawReward * 100) / 100);
   
   return {
     reward,
