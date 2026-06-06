@@ -819,7 +819,7 @@ function App() {
           <div>
             <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '6px' }}>
               贝克街私家侦探档案柜
-              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.2.4</span>
+              <span style={{ fontSize: '9px', opacity: 0.5, border: '1px solid var(--border-color)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'var(--font-mono)', fontWeight: 'normal' }}>v1.2.5</span>
             </h1>
             <span className="di-rate" style={{ fontSize: '11px', display: 'block', marginTop: '2px' }}>
               侦查效率: {diRate < 0.1 ? diRate.toFixed(3) : diRate < 1 ? diRate.toFixed(2) : diRate.toFixed(1)} DI/秒

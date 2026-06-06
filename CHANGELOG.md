@@ -13,6 +13,14 @@
 
 ## 🗺️ 版本历史 (Version History)
 
+### [v1.2.5] - 2026-06-06
+> **本次更新重点：自更新打包构建修复与体验优化回归发版**
+
+#### 🚀 新增与修复 (Features & Fixes)
+- **自更新签名与描述生成修复 (Tauri Auto-Updater Fix)**：
+  - 在 `tauri.conf.json` 中配置启用 `createUpdaterArtifacts`，确保发布流程自动生成 `latest.json` 和对应的 `.sig` 签名文件。
+  - 在 GitHub Actions 工作流中接入 Tauri 签名私钥与密码的 Secrets，实现构建包数字签名并自动上传。解决了以往本地 1.2.1 安装版因缺乏 Release 更新元数据导致更新检测报告 `Could not fetch a valid release JSON` 的问题。
+
 ### [v1.2.4] - 2026-06-05
 > **本次更新重点：嫌疑人角色身份与线索墙卡片描述动态防剧透调整**
 
