@@ -51,6 +51,33 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Extract latest changelog
+        id: changelog
+        run: |
+          node -e "
+          const fs = require('fs');
+          const content = fs.readFileSync('CHANGELOG.md', 'utf8');
+          const lines = content.split(/\r?\n/);
+          let startIndex = -1;
+          let endIndex = -1;
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('### [')) {
+              if (startIndex === -1) {
+                startIndex = i;
+              } else {
+                endIndex = i;
+                break;
+              }
+            }
+          }
+          if (startIndex !== -1) {
+            const body = lines.slice(startIndex, endIndex !== -1 ? endIndex : undefined).join('\n').trim();
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'body<<EOF\n' + body + '\nEOF\n');
+          } else {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'body=No changelog found\n');
+          }
+          "
+
       - name: Build Tauri app and publish release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -60,16 +87,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: '贝克街私家侦探档案柜 ${{ github.ref_name }}'
-          releaseBody: |
-            贝克街私家侦探档案柜客户端自动发版。
-
-            **下载说明：**
-            - Windows：下载 `.msi` 安装包
-            - macOS：下载 `.dmg` 安装包
-            - Linux：下载 `.AppImage`
-
-            进度保存在本地，无需登录即可游玩。
-            在线版请访问：https://idn.fivood.com
+          releaseBody: ${{ steps.changelog.outputs.body }}
           releaseDraft: false
           prerelease: false
           updaterJsonPreferNsis: true
