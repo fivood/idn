@@ -596,6 +596,11 @@ function ClueWallModal({
 
           {/* Extended Suspect Stats (Bilingual) */}
           {suspect && (() => {
+            const selectedNovelState = novelStates[selectedNovelId] || { currentChapterId: 1, pagesRead: 0, pagesUnlocked: 1 };
+            const currentChId = selectedNovelState.currentChapterId;
+            const pRead = selectedNovelState.pagesRead;
+            const hasAccusationRevealed = selectedNovelId !== 'attwn' || currentChId > 3 || (currentChId === 3 && pRead > 5);
+
             const displayInfo = getSuspectDisplayAccusationAndAlibi(suspect, isDeceased, currentNovelInfo.suspects, allSuspectsDeceasedMap);
             return (
               <>
@@ -615,16 +620,28 @@ function ClueWallModal({
 
                 <div className="clue-detail-section">
                   <h6 className="clue-detail-sec-title">留声机控诉罪行 / Indictment</h6>
-                  <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.accusationZH}</p>
-                  <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.accusationEN}</p>
+                  {hasAccusationRevealed ? (
+                    <>
+                      <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.accusationZH}</p>
+                      <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.accusationEN}</p>
+                    </>
+                  ) : (
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0' }}>线索尚未浮现，待调查 / Clue has not emerged yet, awaiting investigation</p>
+                  )}
                 </div>
 
                 <div className="clue-detail-divider" />
 
                 <div className="clue-detail-section">
                   <h6 className="clue-detail-sec-title">辩解口供 / Alibi Defence</h6>
-                  <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.alibiZH}</p>
-                  <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.alibiEN}</p>
+                  {hasAccusationRevealed ? (
+                    <>
+                      <p style={{ fontSize: '12px', lineHeight: 1.4, margin: '2px 0' }}>{displayInfo.alibiZH}</p>
+                      <p style={{ fontSize: '10.5px', lineHeight: 1.3, opacity: 0.7, fontStyle: 'italic', margin: '2px 0' }}>{displayInfo.alibiEN}</p>
+                    </>
+                  ) : (
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0' }}>线索尚未浮现，待调查 / Clue has not emerged yet, awaiting investigation</p>
+                  )}
                 </div>
 
                 {isDeceased && suspect.deathMethodZH && (

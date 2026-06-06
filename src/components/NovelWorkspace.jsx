@@ -411,7 +411,7 @@ function NovelWorkspace({
   // Derived state: check if gramophone accusation is revealed (Chapter 3 page 15+)
   const isAccusationRevealed = () => {
     if (currentChapterId > 3) return true;
-    if (currentChapterId === 3 && pagesRead > 15) return true;
+    if (currentChapterId === 3 && pagesRead > 5) return true;
     return false;
   };
 
