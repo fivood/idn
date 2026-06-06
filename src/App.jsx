@@ -674,16 +674,18 @@ function App() {
   };
 
   // Manual Read Page (called when clicking next page to catch up to decryption)
-  const readNextPage = (novelId, chapterId) => {
+  const readNextPage = (novelId, chapterId, isAuto = false) => {
     setNovelStates(prev => {
       const bookState = prev[novelId];
       if (bookState.currentChapterId === chapterId && bookState.pagesRead < bookState.pagesUnlocked) {
-        // Calculate reading reward DI
-        const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[chapterId] * 0.00005));
-        const reward = Math.round(baseReward * (1 + 0.01 * bookState.pagesRead));
-        
-        // Directly award DI points
-        setDi(d => d + reward);
+        if (!isAuto) {
+          // Calculate reading reward DI
+          const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[chapterId] * 0.00005));
+          const reward = Math.round(baseReward * (1 + 0.01 * bookState.pagesRead));
+          
+          // Directly award DI points
+          setDi(d => d + reward);
+        }
 
         const nextPagesRead = bookState.pagesRead + 1;
         const currentChapterData = novelData[novelId]?.chapters?.find(c => c.id === chapterId);

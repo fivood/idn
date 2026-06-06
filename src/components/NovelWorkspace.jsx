@@ -166,19 +166,21 @@ function NovelWorkspace({
     return () => { active = false; };
   }, [novelId]);
 
-  const handleReadNextPage = useCallback(() => {
+  const handleReadNextPage = useCallback((isAuto = false) => {
     if (pagesRead < pagesUnlocked) {
-      const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
-      const reward = Math.round(baseReward * (1 + 0.01 * pagesRead));
+      if (!isAuto) {
+        const baseReward = Math.max(0.5, Math.round(CHAPTER_COSTS[currentChapterId] * 0.00005));
+        const reward = Math.round(baseReward * (1 + 0.01 * pagesRead));
+        
+        const id = Date.now() + Math.random();
+        setFloatingRewards(prev => [...prev, { id, amount: reward }]);
+        
+        setTimeout(() => {
+          setFloatingRewards(prev => prev.filter(r => r.id !== id));
+        }, 1200);
+      }
       
-      const id = Date.now() + Math.random();
-      setFloatingRewards(prev => [...prev, { id, amount: reward }]);
-      
-      readNextPage(novelId, currentChapterId);
-      
-      setTimeout(() => {
-        setFloatingRewards(prev => prev.filter(r => r.id !== id));
-      }, 1200);
+      readNextPage(novelId, currentChapterId, isAuto);
     }
   }, [pagesRead, pagesUnlocked, currentChapterId, CHAPTER_COSTS, novelId, readNextPage]);
 
@@ -257,7 +259,7 @@ function NovelWorkspace({
       if (autoPlay) {
         const delayTime = Math.max(100, Math.round(1200 / playSpeed));
         const timeout = setTimeout(() => {
-          handleReadNextPage();
+          handleReadNextPage(true);
         }, delayTime);
         return () => clearTimeout(timeout);
       }
@@ -296,6 +298,13 @@ function NovelWorkspace({
       readerEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [pagesRead, pagesUnlocked, novelId, viewedChapterId]);
+
+  // During autoplay, auto-scroll to the bottom as text reveals
+  useEffect(() => {
+    if (autoPlay && readerEndRef.current) {
+      readerEndRef.current.scrollIntoView({ behavior: 'auto' });
+    }
+  }, [revealedChars, autoPlay]);
 
   // Early returns / Loading guards (Moved AFTER all hook declarations)
   if (!novelState) {
